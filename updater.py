@@ -2,11 +2,11 @@ import requests
 import os
 import sys
 
-VERSION_FILE_URL = 'https://example.com/version.txt'  # Ganti dengan URL file versi online
-MAIN_FILE_URL = 'https://example.com/main.py'         # Ganti dengan URL aplikasi terbaru
+VERSION_FILE_URL = 'https://github.com/tonxbow/absensi/raw/refs/heads/main/version.txt'  # Ganti dengan URL file versi online
+MAIN_FILE_URL = 'https://github.com/tonxbow/absensi/raw/refs/heads/main/update.py'         # Ganti dengan URL aplikasi terbaru
 
-LOCAL_VERSION = '1.0.0'
-LOCAL_FILE = 'main.py'
+LOCAL_VERSION = '1.0.1'
+LOCAL_FILE = 'update.py'
 
 def get_online_version():
     try:
