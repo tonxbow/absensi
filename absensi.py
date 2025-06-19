@@ -217,25 +217,24 @@ for interface in netifaces.interfaces():
     if ip_address:
         print(f"  {interface}: {ip_address}")   
 
-
-
-############################### CONFIG FUNCTION #######################################    
-# # Get the directory of the current script
+############################### CONFIG FUNCTION #######################################
 script_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Construct the full path to the file
-file_name = 'config.json'  # Replace with your file's name
+file_name = 'setting.json' 
 file_path = os.path.join(script_dir, file_name)       
 with open(file_path, 'r') as file:
-    data = json.load(file)
+    dataSetting= json.load(file)
 
-# Print the data
-VERSION_FILE_URL = data['ota-version']
-MAIN_FILE_URL = data['ota-app']
-LOCAL_VERSION = data['version']
+file_name = 'ota.json'
+file_path = os.path.join(script_dir, file_name)       
+with open(file_path, 'r') as file:
+    dataOTA= json.load(file)
+
+VERSION_FILE_URL = dataOTA['ota-version']
+MAIN_FILE_URL = dataOTA['ota-app']
+LOCAL_VERSION = dataOTA['version']
 LOCAL_FILE = 'absensi.py'
-MACHINE_ID = data['machine-id']
-API_HOST = data['api-server']
+MACHINE_ID = dataSetting['machine-id']
+API_HOST = dataSetting['api-server']
 
 print("VERSION     : " + LOCAL_VERSION)
 print("API SERVER  : " + API_HOST)
@@ -251,7 +250,6 @@ gpio_control = GPIOControl()
 reader = SimpleMFRC522()
 gpio_control.mode(5, "out") #pin 11 PC6
 gpio_control.mode(7, "in") #pin13 PC5
-
 
 def display():
     try:
@@ -297,7 +295,7 @@ def send():
     try:
         global tagRFID,MACHINE_ID,API_HOST
         while True:
-            print("check internet");
+            print("check internet")
             #check data yang belum ke kirim di database
             mycursor.execute("SELECT * FROM data_absen ORDER BY id ASC LIMIT 1")
 

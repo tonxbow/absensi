@@ -1,7 +1,5 @@
 {
 "version" : "1.0.0",
-"api-server" : "https://api-absensi.scola.id/foundation/kehadiran",
-"machine-id" : "12345",
 "ota-version" : "https://raw.githubusercontent.com/tonxbow/absensi/master/config.json",
 "ota-app" : "https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py"
 }
