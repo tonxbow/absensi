@@ -28,7 +28,7 @@ def restart_app():
 def check_for_update():
     online_version = get_online_version()
     if online_version and online_version != LOCAL_VERSION:
-        print(f"Versi baru tersedia: {online_version}")
+        print("Versi baru tersedia:" + online_version)
         download_latest()
         restart_app()
     else:
