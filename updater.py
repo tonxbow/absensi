@@ -6,7 +6,7 @@ VERSION_FILE_URL = 'https://github.com/tonxbow/absensi/raw/refs/heads/main/versi
 MAIN_FILE_URL = 'https://github.com/tonxbow/absensi/raw/refs/heads/main/update.py'         # Ganti dengan URL aplikasi terbaru
 
 LOCAL_VERSION = '1.0.1'
-LOCAL_FILE = 'update.py'
+LOCAL_FILE = 'updater.py'
 
 def get_online_version():
     try:
