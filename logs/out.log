@@ -2774,3 +2774,15 @@
 2025-06-19 19:11:49: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
 2025-06-19 19:11:49: Jadwal: 
 2025-06-19 19:11:49: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'read properties of undefined (reading waktu_pulang) WHERE id = 140' at line 1
+2025-06-19 19:15:40: VERSION     : 1.0.0
+2025-06-19 19:15:40: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:15:40: MACHINE ID  : 12345
+2025-06-19 19:15:40: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:15:40: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:15:40: {'version': '1.0.0', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-19 19:15:40: 1.0.0
+2025-06-19 19:15:40: VERSION ONLINE : 1.0.0 = 1.0.0
+2025-06-19 19:15:40: Aplikasi sudah versi terbaru.
+2025-06-19 19:15:42: SSID: Pakebun
+2025-06-19 19:15:42: Hold a tag near the reader
+2025-06-19 19:15:42: 

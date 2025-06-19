@@ -257,6 +257,7 @@ print("API SERVER  : " + API_HOST)
 print("MACHINE ID  : " + MACHINE_ID)
 print("OTA VERSION : " + VERSION_FILE_URL)
 print("OTA APP     : " + MAIN_FILE_URL)
+print("VER HARD    : " + "1.0.1")
 
 tagRFID=""
 statusInsert=0
