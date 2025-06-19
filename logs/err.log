@@ -1,0 +1,1121 @@
+2025-06-19 18:33:40: Traceback (most recent call last):
+2025-06-19 18:33:40:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:40:     check_for_update()
+2025-06-19 18:33:40:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:40:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:40: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:41: Traceback (most recent call last):
+2025-06-19 18:33:41:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:41:     check_for_update()
+2025-06-19 18:33:41:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:41:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:41: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:42: Traceback (most recent call last):
+2025-06-19 18:33:42:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:42:     check_for_update()
+2025-06-19 18:33:42:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:42:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:42: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:43: Traceback (most recent call last):
+2025-06-19 18:33:43:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:43:     check_for_update()
+2025-06-19 18:33:43:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:43:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:43: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:44: Traceback (most recent call last):
+2025-06-19 18:33:44:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:44:     check_for_update()
+2025-06-19 18:33:44:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:44:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:44: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:45: Traceback (most recent call last):
+2025-06-19 18:33:45:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:45:     check_for_update()
+2025-06-19 18:33:45:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:45:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:45: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:46: Traceback (most recent call last):
+2025-06-19 18:33:46:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:46:     check_for_update()
+2025-06-19 18:33:46:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:46:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:46: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:49: Traceback (most recent call last):
+2025-06-19 18:33:49:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:49:     check_for_update()
+2025-06-19 18:33:49:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:49:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:49: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:50: Traceback (most recent call last):
+2025-06-19 18:33:50:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:50:     check_for_update()
+2025-06-19 18:33:50:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:50:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:50: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:51: Traceback (most recent call last):
+2025-06-19 18:33:51:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:51:     check_for_update()
+2025-06-19 18:33:51:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:51:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:51: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:53: Traceback (most recent call last):
+2025-06-19 18:33:53:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:53:     check_for_update()
+2025-06-19 18:33:53:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:53:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:53: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:54: Traceback (most recent call last):
+2025-06-19 18:33:54:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:54:     check_for_update()
+2025-06-19 18:33:54:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:54:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:54: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:55: Traceback (most recent call last):
+2025-06-19 18:33:55:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:55:     check_for_update()
+2025-06-19 18:33:55:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:55:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:55: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:56: Traceback (most recent call last):
+2025-06-19 18:33:56:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:56:     check_for_update()
+2025-06-19 18:33:56:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:56:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:56: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:57: Traceback (most recent call last):
+2025-06-19 18:33:57:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:57:     check_for_update()
+2025-06-19 18:33:57:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:57:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:57: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:58: Traceback (most recent call last):
+2025-06-19 18:33:58:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:58:     check_for_update()
+2025-06-19 18:33:58:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:58:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:58: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:33:59: Traceback (most recent call last):
+2025-06-19 18:33:59:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:33:59:     check_for_update()
+2025-06-19 18:33:59:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:33:59:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:33:59: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:00: Traceback (most recent call last):
+2025-06-19 18:34:00:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:00:     check_for_update()
+2025-06-19 18:34:00:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:00:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:00: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:01: Traceback (most recent call last):
+2025-06-19 18:34:01:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:01:     check_for_update()
+2025-06-19 18:34:01:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:01:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:01: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:02: Traceback (most recent call last):
+2025-06-19 18:34:02:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:02:     check_for_update()
+2025-06-19 18:34:02:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:02:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:02: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:03: Traceback (most recent call last):
+2025-06-19 18:34:03:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:03:     check_for_update()
+2025-06-19 18:34:03:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:03:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:03: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:04: Traceback (most recent call last):
+2025-06-19 18:34:04:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:04:     check_for_update()
+2025-06-19 18:34:04:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:04:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:04: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:05: Traceback (most recent call last):
+2025-06-19 18:34:05:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:05:     check_for_update()
+2025-06-19 18:34:05:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:05:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:05: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:06: Traceback (most recent call last):
+2025-06-19 18:34:06:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:06:     check_for_update()
+2025-06-19 18:34:06:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:06:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:06: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:07: Traceback (most recent call last):
+2025-06-19 18:34:07:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:07:     check_for_update()
+2025-06-19 18:34:07:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:07:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:07: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:08: Traceback (most recent call last):
+2025-06-19 18:34:08:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:08:     check_for_update()
+2025-06-19 18:34:08:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:08:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:08: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:09: Traceback (most recent call last):
+2025-06-19 18:34:09:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:09:     check_for_update()
+2025-06-19 18:34:09:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:09:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:09: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:10: Traceback (most recent call last):
+2025-06-19 18:34:10:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:10:     check_for_update()
+2025-06-19 18:34:10:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:10:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:10: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:11: Traceback (most recent call last):
+2025-06-19 18:34:11:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:11:     check_for_update()
+2025-06-19 18:34:11:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:11:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:11: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:12: Traceback (most recent call last):
+2025-06-19 18:34:12:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:12:     check_for_update()
+2025-06-19 18:34:12:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:12:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:12: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:13: Traceback (most recent call last):
+2025-06-19 18:34:13:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:13:     check_for_update()
+2025-06-19 18:34:13:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:13:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:13: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:15: Traceback (most recent call last):
+2025-06-19 18:34:15:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:15:     check_for_update()
+2025-06-19 18:34:15:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:15:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:15: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:16: Traceback (most recent call last):
+2025-06-19 18:34:16:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:16:     check_for_update()
+2025-06-19 18:34:16:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:16:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:16: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:17: Traceback (most recent call last):
+2025-06-19 18:34:17:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:17:     check_for_update()
+2025-06-19 18:34:17:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:17:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:17: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:18: Traceback (most recent call last):
+2025-06-19 18:34:18:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:18:     check_for_update()
+2025-06-19 18:34:18:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:18:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:18: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:19: Traceback (most recent call last):
+2025-06-19 18:34:19:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:19:     check_for_update()
+2025-06-19 18:34:19:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:19:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:19: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:22: Traceback (most recent call last):
+2025-06-19 18:34:22:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:22:     check_for_update()
+2025-06-19 18:34:22:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:22:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:22: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:23: Traceback (most recent call last):
+2025-06-19 18:34:23:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:23:     check_for_update()
+2025-06-19 18:34:23:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:23:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:23: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:24: Traceback (most recent call last):
+2025-06-19 18:34:24:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:24:     check_for_update()
+2025-06-19 18:34:24:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:24:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:24: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:26: Traceback (most recent call last):
+2025-06-19 18:34:26:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:26:     check_for_update()
+2025-06-19 18:34:26:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:26:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:26: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:27: Traceback (most recent call last):
+2025-06-19 18:34:27:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:27:     check_for_update()
+2025-06-19 18:34:27:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:27:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:27: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:28: Traceback (most recent call last):
+2025-06-19 18:34:28:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:28:     check_for_update()
+2025-06-19 18:34:28:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:28:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:28: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:29: Traceback (most recent call last):
+2025-06-19 18:34:29:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:29:     check_for_update()
+2025-06-19 18:34:29:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:29:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:29: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:30: Traceback (most recent call last):
+2025-06-19 18:34:30:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:30:     check_for_update()
+2025-06-19 18:34:30:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:30:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:30: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:31: Traceback (most recent call last):
+2025-06-19 18:34:31:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:31:     check_for_update()
+2025-06-19 18:34:31:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:31:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:31: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:32: Traceback (most recent call last):
+2025-06-19 18:34:32:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:32:     check_for_update()
+2025-06-19 18:34:32:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:32:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:32: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:33: Traceback (most recent call last):
+2025-06-19 18:34:33:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:33:     check_for_update()
+2025-06-19 18:34:33:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:33:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:33: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:34: Traceback (most recent call last):
+2025-06-19 18:34:34:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:34:     check_for_update()
+2025-06-19 18:34:34:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:34:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:34: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:35: Traceback (most recent call last):
+2025-06-19 18:34:35:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:35:     check_for_update()
+2025-06-19 18:34:35:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:35:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:35: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:36: Traceback (most recent call last):
+2025-06-19 18:34:36:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:36:     check_for_update()
+2025-06-19 18:34:36:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:36:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:36: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:37: Traceback (most recent call last):
+2025-06-19 18:34:37:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:37:     check_for_update()
+2025-06-19 18:34:37:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:37:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:37: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:38: Traceback (most recent call last):
+2025-06-19 18:34:38:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:38:     check_for_update()
+2025-06-19 18:34:38:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:38:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:38: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:41: Traceback (most recent call last):
+2025-06-19 18:34:41:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:41:     check_for_update()
+2025-06-19 18:34:41:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:41:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:41: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:42: Traceback (most recent call last):
+2025-06-19 18:34:42:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:42:     check_for_update()
+2025-06-19 18:34:42:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:42:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:42: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:43: Traceback (most recent call last):
+2025-06-19 18:34:43:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:43:     check_for_update()
+2025-06-19 18:34:43:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:43:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:43: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:44: Traceback (most recent call last):
+2025-06-19 18:34:44:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:44:     check_for_update()
+2025-06-19 18:34:44:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:44:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:44: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:45: Traceback (most recent call last):
+2025-06-19 18:34:45:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:45:     check_for_update()
+2025-06-19 18:34:45:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:45:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:45: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:47: Traceback (most recent call last):
+2025-06-19 18:34:47:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:47:     check_for_update()
+2025-06-19 18:34:47:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:47:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:47: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:48: Traceback (most recent call last):
+2025-06-19 18:34:48:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:48:     check_for_update()
+2025-06-19 18:34:48:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:48:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:48: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:49: Traceback (most recent call last):
+2025-06-19 18:34:49:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:49:     check_for_update()
+2025-06-19 18:34:49:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:49:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:49: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:50: Traceback (most recent call last):
+2025-06-19 18:34:50:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:50:     check_for_update()
+2025-06-19 18:34:50:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:50:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:50: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:51: Traceback (most recent call last):
+2025-06-19 18:34:51:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:51:     check_for_update()
+2025-06-19 18:34:51:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:51:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:51: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:52: Traceback (most recent call last):
+2025-06-19 18:34:52:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:52:     check_for_update()
+2025-06-19 18:34:52:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:52:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:52: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:55: Traceback (most recent call last):
+2025-06-19 18:34:55:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:55:     check_for_update()
+2025-06-19 18:34:55:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:55:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:55: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:56: Traceback (most recent call last):
+2025-06-19 18:34:56:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:56:     check_for_update()
+2025-06-19 18:34:56:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:56:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:56: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:57: Traceback (most recent call last):
+2025-06-19 18:34:57:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:57:     check_for_update()
+2025-06-19 18:34:57:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:57:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:57: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:58: Traceback (most recent call last):
+2025-06-19 18:34:58:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:58:     check_for_update()
+2025-06-19 18:34:58:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:58:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:58: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:34:59: Traceback (most recent call last):
+2025-06-19 18:34:59:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:34:59:     check_for_update()
+2025-06-19 18:34:59:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:34:59:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:34:59: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:00: Traceback (most recent call last):
+2025-06-19 18:35:00:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:00:     check_for_update()
+2025-06-19 18:35:00:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:00:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:00: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:01: Traceback (most recent call last):
+2025-06-19 18:35:01:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:01:     check_for_update()
+2025-06-19 18:35:01:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:01:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:01: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:02: Traceback (most recent call last):
+2025-06-19 18:35:02:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:02:     check_for_update()
+2025-06-19 18:35:02:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:02:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:02: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:03: Traceback (most recent call last):
+2025-06-19 18:35:03:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:03:     check_for_update()
+2025-06-19 18:35:03:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:03:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:03: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:05: Traceback (most recent call last):
+2025-06-19 18:35:05:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:05:     check_for_update()
+2025-06-19 18:35:05:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:05:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:05: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:06: Traceback (most recent call last):
+2025-06-19 18:35:06:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:06:     check_for_update()
+2025-06-19 18:35:06:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:06:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:06: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:07: Traceback (most recent call last):
+2025-06-19 18:35:07:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:07:     check_for_update()
+2025-06-19 18:35:07:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:07:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:07: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:08: Traceback (most recent call last):
+2025-06-19 18:35:08:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:08:     check_for_update()
+2025-06-19 18:35:08:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:08:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:08: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:09: Traceback (most recent call last):
+2025-06-19 18:35:09:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:09:     check_for_update()
+2025-06-19 18:35:09:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:09:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:09: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:10: Traceback (most recent call last):
+2025-06-19 18:35:10:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:10:     check_for_update()
+2025-06-19 18:35:10:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:10:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:10: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:11: Traceback (most recent call last):
+2025-06-19 18:35:11:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:11:     check_for_update()
+2025-06-19 18:35:11:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:11:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:11: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:12: Traceback (most recent call last):
+2025-06-19 18:35:12:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:12:     check_for_update()
+2025-06-19 18:35:12:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:12:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:12: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:13: Traceback (most recent call last):
+2025-06-19 18:35:13:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:13:     check_for_update()
+2025-06-19 18:35:13:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:13:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:13: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:14: Traceback (most recent call last):
+2025-06-19 18:35:14:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:14:     check_for_update()
+2025-06-19 18:35:14:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:14:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:14: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:15: Traceback (most recent call last):
+2025-06-19 18:35:15:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:15:     check_for_update()
+2025-06-19 18:35:15:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:15:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:15: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:16: Traceback (most recent call last):
+2025-06-19 18:35:16:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:16:     check_for_update()
+2025-06-19 18:35:16:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:16:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:16: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:17: Traceback (most recent call last):
+2025-06-19 18:35:17:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:17:     check_for_update()
+2025-06-19 18:35:17:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:17:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:17: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:18: Traceback (most recent call last):
+2025-06-19 18:35:18:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:18:     check_for_update()
+2025-06-19 18:35:18:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:18:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:18: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:19: Traceback (most recent call last):
+2025-06-19 18:35:19:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:19:     check_for_update()
+2025-06-19 18:35:19:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:19:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:19: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:20: Traceback (most recent call last):
+2025-06-19 18:35:20:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:20:     check_for_update()
+2025-06-19 18:35:20:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:20:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:20: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:21: Traceback (most recent call last):
+2025-06-19 18:35:21:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:21:     check_for_update()
+2025-06-19 18:35:21:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:21:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:21: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:22: Traceback (most recent call last):
+2025-06-19 18:35:22:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:22:     check_for_update()
+2025-06-19 18:35:22:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:22:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:22: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:23: Traceback (most recent call last):
+2025-06-19 18:35:23:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:23:     check_for_update()
+2025-06-19 18:35:23:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:23:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:23: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:24: Traceback (most recent call last):
+2025-06-19 18:35:24:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:24:     check_for_update()
+2025-06-19 18:35:24:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:24:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:24: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:25: Traceback (most recent call last):
+2025-06-19 18:35:25:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:25:     check_for_update()
+2025-06-19 18:35:25:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:25:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:25: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:28: Traceback (most recent call last):
+2025-06-19 18:35:28:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:28:     check_for_update()
+2025-06-19 18:35:28:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:28:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:28: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:29: Traceback (most recent call last):
+2025-06-19 18:35:29:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:29:     check_for_update()
+2025-06-19 18:35:29:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:29:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:29: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:30: Traceback (most recent call last):
+2025-06-19 18:35:30:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:30:     check_for_update()
+2025-06-19 18:35:30:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:30:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:30: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:31: Traceback (most recent call last):
+2025-06-19 18:35:31:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:31:     check_for_update()
+2025-06-19 18:35:31:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:31:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:31: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:32: Traceback (most recent call last):
+2025-06-19 18:35:32:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:32:     check_for_update()
+2025-06-19 18:35:32:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:32:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:32: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:33: Traceback (most recent call last):
+2025-06-19 18:35:33:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:33:     check_for_update()
+2025-06-19 18:35:33:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:33:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:33: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:34: Traceback (most recent call last):
+2025-06-19 18:35:34:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:34:     check_for_update()
+2025-06-19 18:35:34:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:34:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:34: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:35: Traceback (most recent call last):
+2025-06-19 18:35:35:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:35:     check_for_update()
+2025-06-19 18:35:35:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:35:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:35: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:36: Traceback (most recent call last):
+2025-06-19 18:35:36:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:36:     check_for_update()
+2025-06-19 18:35:36:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:36:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:36: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:37: Traceback (most recent call last):
+2025-06-19 18:35:37:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:37:     check_for_update()
+2025-06-19 18:35:37:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:37:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:37: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:38: Traceback (most recent call last):
+2025-06-19 18:35:38:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:38:     check_for_update()
+2025-06-19 18:35:38:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:38:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:38: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:39: Traceback (most recent call last):
+2025-06-19 18:35:39:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:39:     check_for_update()
+2025-06-19 18:35:39:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:39:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:39: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:40: Traceback (most recent call last):
+2025-06-19 18:35:40:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:40:     check_for_update()
+2025-06-19 18:35:40:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:40:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:40: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:41: Traceback (most recent call last):
+2025-06-19 18:35:41:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:41:     check_for_update()
+2025-06-19 18:35:41:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:41:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:41: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:42: Traceback (most recent call last):
+2025-06-19 18:35:42:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:42:     check_for_update()
+2025-06-19 18:35:42:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:42:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:42: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:43: Traceback (most recent call last):
+2025-06-19 18:35:43:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:43:     check_for_update()
+2025-06-19 18:35:43:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:43:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:43: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:44: Traceback (most recent call last):
+2025-06-19 18:35:44:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:44:     check_for_update()
+2025-06-19 18:35:44:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:44:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:44: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:45: Traceback (most recent call last):
+2025-06-19 18:35:45:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:45:     check_for_update()
+2025-06-19 18:35:45:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:45:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:45: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:46: Traceback (most recent call last):
+2025-06-19 18:35:46:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:46:     check_for_update()
+2025-06-19 18:35:46:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:46:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:46: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:48: Traceback (most recent call last):
+2025-06-19 18:35:48:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:48:     check_for_update()
+2025-06-19 18:35:48:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:48:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:48: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:49: Traceback (most recent call last):
+2025-06-19 18:35:49:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:49:     check_for_update()
+2025-06-19 18:35:49:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:49:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:49: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:50: Traceback (most recent call last):
+2025-06-19 18:35:50:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:50:     check_for_update()
+2025-06-19 18:35:50:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:50:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:50: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:51: Traceback (most recent call last):
+2025-06-19 18:35:51:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:51:     check_for_update()
+2025-06-19 18:35:51:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:51:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:51: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:52: Traceback (most recent call last):
+2025-06-19 18:35:52:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:52:     check_for_update()
+2025-06-19 18:35:52:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:52:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:52: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:53: Traceback (most recent call last):
+2025-06-19 18:35:53:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:53:     check_for_update()
+2025-06-19 18:35:53:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:53:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:53: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:54: Traceback (most recent call last):
+2025-06-19 18:35:54:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:54:     check_for_update()
+2025-06-19 18:35:54:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:54:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:54: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:55: Traceback (most recent call last):
+2025-06-19 18:35:55:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:55:     check_for_update()
+2025-06-19 18:35:55:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:55:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:55: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:56: Traceback (most recent call last):
+2025-06-19 18:35:56:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:56:     check_for_update()
+2025-06-19 18:35:56:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:56:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:56: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:57: Traceback (most recent call last):
+2025-06-19 18:35:57:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:57:     check_for_update()
+2025-06-19 18:35:57:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:57:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:57: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:35:58: Traceback (most recent call last):
+2025-06-19 18:35:58:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:35:58:     check_for_update()
+2025-06-19 18:35:58:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:35:58:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:35:58: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:01: Traceback (most recent call last):
+2025-06-19 18:36:01:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:01:     check_for_update()
+2025-06-19 18:36:01:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:01:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:01: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:02: Traceback (most recent call last):
+2025-06-19 18:36:02:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:02:     check_for_update()
+2025-06-19 18:36:02:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:02:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:02: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:03: Traceback (most recent call last):
+2025-06-19 18:36:03:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:03:     check_for_update()
+2025-06-19 18:36:03:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:03:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:03: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:04: Traceback (most recent call last):
+2025-06-19 18:36:04:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:04:     check_for_update()
+2025-06-19 18:36:04:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:04:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:04: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:05: Traceback (most recent call last):
+2025-06-19 18:36:05:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:05:     check_for_update()
+2025-06-19 18:36:05:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:05:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:05: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:06: Traceback (most recent call last):
+2025-06-19 18:36:06:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:06:     check_for_update()
+2025-06-19 18:36:06:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:06:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:06: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:07: Traceback (most recent call last):
+2025-06-19 18:36:07:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:07:     check_for_update()
+2025-06-19 18:36:07:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:07:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:07: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:08: Traceback (most recent call last):
+2025-06-19 18:36:08:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:08:     check_for_update()
+2025-06-19 18:36:08:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:08:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:08: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:09: Traceback (most recent call last):
+2025-06-19 18:36:09:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:09:     check_for_update()
+2025-06-19 18:36:09:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:09:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:09: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:10: Traceback (most recent call last):
+2025-06-19 18:36:10:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:10:     check_for_update()
+2025-06-19 18:36:10:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:10:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:10: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:11: Traceback (most recent call last):
+2025-06-19 18:36:11:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:11:     check_for_update()
+2025-06-19 18:36:11:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:11:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:11: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:13: Traceback (most recent call last):
+2025-06-19 18:36:13:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:13:     check_for_update()
+2025-06-19 18:36:13:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:13:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:13: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:14: Traceback (most recent call last):
+2025-06-19 18:36:14:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:14:     check_for_update()
+2025-06-19 18:36:14:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:14:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:14: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:15: Traceback (most recent call last):
+2025-06-19 18:36:15:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:15:     check_for_update()
+2025-06-19 18:36:15:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:15:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:15: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:16: Traceback (most recent call last):
+2025-06-19 18:36:16:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:16:     check_for_update()
+2025-06-19 18:36:16:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:16:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:16: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:17: Traceback (most recent call last):
+2025-06-19 18:36:17:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:17:     check_for_update()
+2025-06-19 18:36:17:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:17:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:17: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:18: Traceback (most recent call last):
+2025-06-19 18:36:18:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:18:     check_for_update()
+2025-06-19 18:36:18:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:18:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:18: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:19: Traceback (most recent call last):
+2025-06-19 18:36:19:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:19:     check_for_update()
+2025-06-19 18:36:19:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:19:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:19: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:20: Traceback (most recent call last):
+2025-06-19 18:36:20:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:20:     check_for_update()
+2025-06-19 18:36:20:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:20:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:20: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:21: Traceback (most recent call last):
+2025-06-19 18:36:21:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:21:     check_for_update()
+2025-06-19 18:36:21:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:21:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:21: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:22: Traceback (most recent call last):
+2025-06-19 18:36:22:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:22:     check_for_update()
+2025-06-19 18:36:22:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:22:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:22: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:23: Traceback (most recent call last):
+2025-06-19 18:36:23:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:23:     check_for_update()
+2025-06-19 18:36:23:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:23:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:23: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:24: Traceback (most recent call last):
+2025-06-19 18:36:24:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:24:     check_for_update()
+2025-06-19 18:36:24:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:24:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:24: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:25: Traceback (most recent call last):
+2025-06-19 18:36:25:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:25:     check_for_update()
+2025-06-19 18:36:25:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:25:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:25: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:26: Traceback (most recent call last):
+2025-06-19 18:36:26:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:26:     check_for_update()
+2025-06-19 18:36:26:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:26:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:26: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:27: Traceback (most recent call last):
+2025-06-19 18:36:27:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:27:     check_for_update()
+2025-06-19 18:36:27:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:27:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:27: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:28: Traceback (most recent call last):
+2025-06-19 18:36:28:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:28:     check_for_update()
+2025-06-19 18:36:28:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:28:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:28: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:29: Traceback (most recent call last):
+2025-06-19 18:36:29:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:29:     check_for_update()
+2025-06-19 18:36:29:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:29:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:29: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:30: Traceback (most recent call last):
+2025-06-19 18:36:30:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:30:     check_for_update()
+2025-06-19 18:36:30:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:30:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:30: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:31: Traceback (most recent call last):
+2025-06-19 18:36:31:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:31:     check_for_update()
+2025-06-19 18:36:31:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:31:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:31: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:34: Traceback (most recent call last):
+2025-06-19 18:36:34:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:34:     check_for_update()
+2025-06-19 18:36:34:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:34:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:34: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:35: Traceback (most recent call last):
+2025-06-19 18:36:35:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:35:     check_for_update()
+2025-06-19 18:36:35:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:35:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:35: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:36: Traceback (most recent call last):
+2025-06-19 18:36:36:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:36:     check_for_update()
+2025-06-19 18:36:36:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:36:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:36: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:37: Traceback (most recent call last):
+2025-06-19 18:36:37:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:37:     check_for_update()
+2025-06-19 18:36:37:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:37:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:37: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:38: Traceback (most recent call last):
+2025-06-19 18:36:38:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:38:     check_for_update()
+2025-06-19 18:36:38:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:38:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:38: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:40: Traceback (most recent call last):
+2025-06-19 18:36:40:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:40:     check_for_update()
+2025-06-19 18:36:40:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:40:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:40: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:41: Traceback (most recent call last):
+2025-06-19 18:36:41:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:41:     check_for_update()
+2025-06-19 18:36:41:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:41:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:41: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:42: Traceback (most recent call last):
+2025-06-19 18:36:42:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:42:     check_for_update()
+2025-06-19 18:36:42:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:42:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:42: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:43: Traceback (most recent call last):
+2025-06-19 18:36:43:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:43:     check_for_update()
+2025-06-19 18:36:43:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:43:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:43: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:44: Traceback (most recent call last):
+2025-06-19 18:36:44:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:44:     check_for_update()
+2025-06-19 18:36:44:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:44:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:44: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:45: Traceback (most recent call last):
+2025-06-19 18:36:45:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:45:     check_for_update()
+2025-06-19 18:36:45:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:45:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:45: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:46: Traceback (most recent call last):
+2025-06-19 18:36:46:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:46:     check_for_update()
+2025-06-19 18:36:46:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:46:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:46: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:47: Traceback (most recent call last):
+2025-06-19 18:36:47:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:47:     check_for_update()
+2025-06-19 18:36:47:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:47:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:47: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:48: Traceback (most recent call last):
+2025-06-19 18:36:48:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:48:     check_for_update()
+2025-06-19 18:36:48:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:48:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:48: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:49: Traceback (most recent call last):
+2025-06-19 18:36:49:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:49:     check_for_update()
+2025-06-19 18:36:49:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:49:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:49: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:50: Traceback (most recent call last):
+2025-06-19 18:36:50:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:50:     check_for_update()
+2025-06-19 18:36:50:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:50:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:50: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:51: Traceback (most recent call last):
+2025-06-19 18:36:51:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:51:     check_for_update()
+2025-06-19 18:36:51:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:51:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:51: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:52: Traceback (most recent call last):
+2025-06-19 18:36:52:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:52:     check_for_update()
+2025-06-19 18:36:52:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:52:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:52: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:53: Traceback (most recent call last):
+2025-06-19 18:36:53:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:53:     check_for_update()
+2025-06-19 18:36:53:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:53:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:53: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:54: Traceback (most recent call last):
+2025-06-19 18:36:54:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:54:     check_for_update()
+2025-06-19 18:36:54:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:54:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:54: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:55: Traceback (most recent call last):
+2025-06-19 18:36:55:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:55:     check_for_update()
+2025-06-19 18:36:55:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:55:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:55: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:56: Traceback (most recent call last):
+2025-06-19 18:36:56:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:56:     check_for_update()
+2025-06-19 18:36:56:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:56:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:56: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:57: Traceback (most recent call last):
+2025-06-19 18:36:57:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:57:     check_for_update()
+2025-06-19 18:36:57:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:57:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:57: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:58: Traceback (most recent call last):
+2025-06-19 18:36:58:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:58:     check_for_update()
+2025-06-19 18:36:58:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:58:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:58: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:36:59: Traceback (most recent call last):
+2025-06-19 18:36:59:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:36:59:     check_for_update()
+2025-06-19 18:36:59:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:36:59:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:36:59: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:00: Traceback (most recent call last):
+2025-06-19 18:37:00:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:00:     check_for_update()
+2025-06-19 18:37:00:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:00:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:00: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:01: Traceback (most recent call last):
+2025-06-19 18:37:01:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:01:     check_for_update()
+2025-06-19 18:37:01:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:01:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:01: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:02: Traceback (most recent call last):
+2025-06-19 18:37:02:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:02:     check_for_update()
+2025-06-19 18:37:02:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:02:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:02: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:03: Traceback (most recent call last):
+2025-06-19 18:37:03:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:03:     check_for_update()
+2025-06-19 18:37:03:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:03:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:03: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:04: Traceback (most recent call last):
+2025-06-19 18:37:04:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:04:     check_for_update()
+2025-06-19 18:37:04:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:04:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:04: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:07: Traceback (most recent call last):
+2025-06-19 18:37:07:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:07:     check_for_update()
+2025-06-19 18:37:07:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:07:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:07: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:09: Traceback (most recent call last):
+2025-06-19 18:37:09:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:09:     check_for_update()
+2025-06-19 18:37:09:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:09:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:09: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:37:10: Traceback (most recent call last):
+2025-06-19 18:37:10:   File "/home/orangepi/absensi/absensi.py", line 276, in <module>
+2025-06-19 18:37:10:     check_for_update()
+2025-06-19 18:37:10:   File "/home/orangepi/absensi/absensi.py", line 57, in check_for_update
+2025-06-19 18:37:10:     print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+2025-06-19 18:37:10: TypeError: can only concatenate str (not "NoneType") to str
+2025-06-19 18:48:00: Exception ignored in: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-19 18:48:00: Traceback (most recent call last):
+2025-06-19 18:48:00:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-19 18:48:00:     lock.acquire()
+2025-06-19 18:48:00: : 
