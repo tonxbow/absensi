@@ -2,8 +2,8 @@ import requests
 import os
 import sys
 
-VERSION_FILE_URL = 'https://github.com/tonxbow/absensi/raw/refs/heads/main/version.txt'  # Ganti dengan URL file versi online
-MAIN_FILE_URL = 'https://github.com/tonxbow/absensi/raw/refs/heads/main/update.py'         # Ganti dengan URL aplikasi terbaru
+VERSION_FILE_URL = 'https://raw.githubusercontent.com/tonxbow/absensi/main/version.txt'  # Ganti dengan URL file versi online
+MAIN_FILE_URL = 'https://raw.githubusercontent.com/tonxbow/absensi/main/updater.py'         # Ganti dengan URL aplikasi terbaru
 
 LOCAL_VERSION = '1.0.2'
 LOCAL_FILE = 'updater.py'
