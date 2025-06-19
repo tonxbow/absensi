@@ -25,6 +25,7 @@ import socket
 import netifaces
 import requests
 import json
+import subprocess
 
 import mysql.connector
 
@@ -84,8 +85,8 @@ def insertdata(tagRFID):
     # Eksekusi dan commit
     mycursor.execute(query, values)
     mydb.commit()
-
-    print("Data berhasil disimpan, ID:", mycursor.lastrowid)
+    return mycursor.lastrowid
+    # print("Data berhasil disimpan, ID:", mycursor.lastrowid)
 
 ############################### LCD FUNCTION #######################################
 I2C_ADDR  = 0x27 # I2C device address
@@ -181,7 +182,7 @@ class GPIOControl:
 
 
 
-############################### IP ADDRESS FUNCTION #######################################
+############################### NETWORK FUNCTION #######################################
 def get_interface_ip(interface_name):
     """
     Retrieves the IPv4 address for a specified network interface.
@@ -198,6 +199,20 @@ def get_interface_ip(interface_name):
         # Handle cases where the interface name is not found
         return None
     return None
+
+def get_ssid_nmcli():
+    try:
+        output = subprocess.check_output("nmcli -t -f active,ssid dev wifi", shell=True, encoding="utf-8")
+        for line in output.strip().split("\n"):
+            if line.startswith("yes:"):
+                return line.split(":")[1]
+        return None
+    except subprocess.CalledProcessError:
+        return None
+
+ssid = get_ssid_nmcli()
+print("SSID:", ssid if ssid else "Tidak terhubung")
+
 wlan_ip = get_interface_ip('wlan0')  # Common on Linux/Raspberry Pi
 if not wlan_ip:
     wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
@@ -216,6 +231,15 @@ for interface in netifaces.interfaces():
     ip_address = get_interface_ip(interface)
     if ip_address:
         print(f"  {interface}: {ip_address}")   
+
+def cek_internet(url='https://www.google.com/', timeout=5):
+    try:
+        _ = requests.get(url, timeout=timeout)
+        return True
+    except requests.ConnectionError:
+        return False
+
+
 
 ############################### CONFIG FUNCTION #######################################
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -236,6 +260,9 @@ LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
 
+BUZZER = 5
+BUTTON = 7
+
 print("VERSION     : " + LOCAL_VERSION)
 print("API SERVER  : " + API_HOST)
 print("MACHINE ID  : " + MACHINE_ID)
@@ -243,45 +270,91 @@ print("OTA VERSION : " + VERSION_FILE_URL)
 print("OTA APP     : " + MAIN_FILE_URL)
 
 tagRFID=""
+statusInsert=0
+statusInternet="OFFLINE"
 
 check_for_update()
 lcd_init()
 gpio_control = GPIOControl()
 reader = SimpleMFRC522()
-gpio_control.mode(5, "out") #pin 11 PC6
-gpio_control.mode(7, "in") #pin13 PC5
+gpio_control.mode(BUZZER, "out") #pin 11 PC6
+gpio_control.mode(BUTTON, "in") #pin13 PC5
+
+displayPage=0
+displayMaxPage=3
+jumlahDataNotSend=0
 
 def display():
     try:
-        global tagRFID
+        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage
+        lcd_clear()
+        lcd_string("    SCOLA ABSEN",LCD_LINE_2)
+        lcd_string("  FIRMWARE V."+LOCAL_VERSION,LCD_LINE_3)
+        time.sleep(2)
+        lcd_clear()
+        tick=True
+        countTick=0
         while True:
-            lcd_clear()
-            now = datetime.now()
-            formatted_datetime_1 = now.strftime("%Y-%m-%d %H:%M:%S")
-            lcd_string(formatted_datetime_1,LCD_LINE_1)
-            lcd_string("SILAHKAN TAP KARTU  ",LCD_LINE_2)   
-            lcd_string("W : " + str(wlan_ip),LCD_LINE_3)  
-            lcd_string("E : " + str(eth_ip),LCD_LINE_4)  
             
-            time.sleep(1)
+            now = datetime.now()
+            formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
+
+            if displayPage==0 :
+                lcd_string(formatted_datetime_1,LCD_LINE_1)
+                if tick :
+                    lcd_string(" SILAHKAN TAP KARTU  ",LCD_LINE_2)
+                else :
+                    lcd_string("           ",LCD_LINE_2)
+
+                lcd_string("I:"+statusInternet+" D:"+str(jumlahDataNotSend),LCD_LINE_4)
+                
+
+            if displayPage==1 :
+                lcd_string("S : " + str(ssid),LCD_LINE_1)  
+                lcd_string("W : " + str(wlan_ip),LCD_LINE_2)  
+                lcd_string("E : " + str(eth_ip),LCD_LINE_3)  
+            
+            time.sleep(0.5)
+            tick = not tick
+            countTick += 1
+
+            if countTick>10 :
+                lcd_clear()
+                #displayPage +=1
+                countTick=0
+
+            if displayPage > displayMaxPage:
+                displayPage=0
+
             if tagRFID != "" :
                lcd_clear()
                lcd_string("NO RFID :" + tagRFID,LCD_LINE_1)  
+               lcd_string("   BERHASIL ABSEN",LCD_LINE_2) 
+               lcd_string("ID " + str(statusInsert),LCD_LINE_3) 
                tagRFID=""
                time.sleep(2)
+               lcd_clear()
+
+            # if gpio_control.read(BUTTON)=='0' :
+            #     displayPage = displayPage + 1
+            #     print("PAGE " + displayPage)
+            # #     if displayPage > displayMaxPage:
+            # #         displayPage=0
+            #     time.sleep(1)
+            
     except :
         print("Error !")
         raise
 
 def rfid():
     try:
-        global tagRFID
+        global tagRFID,statusInsert
         while True:
             print("Hold a tag near the reader")
             id, text = reader.read()
             tagRFID = str(id);
             print("ID: %s\nText: %s" % (id,text))
-            insertdata(tagRFID)
+            statusInsert = insertdata(tagRFID)
             gpio_control.write(5, 1)
             sleep(1)
             gpio_control.write(5, 0)
@@ -293,64 +366,70 @@ def rfid():
 
 def send():
     try:
-        global tagRFID,MACHINE_ID,API_HOST
+        global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend
         while True:
-            print("check internet")
-            #check data yang belum ke kirim di database
-            mycursor.execute("SELECT * FROM data_absen ORDER BY id ASC LIMIT 1")
+            query = "SELECT COUNT(*) FROM data_absen where status=0"
+            mycursor.execute(query)
+            jumlahData = mycursor.fetchone()[0]
+            jumlahDataNotSend = jumlahData
 
-            row = mycursor.fetchone()
+            if cek_internet(API_HOST,3) : 
+                statusInternet = "ONLINE"
+                #check data yang belum ke kirim di database
+                mycursor.execute("SELECT * FROM data_absen WHERE status=0 ORDER BY id ASC LIMIT 1")
+                row = mycursor.fetchone()
+    
+                if row:
+                    id = row[0]
+                    kartu = row[1]
+                    waktu = row[2]
 
-           # Pastikan data ada
-            if row:
-                id = row[0]
-                kartu = row[1]
-                waktu = row[2]
-            else:
-                print("Data tidak ditemukan.")
+                    payload = json.dumps({
+                    "mesin": str(MACHINE_ID),
+                    "kartu": str(kartu),
+                    "waktu": str(waktu)
+                    })
+                    headers = {
+                    'Content-Type': 'application/json'
+                    }
+                    response = requests.request("POST", API_HOST, headers=headers, data=payload)
+                    print(response.text)
 
-            #jika sukses maka di delete
-            
-            payload = json.dumps({
-            "mesin": str(MACHINE_ID),
-            "kartu": str(kartu),
-            "waktu": str(waktu)
-            })
-            headers = {
-            'Content-Type': 'application/json'
-            }
-            response = requests.request("POST", API_HOST, headers=headers, data=payload)
-            print(response.text)
+                    try:
+                        res_json = response.json()
+                        status = res_json.get("status", False)
+                        message = res_json.get("message", "")
+                        jadwal = res_json.get("data", {}).get("jadwal", "")
 
-            try:
-                res_json = response.json()
+                        if status:
+                            print("✅ Status: Berhasil")
+                            print("Pesan:", message)
+                            print("Jadwal:", jadwal)
+                            query = "DELETE FROM data_absen WHERE id = %s"
+                            mycursor.execute(query, (id,))
+                            mydb.commit()
+                            print(f"Data dengan ID {id} berhasil dihapus.")
+                        else:
+                            print("❌ Status: Gagal")
+                            print("Pesan:", message)
+                            print("Jadwal:", jadwal)
+                            query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
+                            mycursor.execute(query, (id,))
+                            mydb.commit()
+
+                    except ValueError:
+                        print("⚠️ Response bukan format JSON yang valid:")
+                        print(response.text)
+                #else:
+                    #print("Data tidak ditemukan.")
+
+                #jika sukses maka di delete
                 
-                # Ambil nilai-nilainya
-                status = res_json.get("status", False)
-                message = res_json.get("message", "")
-                jadwal = res_json.get("data", {}).get("jadwal", "")
+                
 
-                # Cek status
-                if status:
-                    print("✅ Status: Berhasil")
-                    print("Pesan:", message)
-                    print("Jadwal:", jadwal)
-                    query = "DELETE FROM data_absen WHERE id = %s"
-                    mycursor.execute(query, (id,))
-
-                    # Commit perubahan
-                    mydb.commit()
-
-                    print(f"Data dengan ID {id} berhasil dihapus.")
-                    # Tambahkan aksi lanjutan di sini jika status True (misalnya insert ke database)
-                else:
-                    print("❌ Status: Gagal")
-                    print("Pesan:", message)
-                    print("Jadwal:", jadwal)
-
-            except ValueError:
-                print("⚠️ Response bukan format JSON yang valid:")
-                print(response.text)
+                
+            else :
+                statusInternet = "OFFLINE"
 
             
             time.sleep(5)
