@@ -115,14 +115,18 @@ E_DELAY = 0.0005
 bus = smbus.SMBus(3) # Rev 2 Pi uses 1
 
 def lcd_init():
-  # Initialise display
-  lcd_byte(0x33,LCD_CMD) # 110011 Initialise
-  lcd_byte(0x32,LCD_CMD) # 110010 Initialise
-  lcd_byte(0x06,LCD_CMD) # 000110 Cursor move direction
-  lcd_byte(0x0C,LCD_CMD) # 001100 Display On,Cursor Off, Blink Off 
-  lcd_byte(0x28,LCD_CMD) # 101000 Data length, number of lines, font size
-  lcd_byte(0x01,LCD_CMD) # 000001 Clear display
-  time.sleep(E_DELAY)
+    try :
+        # Initialise display
+        lcd_byte(0x33,LCD_CMD) # 110011 Initialise
+        lcd_byte(0x32,LCD_CMD) # 110010 Initialise
+        lcd_byte(0x06,LCD_CMD) # 000110 Cursor move direction
+        lcd_byte(0x0C,LCD_CMD) # 001100 Display On,Cursor Off, Blink Off 
+        lcd_byte(0x28,LCD_CMD) # 101000 Data length, number of lines, font size
+        lcd_byte(0x01,LCD_CMD) # 000001 Clear display
+        time.sleep(E_DELAY)
+    except :
+        print ("ERROR LCD")
+
 
 def lcd_clear():
     lcd_byte(0x01,LCD_CMD) # 000001 Clear display
@@ -272,13 +276,15 @@ print("OTA APP     : " + MAIN_FILE_URL)
 tagRFID=""
 statusInsert=0
 statusInternet="OFFLINE"
-
-check_for_update()
-lcd_init()
-gpio_control = GPIOControl()
-reader = SimpleMFRC522()
-gpio_control.mode(BUZZER, "out") #pin 11 PC6
-gpio_control.mode(BUTTON, "in") #pin13 PC5
+try :
+    check_for_update()
+    lcd_init()
+    gpio_control = GPIOControl()
+    reader = SimpleMFRC522()
+    gpio_control.mode(BUZZER, "out") #pin 11 PC6
+    gpio_control.mode(BUTTON, "in") #pin13 PC5
+except Exception as e:
+    print("ERROR : ", e)
 
 displayPage=0
 displayMaxPage=3
@@ -342,9 +348,8 @@ def display():
             # #         displayPage=0
             #     time.sleep(1)
             
-    except :
-        print("Error !")
-        raise
+    except Exception as e:
+        print("ERROR : ", e)
 
 def rfid():
     try:
@@ -360,9 +365,8 @@ def rfid():
             gpio_control.write(5, 0)
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
 
-    except :
-        print("Error 2!")
-        raise 
+    except Exception as e:
+        print("ERROR : ", e) 
 
 def send():
     try:
@@ -433,9 +437,8 @@ def send():
 
             
             time.sleep(5)
-    except :
-        print("Error 2!")
-        raise 
+    except Exception as e:
+        print("ERROR : ", e)
 
 if __name__ == '__main__':
   try:
@@ -447,6 +450,6 @@ if __name__ == '__main__':
     t1.start()
     t2.start()
     t3.start()
-  except:
-    print ("Error MAIN")
+  except Exception as e:
+    print("ERROR : ", e)
 
