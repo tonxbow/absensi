@@ -9,13 +9,7 @@ module.exports = {
       restart_delay: 5000,             // Delay 5 detik antar restart
       error_file: "logs/err.log",      // File log error
       out_file: "logs/out.log",        // File log output
-      log_date_format: "YYYY-MM-DD HH:mm:ss",  // Format waktu log
-      env: {
-        ENV: "development"
-      },
-      env_production: {
-        ENV: "production"
-      }
+      log_date_format: "YYYY-MM-DD HH:mm:ss"
     }
   ]
 }

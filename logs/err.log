@@ -1119,3 +1119,26 @@
 2025-06-19 18:48:00:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
 2025-06-19 18:48:00:     lock.acquire()
 2025-06-19 18:48:00: : 
+2025-06-19 19:06:38: Exception ignored in: 
+2025-06-19 19:06:38: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-19 19:06:38: Traceback (most recent call last):
+2025-06-19 19:06:38:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-19 19:06:38:     lock.acquire()
+2025-06-19 19:06:38: KeyboardInterrupt: 
+2025-06-19 19:07:32: Exception ignored in: 
+2025-06-19 19:07:32: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-19 19:07:32: Traceback (most recent call last):
+2025-06-19 19:07:32:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-19 19:07:32:     lock.acquire()
+2025-06-19 19:07:32: KeyboardInterrupt: 
+2025-06-19 19:11:46: Exception ignored in: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-19 19:11:46: Traceback (most recent call last):
+2025-06-19 19:11:46:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-19 19:11:46:     lock.acquire()
+2025-06-19 19:11:46: KeyboardInterrupt: 
+2025-06-19 19:12:11: Exception ignored in: 
+2025-06-19 19:12:11: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-19 19:12:11: Traceback (most recent call last):
+2025-06-19 19:12:11:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-19 19:12:11:     lock.acquire()
+2025-06-19 19:12:11: KeyboardInterrupt: 

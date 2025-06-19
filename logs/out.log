@@ -2282,3 +2282,495 @@
 2025-06-19 18:48:10: ERROR : Hold a tag near the reader 
 2025-06-19 18:48:10: 
 2025-06-19 18:48:10: [Errno 6] No such device or address
+2025-06-19 19:05:06: VERSION     : 1.0.0
+2025-06-19 19:05:06: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:06: MACHINE ID  : 12345
+2025-06-19 19:05:06: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:06: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:06: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:06: Hold a tag near the reader
+2025-06-19 19:05:06: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:06: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:06: ❌ Status: Gagal
+2025-06-19 19:05:06: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:06: Jadwal: 
+2025-06-19 19:05:06: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:09: VERSION     : 1.0.0
+2025-06-19 19:05:09: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:09: MACHINE ID  : 12345
+2025-06-19 19:05:09: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:09: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:09: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:09: Hold a tag near the reader
+2025-06-19 19:05:09: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:09: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:09: 
+2025-06-19 19:05:09: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:09: Jadwal: 
+2025-06-19 19:05:09: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:12: VERSION     : 1.0.0
+2025-06-19 19:05:12: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:12: MACHINE ID  : 12345
+2025-06-19 19:05:12: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:12: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:12: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:12: Hold a tag near the reader
+2025-06-19 19:05:12: 
+2025-06-19 19:05:12: ERROR : 
+2025-06-19 19:05:12:  name 'reader' is not defined
+2025-06-19 19:05:12: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:12: ❌ Status: Gagal
+2025-06-19 19:05:12: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:12: Jadwal: 
+2025-06-19 19:05:12: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:14: VERSION     : 1.0.0
+2025-06-19 19:05:14: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:14: MACHINE ID  : 12345
+2025-06-19 19:05:14: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:14: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:14: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:14: Hold a tag near the reader
+2025-06-19 19:05:14: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:15: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:15: ❌ Status: Gagal
+2025-06-19 19:05:15: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:15: Jadwal: 
+2025-06-19 19:05:15: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:17: VERSION     : 1.0.0
+2025-06-19 19:05:17: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:17: MACHINE ID  : 12345
+2025-06-19 19:05:17: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:17: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:17: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:17: Hold a tag near the reader
+2025-06-19 19:05:17: name 'reader' is not defined
+2025-06-19 19:05:18: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:18: ❌ Status: Gagal
+2025-06-19 19:05:18: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:18: Jadwal: 
+2025-06-19 19:05:18: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:20: VERSION     : 1.0.0
+2025-06-19 19:05:20: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:20: MACHINE ID  : 12345
+2025-06-19 19:05:20: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:20: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:20: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:20: Hold a tag near the reader
+2025-06-19 19:05:20: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:20: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:21: 
+2025-06-19 19:05:21: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:21: Jadwal: 
+2025-06-19 19:05:21: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:23: VERSION     : 1.0.0
+2025-06-19 19:05:23: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:23: MACHINE ID  : 12345
+2025-06-19 19:05:23: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:23: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:23: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:23: Hold a tag near the reader
+2025-06-19 19:05:23: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:23: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:23: ❌ Status: Gagal
+2025-06-19 19:05:23: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:23: Jadwal: 
+2025-06-19 19:05:23: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:26: VERSION     : 1.0.0
+2025-06-19 19:05:26: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:26: MACHINE ID  : 12345
+2025-06-19 19:05:26: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:26: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:26: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:26: Hold a tag near the reader
+2025-06-19 19:05:26: name 'reader' is not defined
+2025-06-19 19:05:26: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:26: ❌ Status: Gagal
+2025-06-19 19:05:26: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:26: Jadwal: 
+2025-06-19 19:05:26: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:29: VERSION     : 1.0.0
+2025-06-19 19:05:29: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:29: MACHINE ID  : 12345
+2025-06-19 19:05:29: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:29: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:29: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:29: Hold a tag near the reader
+2025-06-19 19:05:29: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:29: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:29: ❌ Status: Gagal
+2025-06-19 19:05:29: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:29: Jadwal: 
+2025-06-19 19:05:29: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:32: VERSION     : 1.0.0
+2025-06-19 19:05:32: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:32: MACHINE ID  : 12345
+2025-06-19 19:05:32: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:32: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:32: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:32: Hold a tag near the reader
+2025-06-19 19:05:32: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:32: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:32: ❌ Status: Gagal
+2025-06-19 19:05:32: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:32: Jadwal: 
+2025-06-19 19:05:32: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:35: VERSION     : 1.0.0
+2025-06-19 19:05:35: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:35: MACHINE ID  : 12345
+2025-06-19 19:05:35: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:35: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:35: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:35: Hold a tag near the reader
+2025-06-19 19:05:35: name 'reader' is not defined
+2025-06-19 19:05:35: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:35: ❌ Status: Gagal
+2025-06-19 19:05:35: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:35: Jadwal: 
+2025-06-19 19:05:35: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:38: VERSION     : 1.0.0
+2025-06-19 19:05:38: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:38: MACHINE ID  : 12345
+2025-06-19 19:05:38: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:38: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:38: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:38: Hold a tag near the reader
+2025-06-19 19:05:38: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:38: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:38: ❌ Status: Gagal
+2025-06-19 19:05:38: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:38: Jadwal: 
+2025-06-19 19:05:38: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:40: VERSION     : 1.0.0
+2025-06-19 19:05:40: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:40: MACHINE ID  : 12345
+2025-06-19 19:05:40: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:40: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:40: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:40: Hold a tag near the reader
+2025-06-19 19:05:40: 
+2025-06-19 19:05:40:  name 'reader' is not defined
+2025-06-19 19:05:41: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:41: ❌ Status: Gagal
+2025-06-19 19:05:41: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:41: Jadwal: 
+2025-06-19 19:05:41: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:43: VERSION     : 1.0.0
+2025-06-19 19:05:43: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:43: MACHINE ID  : 12345
+2025-06-19 19:05:43: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:43: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:43: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:43: Hold a tag near the reader
+2025-06-19 19:05:43: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:44: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:44: ❌ Status: Gagal
+2025-06-19 19:05:44: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:44: Jadwal: 
+2025-06-19 19:05:44: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:46: VERSION     : 1.0.0
+2025-06-19 19:05:46: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:46: MACHINE ID  : 12345
+2025-06-19 19:05:46: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:46: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:46: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:46: Hold a tag near the reader
+2025-06-19 19:05:46: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:47: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:47: 
+2025-06-19 19:05:47: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:47: Jadwal: 
+2025-06-19 19:05:47: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:49: VERSION     : 1.0.0
+2025-06-19 19:05:49: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:49: MACHINE ID  : 12345
+2025-06-19 19:05:49: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:49: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:49: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:49: Hold a tag near the reader
+2025-06-19 19:05:49: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:49: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:49: ❌ Status: Gagal
+2025-06-19 19:05:49:  Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:49: Jadwal: 
+2025-06-19 19:05:49: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:52: VERSION     : 1.0.0
+2025-06-19 19:05:52: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:52: MACHINE ID  : 12345
+2025-06-19 19:05:52: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:52: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:52: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:52: Hold a tag near the reader
+2025-06-19 19:05:52: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:52: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:52: ❌ Status: Gagal
+2025-06-19 19:05:52: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:52: Jadwal: 
+2025-06-19 19:05:52: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:55: VERSION     : 1.0.0
+2025-06-19 19:05:55: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:55: MACHINE ID  : 12345
+2025-06-19 19:05:55: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:55: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:55: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:55: Hold a tag near the reader
+2025-06-19 19:05:55: 
+2025-06-19 19:05:55: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:55: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:55: ❌ Status: Gagal
+2025-06-19 19:05:55: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:55: Jadwal: 
+2025-06-19 19:05:55: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:05:58: VERSION     : 1.0.0
+2025-06-19 19:05:58: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:05:58: MACHINE ID  : 12345
+2025-06-19 19:05:58: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:05:58: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:05:58: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:05:58: Hold a tag near the reader
+2025-06-19 19:05:58: 
+2025-06-19 19:05:58: ERROR :  name 'reader' is not defined
+2025-06-19 19:05:58: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:05:58: ❌ Status: Gagal
+2025-06-19 19:05:58: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:05:58: Jadwal: 
+2025-06-19 19:05:58: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:00: VERSION     : 1.0.0
+2025-06-19 19:06:00: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:00: MACHINE ID  : 12345
+2025-06-19 19:06:00: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:00: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:01: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:01: Hold a tag near the reader
+2025-06-19 19:06:01: 
+2025-06-19 19:06:01: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:01: ❌ Status: Gagal
+2025-06-19 19:06:01: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:01: Jadwal: 
+2025-06-19 19:06:01: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:03: VERSION     : 1.0.0
+2025-06-19 19:06:03: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:03: MACHINE ID  : 12345
+2025-06-19 19:06:03: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:03: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:03: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:03: Hold a tag near the reader
+2025-06-19 19:06:03: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:04: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:04: ❌ Status: Gagal
+2025-06-19 19:06:04: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:04: Jadwal: 
+2025-06-19 19:06:04: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:06: VERSION     : 1.0.0
+2025-06-19 19:06:06: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:06: MACHINE ID  : 12345
+2025-06-19 19:06:06: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:06: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:06: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:06: Hold a tag near the reader
+2025-06-19 19:06:06: 
+2025-06-19 19:06:07: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:07: ❌ Status: Gagal
+2025-06-19 19:06:07:  Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:07: Jadwal: 
+2025-06-19 19:06:07: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:09: VERSION     : 1.0.0
+2025-06-19 19:06:09: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:09: MACHINE ID  : 12345
+2025-06-19 19:06:09: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:09: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:09: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:09: Hold a tag near the reader
+2025-06-19 19:06:09: 
+2025-06-19 19:06:09: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:09: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:09: ❌ Status: Gagal
+2025-06-19 19:06:09: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:09: Jadwal: 
+2025-06-19 19:06:09: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:12: VERSION     : 1.0.0
+2025-06-19 19:06:12: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:12: MACHINE ID  : 12345
+2025-06-19 19:06:12: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:12: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:12: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:12: Hold a tag near the reader
+2025-06-19 19:06:12: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:13: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:13: ❌ Status: Gagal
+2025-06-19 19:06:13:  Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:13: Jadwal: 
+2025-06-19 19:06:13: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:15: VERSION     : 1.0.0
+2025-06-19 19:06:15: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:15: MACHINE ID  : 12345
+2025-06-19 19:06:15: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:15: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:15: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:15: Hold a tag near the reader
+2025-06-19 19:06:15: 
+2025-06-19 19:06:15: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:15: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:15: ❌ Status: Gagal
+2025-06-19 19:06:15: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:15: Jadwal: 
+2025-06-19 19:06:15: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:18: VERSION     : 1.0.0
+2025-06-19 19:06:18: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:18: MACHINE ID  : 12345
+2025-06-19 19:06:18: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:18: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:18: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:18: Hold a tag near the reader
+2025-06-19 19:06:18: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:18: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:18: ❌ Status: Gagal
+2025-06-19 19:06:18: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:18: Jadwal: 
+2025-06-19 19:06:18: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:20: VERSION     : 1.0.0
+2025-06-19 19:06:20: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:20: MACHINE ID  : 12345
+2025-06-19 19:06:20: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:20: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:21: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:21: Hold a tag near the reader
+2025-06-19 19:06:21: 
+2025-06-19 19:06:21: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:21: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:21: 
+2025-06-19 19:06:21: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:21: Jadwal: 
+2025-06-19 19:06:21: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:23: VERSION     : 1.0.0
+2025-06-19 19:06:23: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:23: MACHINE ID  : 12345
+2025-06-19 19:06:23: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:23: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:23: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:23: Hold a tag near the reader
+2025-06-19 19:06:23: 
+2025-06-19 19:06:23: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:24: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:24: ❌ Status: Gagal
+2025-06-19 19:06:24: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:24: Jadwal: 
+2025-06-19 19:06:24: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:26: VERSION     : 1.0.0
+2025-06-19 19:06:26: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:26: MACHINE ID  : 12345
+2025-06-19 19:06:26: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:26: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:26: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:26: Hold a tag near the reader
+2025-06-19 19:06:26: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:27: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:27: ❌ Status: Gagal
+2025-06-19 19:06:27: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:27: Jadwal: 
+2025-06-19 19:06:27: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:29: VERSION     : 1.0.0
+2025-06-19 19:06:29: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:29: MACHINE ID  : 12345
+2025-06-19 19:06:29: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:29: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:29: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:29: Hold a tag near the reader
+2025-06-19 19:06:29: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:29: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:29: ❌ Status: Gagal
+2025-06-19 19:06:29: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:29: Jadwal: 
+2025-06-19 19:06:29: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:32: VERSION     : 1.0.0
+2025-06-19 19:06:32: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:32: MACHINE ID  : 12345
+2025-06-19 19:06:32: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:32: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:32: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:32: Hold a tag near the reader
+2025-06-19 19:06:32: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:32: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:32: ❌ Status: Gagal
+2025-06-19 19:06:32: 
+2025-06-19 19:06:32: Jadwal: 
+2025-06-19 19:06:32: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:35: VERSION     : 1.0.0
+2025-06-19 19:06:35: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:35: MACHINE ID  : 12345
+2025-06-19 19:06:35: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:35: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:35: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:35: Hold a tag near the reader
+2025-06-19 19:06:35: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:35: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:35: ❌ Status: Gagal
+2025-06-19 19:06:35: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:35: Jadwal: 
+2025-06-19 19:06:35: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:38: VERSION     : 1.0.0
+2025-06-19 19:06:38: 
+2025-06-19 19:06:38: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:38: MACHINE ID  : 12345
+2025-06-19 19:06:38: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:38: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:38: ERROR :  can only concatenate str (not "NoneType") to str
+2025-06-19 19:06:38: Hold a tag near the reader
+2025-06-19 19:06:38: 
+2025-06-19 19:06:38: ERROR :  name 'reader' is not defined
+2025-06-19 19:06:38: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:38: 
+2025-06-19 19:06:38: ❌ Status: Gagal
+2025-06-19 19:06:38: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:38: Jadwal: 
+2025-06-19 19:06:38: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:06:40: VERSION     : 1.0.0
+2025-06-19 19:06:40: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:06:40: MACHINE ID  : 12345
+2025-06-19 19:06:40: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:06:40: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:06:40: {'version': '1.0.0', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-19 19:06:40: 1.0.0
+2025-06-19 19:06:40: VERSION ONLINE : 1.0.0 = 1.0.0
+2025-06-19 19:06:40: Aplikasi sudah versi terbaru.
+2025-06-19 19:06:42: SSID: Pakebun
+2025-06-19 19:06:42: Hold a tag near the reader
+2025-06-19 19:06:42: 
+2025-06-19 19:06:42: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:06:42: ❌ Status: Gagal
+2025-06-19 19:06:42: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:06:42: Jadwal: 
+2025-06-19 19:06:42: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:07:33: VERSION     : 1.0.0
+2025-06-19 19:07:33: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:07:33: MACHINE ID  : 12345
+2025-06-19 19:07:33: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:07:33: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:07:33: {'version': '1.0.0', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-19 19:07:33: 1.0.0
+2025-06-19 19:07:33: VERSION ONLINE : 1.0.0 = 1.0.0
+2025-06-19 19:07:33: Aplikasi sudah versi terbaru.
+2025-06-19 19:07:35: SSID: Pakebun
+2025-06-19 19:07:35: Hold a tag near the reader
+2025-06-19 19:07:35: 
+2025-06-19 19:07:36: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:07:36: ❌ Status: Gagal
+2025-06-19 19:07:36: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:07:36: Jadwal: 
+2025-06-19 19:07:36: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'waktu_pulang')' WHERE id = 140' at line 1
+2025-06-19 19:11:47: VERSION     : 1.0.0
+2025-06-19 19:11:47: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-19 19:11:47: MACHINE ID  : 12345
+2025-06-19 19:11:47: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-19 19:11:47: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-19 19:11:47: {'version': '1.0.0', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-19 19:11:47: 1.0.0
+2025-06-19 19:11:47: VERSION ONLINE : 1.0.0 = 1.0.0
+2025-06-19 19:11:47: Aplikasi sudah versi terbaru.
+2025-06-19 19:11:49: SSID: Pakebun
+2025-06-19 19:11:49: Hold a tag near the reader
+2025-06-19 19:11:49: 
+2025-06-19 19:11:49: {"statusCode":500,"error":"Internal Server Error","message":"Cannot read properties of undefined (reading 'waktu_pulang')"}
+2025-06-19 19:11:49: ❌ Status: Gagal
+2025-06-19 19:11:49: Pesan: Cannot read properties of undefined (reading 'waktu_pulang')
+2025-06-19 19:11:49: Jadwal: 
+2025-06-19 19:11:49: ERROR :  1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near 'read properties of undefined (reading waktu_pulang) WHERE id = 140' at line 1

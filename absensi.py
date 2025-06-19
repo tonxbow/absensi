@@ -418,6 +418,7 @@ def send():
                             print("❌ Status: Gagal")
                             print("Pesan:", message)
                             print("Jadwal:", jadwal)
+                            message = message.replace("'", "").replace('"', "")
                             query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
                             mycursor.execute(query, (id,))
                             mydb.commit()
