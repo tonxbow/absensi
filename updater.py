@@ -5,7 +5,7 @@ import sys
 VERSION_FILE_URL = 'https://raw.githubusercontent.com/tonxbow/absensi/main/version.txt'  # Ganti dengan URL file versi online
 MAIN_FILE_URL = 'https://raw.githubusercontent.com/tonxbow/absensi/main/updater.py'         # Ganti dengan URL aplikasi terbaru
 
-LOCAL_VERSION = '1.0.2'
+LOCAL_VERSION = '1.0.3'
 LOCAL_FILE = 'updater.py'
 
 def get_online_version():
