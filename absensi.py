@@ -28,6 +28,7 @@ import json
 import subprocess
 
 import mysql.connector
+from apscheduler.schedulers.background import BackgroundScheduler
 
 
 
@@ -214,28 +215,6 @@ def get_ssid_nmcli():
     except subprocess.CalledProcessError:
         return None
 
-ssid = get_ssid_nmcli()
-print("SSID:", ssid if ssid else "Tidak terhubung")
-
-wlan_ip = get_interface_ip('wlan0')  # Common on Linux/Raspberry Pi
-if not wlan_ip:
-    wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
-
-# Get IP for Ethernet (common names: eth0, Ethernet)
-eth_ip = get_interface_ip('eth0')  # Common on Linux/Raspberry Pi
-if not eth_ip:
-    eth_ip = get_interface_ip('Ethernet') # Common on Windows
-
-print(f"WLAN IP Address: {wlan_ip if wlan_ip else 'Not found'}")
-print(f"Ethernet IP Address: {eth_ip if eth_ip else 'Not found'}")
-
-# Optional: List all interfaces and their IPs
-print("\nAll available interfaces and their IP addresses:")
-for interface in netifaces.interfaces():
-    ip_address = get_interface_ip(interface)
-    if ip_address:
-        print(f"  {interface}: {ip_address}")   
-
 def cek_internet(url='https://www.google.com/', timeout=5):
     try:
         _ = requests.get(url, timeout=timeout)
@@ -267,6 +246,12 @@ API_HOST = dataSetting['api-server']
 BUZZER = 5
 BUTTON = 7
 
+scheduler = BackgroundScheduler()
+
+
+# Menjadwalkan fungsi setiap hari jam 23:30
+
+
 print("VERSION     : " + LOCAL_VERSION)
 print("API SERVER  : " + API_HOST)
 print("MACHINE ID  : " + MACHINE_ID)
@@ -276,13 +261,29 @@ print("OTA APP     : " + MAIN_FILE_URL)
 tagRFID=""
 statusInsert=0
 statusInternet="OFFLINE"
+
 try :
+    scheduler.add_job(check_for_update, 'cron', hour=23, minute=30)
+    scheduler.start()
     check_for_update()
     lcd_init()
     gpio_control = GPIOControl()
     reader = SimpleMFRC522()
     gpio_control.mode(BUZZER, "out") #pin 11 PC6
     gpio_control.mode(BUTTON, "in") #pin13 PC5
+
+    ssid = get_ssid_nmcli()
+    print("SSID:", ssid if ssid else "Tidak terhubung")
+
+    wlan_ip = get_interface_ip('wlan0')  # Common on Linux/Raspberry Pi
+    if not wlan_ip:
+        wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
+
+    # Get IP for Ethernet (common names: eth0, Ethernet)
+    eth_ip = get_interface_ip('eth0')  # Common on Linux/Raspberry Pi
+    if not eth_ip:
+        eth_ip = get_interface_ip('Ethernet') # Common on Windows
+
 except Exception as e:
     print("ERROR : ", e)
 
