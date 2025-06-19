@@ -1,5 +1,5 @@
 {
-"version" : "1.0.0",
+"version" : "1.0.1",
 "ota-version" : "https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json",
 "ota-app" : "https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py"
 }
