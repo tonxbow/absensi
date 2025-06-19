@@ -34,7 +34,10 @@ import mysql.connector
 def get_online_version():
     try:
         response = requests.get(VERSION_FILE_URL)
-        return response.text.strip()
+        dataVersion = response.json()
+        print (dataVersion)
+        print (dataVersion['version'])
+        return str(dataVersion['version'])
     except:
         return None
 
@@ -50,6 +53,7 @@ def restart_app():
 
 def check_for_update():
     online_version = get_online_version()
+    print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
     if online_version and online_version != LOCAL_VERSION:
         print(f"Versi baru tersedia: {online_version}")
         download_latest()
@@ -241,7 +245,7 @@ print("OTA APP     : " + MAIN_FILE_URL)
 
 tagRFID=""
 
-
+check_for_update()
 lcd_init()
 gpio_control = GPIOControl()
 reader = SimpleMFRC522()
