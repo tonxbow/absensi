@@ -30,6 +30,12 @@ import subprocess
 import mysql.connector
 from apscheduler.schedulers.background import BackgroundScheduler
 
+import paho.mqtt.client as mqtt
+
+broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
+port = 1883
+
+
 
 
 ############################### OTA FUNCTION #######################################
@@ -205,6 +211,23 @@ def get_interface_ip(interface_name):
         return None
     return None
 
+def get_interface_mac(interface_name):
+    """
+    Retrieves the IPv4 address for a specified network interface.
+    Returns None if the interface or address is not found.
+    """
+    try:
+        # Get addresses for the specified interface
+        addresses = netifaces.ifaddresses(interface_name)
+        # Check if IPv4 addresses exist for this interface
+        if netifaces.AF_INET in addresses:
+            # Return the first IPv4 address found
+            return addresses[netifaces.AF_LINK][0]['addr']
+    except ValueError:
+        # Handle cases where the interface name is not found
+        return None
+    return None
+
 def get_ssid_nmcli():
     try:
         output = subprocess.check_output("nmcli -t -f active,ssid dev wifi", shell=True, encoding="utf-8")
@@ -238,7 +261,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = dataOTA['version']
+LOCAL_VERSION = "1.0.1"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -248,13 +271,30 @@ BUTTON = 7
 
 scheduler = BackgroundScheduler()
 
+def on_connect(client, userdata, flags, rc):
+    now = datetime.now()
+    formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
+    client.publish(topicPublish, "STARTING " + formatted_datetime_1)
+    client.subscribe(topicSubscribe)
+
+def on_message(client, userdata, msg):
+    print(f"Pesan diterima dari topic {msg.topic}: {msg.payload.decode()}")
+
+clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
+clientMQTT.on_connect = on_connect
+clientMQTT.on_message = on_message
+clientMQTT.connect(broker, port)
+
 
 # Menjadwalkan fungsi setiap hari jam 23:30
 
-
+# eth_mac = str(get_interface_mac('eth0'))
+eth_mac = str(get_interface_mac('wlan0'))
+eth_mac = eth_mac.replace(":", "")
 print("VERSION     : " + LOCAL_VERSION)
 print("API SERVER  : " + API_HOST)
 print("MACHINE ID  : " + MACHINE_ID)
+print("MACADDRESS  : " + eth_mac)
 print("OTA VERSION : " + VERSION_FILE_URL)
 print("OTA APP     : " + MAIN_FILE_URL)
 print("VER HARD    : " + "1.0.1")
@@ -263,9 +303,15 @@ tagRFID=""
 statusInsert=0
 statusInternet="OFFLINE"
 
+topicPublish = "scola/absensi/"+eth_mac
+topicSubscribe = "scola/absensi/"+eth_mac+"/subs"
+
+
+
 try :
-    scheduler.add_job(check_for_update, 'cron', hour=23, minute=30)
-    scheduler.start()
+    # scheduler.add_job(check_for_update, 'cron', hour=23, minute=30)
+    # scheduler.start()
+    
     check_for_update()
     lcd_init()
     gpio_control = GPIOControl()
@@ -282,6 +328,7 @@ try :
 
     # Get IP for Ethernet (common names: eth0, Ethernet)
     eth_ip = get_interface_ip('eth0')  # Common on Linux/Raspberry Pi
+    
     if not eth_ip:
         eth_ip = get_interface_ip('Ethernet') # Common on Windows
 
@@ -302,8 +349,8 @@ def display():
         lcd_clear()
         tick=True
         countTick=0
+        clientMQTT.publish(topicPublish, "DISPLAY START")
         while True:
-            
             now = datetime.now()
             formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
 
@@ -351,7 +398,7 @@ def display():
             #     time.sleep(1)
             
     except Exception as e:
-        print("ERROR : ", e)
+        print("ERROR DISPLAY : ", e)
 
 def rfid():
     try:
@@ -365,10 +412,11 @@ def rfid():
             gpio_control.write(5, 1)
             sleep(1)
             gpio_control.write(5, 0)
+            clientMQTT.publish(topicPublish+"/tag", tagRFID)
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
 
     except Exception as e:
-        print("ERROR : ", e) 
+        print("ERROR RFID : ", e) 
 
 def send():
     try:
@@ -441,7 +489,13 @@ def send():
             
             time.sleep(5)
     except Exception as e:
-        print("ERROR : ", e)
+        print("ERROR SEND : ", e)
+
+def mqttThread():
+    try:
+        clientMQTT.loop_forever()  # listen terus
+    except Exception as e:
+        print("ERROR MQTT : ", e)
 
 if __name__ == '__main__':
   try:
@@ -449,10 +503,12 @@ if __name__ == '__main__':
     t1 = threading.Thread(target=display, args=())
     t2 = threading.Thread(target=rfid, args=())
     t3 = threading.Thread(target=send, args=())
+    t4 = threading.Thread(target=mqttThread, args=())
 
     t1.start()
     t2.start()
     t3.start()
+    t4.start()
   except Exception as e:
     print("ERROR : ", e)
 
