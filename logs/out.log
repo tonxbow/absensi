@@ -2800,3 +2800,191 @@
 2025-06-20 08:27:15: SSID: Pakebun
 2025-06-20 08:27:15: Hold a tag near the reader
 2025-06-20 08:27:15: 
+2025-06-20 08:39:54: VERSION     : 1.0.1
+2025-06-20 08:39:54: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-20 08:39:54: MACHINE ID  : 12345
+2025-06-20 08:39:54: MACADDRESS  : 2476950b4d44
+2025-06-20 08:39:54: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-20 08:39:54: 
+2025-06-20 08:39:54: VER HARD    : 1.0.1
+2025-06-20 08:39:55: {'version': '1.0.1', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-20 08:39:55: 1.0.1
+2025-06-20 08:39:55: VERSION ONLINE : 1.0.1 = 1.0.1
+2025-06-20 08:39:55: Aplikasi sudah versi terbaru.
+2025-06-20 08:39:57: SSID: Pakebun
+2025-06-20 08:39:58: Hold a tag near the reader
+2025-06-20 08:39:58: 
+2025-06-20 08:56:21: ID: 837872331242
+2025-06-20 08:56:21: Text:                                                 
+2025-06-20 08:56:22: Hold a tag near the reader
+2025-06-20 08:56:22: ID: 837872331242
+2025-06-20 08:56:22: Text:                                                 
+2025-06-20 08:56:23: Hold a tag near the reader
+2025-06-20 08:56:24: ID: 837872331242
+2025-06-20 08:56:24: Text: 
+2025-06-20 08:56:25: Hold a tag near the reader
+2025-06-20 08:56:25: ID: 837872331242
+2025-06-20 08:56:25: Text:                                                 
+2025-06-20 08:56:26: Hold a tag near the reader
+2025-06-20 08:56:26: ID: 837872331242
+2025-06-20 08:56:26: 
+2025-06-20 08:56:26: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:26: ✅ Status: Berhasil
+2025-06-20 08:56:26: Pesan: 
+2025-06-20 08:56:26: Jadwal: Absen Kehadiran
+2025-06-20 08:56:26: Data dengan ID 143 berhasil dihapus.
+2025-06-20 08:56:27: Hold a tag near the reader
+2025-06-20 08:56:27: ID: 837872331242
+2025-06-20 08:56:27: Text:                                                 
+2025-06-20 08:56:28: Hold a tag near the reader
+2025-06-20 08:56:28: 
+2025-06-20 08:56:32: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:32: ✅ Status: Berhasil
+2025-06-20 08:56:32: Pesan: 
+2025-06-20 08:56:32: Jadwal: Absen Kehadiran
+2025-06-20 08:56:32: Data dengan ID 144 berhasil dihapus.
+2025-06-20 08:56:32: 
+2025-06-20 08:56:32: ID: 837872331242
+2025-06-20 08:56:32: Text:                 
+2025-06-20 08:56:33: Hold a tag near the reader
+2025-06-20 08:56:37: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:37: ✅ Status: Berhasil
+2025-06-20 08:56:37: Pesan: 
+2025-06-20 08:56:37: Jadwal: Absen Kehadiran
+2025-06-20 08:56:37: Data dengan ID 145 berhasil dihapus.
+2025-06-20 08:56:42: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:42: ✅ Status: Berhasil
+2025-06-20 08:56:42: Pesan: 
+2025-06-20 08:56:42: Jadwal: Absen Kehadiran
+2025-06-20 08:56:42: Data dengan ID 146 berhasil dihapus.
+2025-06-20 08:56:42: 
+2025-06-20 08:56:48: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:48: ✅ Status: Berhasil
+2025-06-20 08:56:48: Pesan: 
+2025-06-20 08:56:48: Jadwal: Absen Kehadiran
+2025-06-20 08:56:48: Data dengan ID 147 berhasil dihapus.
+2025-06-20 08:56:53: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:53: ✅ Status: Berhasil
+2025-06-20 08:56:53: Pesan: 
+2025-06-20 08:56:53: Jadwal: Absen Kehadiran
+2025-06-20 08:56:53: Data dengan ID 148 berhasil dihapus.
+2025-06-20 08:56:53: 
+2025-06-20 08:56:58: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:56:58: ✅ Status: Berhasil
+2025-06-20 08:56:58: Pesan: 
+2025-06-20 08:56:58: Jadwal: Absen Kehadiran
+2025-06-20 08:56:58: Data dengan ID 149 berhasil dihapus.
+2025-06-20 08:56:58: 
+2025-06-20 08:59:10: ID: 837872331242
+2025-06-20 08:59:10: Text:                                                 
+2025-06-20 08:59:11: Hold a tag near the reader
+2025-06-20 08:59:12: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:59:12: ✅ Status: Berhasil
+2025-06-20 08:59:12: Pesan: 
+2025-06-20 08:59:12: Jadwal: Absen Kehadiran
+2025-06-20 08:59:12: Data dengan ID 150 berhasil dihapus.
+2025-06-20 08:59:12: 
+2025-06-20 08:59:17: ID: 837872331242
+2025-06-20 08:59:17: Text:                                                 
+2025-06-20 08:59:18: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 08:59:18: ✅ Status: Berhasil
+2025-06-20 08:59:18: Pesan: 
+2025-06-20 08:59:18: Jadwal: Absen Kehadiran
+2025-06-20 08:59:18: Data dengan ID 151 berhasil dihapus.
+2025-06-20 08:59:18: Hold a tag near the reader
+2025-06-20 09:26:29: ID: 837872331242
+2025-06-20 09:26:29: Text: 
+2025-06-20 09:26:30: Hold a tag near the reader
+2025-06-20 09:26:33: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 09:26:33: ✅ Status: Berhasil
+2025-06-20 09:26:33: Pesan: 
+2025-06-20 09:26:33: Jadwal: Absen Kehadiran
+2025-06-20 09:26:33: Data dengan ID 152 berhasil dihapus.
+2025-06-20 09:26:33: 
+2025-06-20 09:26:35: ID: 837872331242
+2025-06-20 09:26:35: Text:                                                 
+2025-06-20 09:26:36: Hold a tag near the reader
+2025-06-20 09:26:38: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 09:26:38: ✅ Status: Berhasil
+2025-06-20 09:26:38: Pesan: 
+2025-06-20 09:26:38: Jadwal: Absen Kehadiran
+2025-06-20 09:26:38: Data dengan ID 153 berhasil dihapus.
+2025-06-20 09:26:38: 
+2025-06-20 09:26:44: ID: 908802599867
+2025-06-20 09:26:44: Text:                                                 
+2025-06-20 09:26:45: Hold a tag near the reader
+2025-06-20 09:26:49: {"status":false,"message":"Kartu atau mesin tidak terdaftar","data":{"jadwal":"Kartu atau mesin tidak terdaftar"}}
+2025-06-20 09:26:49: ❌ Status: Gagal
+2025-06-20 09:26:49: Pesan: Kartu atau mesin tidak terdaftar
+2025-06-20 09:26:49: Jadwal: Kartu atau mesin tidak terdaftar
+2025-06-20 09:26:53: ID: 837872331242
+2025-06-20 09:26:53: Text:                                                 
+2025-06-20 09:26:54: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 09:26:54: ✅ Status: Berhasil
+2025-06-20 09:26:54: Pesan: 
+2025-06-20 09:26:54: Jadwal: Absen Kehadiran
+2025-06-20 09:26:54: Data dengan ID 155 berhasil dihapus.
+2025-06-20 09:26:54: Hold a tag near the reader
+2025-06-20 09:26:54: ID: 837872331242
+2025-06-20 09:26:54: Text: 
+2025-06-20 09:26:55: Hold a tag near the reader
+2025-06-20 09:26:55: ID: 837872331242
+2025-06-20 09:26:55: Text:                                                 
+2025-06-20 09:26:56: Hold a tag near the reader
+2025-06-20 09:26:59: ID: 908802599867
+2025-06-20 09:26:59: Text:                                                 
+2025-06-20 09:26:59: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 09:26:59: ✅ Status: Berhasil
+2025-06-20 09:26:59: Pesan: 
+2025-06-20 09:26:59: Jadwal: Absen Kehadiran
+2025-06-20 09:26:59: Data dengan ID 156 berhasil dihapus.
+2025-06-20 09:27:00: Hold a tag near the reader
+2025-06-20 09:27:01: ID: 837872331242
+2025-06-20 09:27:01: Text: 
+2025-06-20 09:27:02: Hold a tag near the reader
+2025-06-20 09:27:04: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 09:27:04: ✅ Status: Berhasil
+2025-06-20 09:27:04: Pesan: 
+2025-06-20 09:27:04: Jadwal: Absen Kehadiran
+2025-06-20 09:27:04: Data dengan ID 157 berhasil dihapus.
+2025-06-20 09:27:10: {"status":false,"message":"Kartu atau mesin tidak terdaftar","data":{"jadwal":"Kartu atau mesin tidak terdaftar"}}
+2025-06-20 09:27:10: ❌ Status: Gagal
+2025-06-20 09:27:10: Pesan: Kartu atau mesin tidak terdaftar
+2025-06-20 09:27:10: Jadwal: Kartu atau mesin tidak terdaftar
+2025-06-20 09:27:15: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 09:27:15: ✅ Status: Berhasil
+2025-06-20 09:27:15: Pesan: 
+2025-06-20 09:27:15: Jadwal: Absen Kehadiran
+2025-06-20 09:27:15: Data dengan ID 159 berhasil dihapus.
+2025-06-20 09:27:15: 
+2025-06-20 10:01:29: ID: 837872331242
+2025-06-20 10:01:29: Text:                                                 
+2025-06-20 10:01:30: Hold a tag near the reader
+2025-06-20 10:01:33: ID: 837872331242
+2025-06-20 10:01:33: Text: 
+2025-06-20 10:01:34: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 10:01:34: ✅ Status: Berhasil
+2025-06-20 10:01:34: Pesan: 
+2025-06-20 10:01:34: Jadwal: Absen Kehadiran
+2025-06-20 10:01:34: Data dengan ID 160 berhasil dihapus.
+2025-06-20 10:01:34: Hold a tag near the reader
+2025-06-20 10:01:39: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 10:01:39: ✅ Status: Berhasil
+2025-06-20 10:01:39: Pesan: 
+2025-06-20 10:01:39: Jadwal: Absen Kehadiran
+2025-06-20 10:01:39: Data dengan ID 161 berhasil dihapus.
+2025-06-20 10:01:39: 
+2025-06-20 10:32:20: VERSION     : 1.0.1
+2025-06-20 10:32:20: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-20 10:32:20: MACHINE ID  : 12345
+2025-06-20 10:32:20: MACADDRESS  : 2476950b4d44
+2025-06-20 10:32:20: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-20 10:32:20: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-20 10:32:20: VER HARD    : 1.0.1
+2025-06-20 10:32:20: {'version': '1.0.1', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-20 10:32:20: 1.0.1
+2025-06-20 10:32:20: VERSION ONLINE : 1.0.1 = 1.0.1
+2025-06-20 10:32:20: Aplikasi sudah versi terbaru.
+2025-06-20 10:32:22: SSID: Pakebun
+2025-06-20 10:32:22: Hold a tag near the reader
+2025-06-20 10:32:22: 

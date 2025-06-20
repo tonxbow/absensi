@@ -1161,3 +1161,26 @@
 2025-06-20 07:37:29: 
 2025-06-20 08:27:12: /home/orangepi/testcode/absensi/absensi.py:283: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
 2025-06-20 08:27:12:   clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
+2025-06-20 08:36:42: Exception ignored in: 
+2025-06-20 08:36:42: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-20 08:36:42: Traceback (most recent call last):
+2025-06-20 08:36:42:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-20 08:36:42:     lock.acquire()
+2025-06-20 08:36:42: KeyboardInterrupt: 
+2025-06-20 08:39:54: /home/orangepi/testcode/absensi/absensi.py:287: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+2025-06-20 08:39:54:   clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
+2025-06-20 08:56:24: Error while reading!
+2025-06-20 08:56:32: Error while reading!
+2025-06-20 09:26:29: Error while reading!
+2025-06-20 09:26:54: Error while reading!
+2025-06-20 09:27:01: AUTH ERROR!!
+2025-06-20 09:27:01: AUTH ERROR(status2reg & 0x08) != 0
+2025-06-20 10:01:33: Error while reading!
+2025-06-20 10:32:18: Exception ignored in: 
+2025-06-20 10:32:18: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-20 10:32:18: Traceback (most recent call last):
+2025-06-20 10:32:18:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-20 10:32:18:     lock.acquire()
+2025-06-20 10:32:18: KeyboardInterrupt: 
+2025-06-20 10:32:20: /home/orangepi/testcode/absensi/absensi.py:350: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+2025-06-20 10:32:20:   clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)

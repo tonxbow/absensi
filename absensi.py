@@ -31,6 +31,10 @@ import mysql.connector
 from apscheduler.schedulers.background import BackgroundScheduler
 
 import paho.mqtt.client as mqtt
+import psutil
+import uuid
+import platform
+from datetime import datetime, timedelta
 
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
@@ -244,7 +248,38 @@ def cek_internet(url='https://www.google.com/', timeout=5):
         return True
     except requests.ConnectionError:
         return False
+    
+# Fungsi ambil MAC address
+def get_mac():
+    mac = uuid.getnode()
+    return ':'.join(['{:02x}'.format((mac >> ele) & 0xff) for ele in range(40, -1, -8)])
 
+# Fungsi ambil uptime
+def get_uptime():
+    boot_time = datetime.fromtimestamp(psutil.boot_time())
+    now = datetime.now()
+    uptime = now - boot_time
+    return str(uptime).split('.')[0]  # Hapus microseconds
+
+# Fungsi ambil data sistem
+def get_system_info():
+    return {
+        "app_version": LOCAL_VERSION,
+        "mac_address": get_mac().replace(":", ""),  # Bisa juga tetap pakai ":"
+        "cpu_percent": psutil.cpu_percent(interval=1),
+        "memory_percent": psutil.virtual_memory().percent,
+        "storage_percent": psutil.disk_usage('/').percent,
+        "uptime": get_uptime(),
+        "device": platform.node(),  # nama host/device
+        "thread_display" : threadStatus[0],
+        "thread_rfid" : threadStatus[1],
+        "thread_send" : threadStatus[2]
+    }
+
+def gettime():
+    now = datetime.now()
+    formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
+    return formatted_datetime_1
 
 
 ############################### CONFIG FUNCTION #######################################
@@ -269,16 +304,48 @@ API_HOST = dataSetting['api-server']
 BUZZER = 5
 BUTTON = 7
 
-scheduler = BackgroundScheduler()
 
 def on_connect(client, userdata, flags, rc):
     now = datetime.now()
     formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
     client.publish(topicPublish, "STARTING " + formatted_datetime_1)
     client.subscribe(topicSubscribe)
+    client.subscribe(topicSubscribeAll)
+
+# Fungsi: Jalankan ulang aplikasi Python saat ini
+def restart_app():
+    print("Menjalankan ulang aplikasi...")
+    python = sys.executable
+    os.execl(python, python, *sys.argv)
+
+# Fungsi: Restart komputer (Linux)
+def restart_computer():
+    print("Merestart komputer...")
+    subprocess.run(["sudo", "reboot"])
+
+# Fungsi: Update aplikasi dari repo Git
+def update_app():
+    print("Melakukan update aplikasi...")
+    check_for_update()
+
+# Mapping perintah ke fungsi
+command_map = {
+    "reload": restart_app,
+    "reboot": restart_computer,
+    "update": update_app
+}
 
 def on_message(client, userdata, msg):
-    print(f"Pesan diterima dari topic {msg.topic}: {msg.payload.decode()}")
+    try:
+        cmd = msg.payload.decode().strip().lower()
+        print(f"Perintah diterima: {cmd}")
+
+        if cmd in command_map:
+            command_map[cmd]()  # Jalankan fungsi sesuai perintah
+        else:
+            print("Perintah tidak dikenali.")
+    except Exception as e:
+        print("Error saat menjalankan perintah:", e)
 
 clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
 clientMQTT.on_connect = on_connect
@@ -289,8 +356,7 @@ clientMQTT.connect(broker, port)
 # Menjadwalkan fungsi setiap hari jam 23:30
 
 # eth_mac = str(get_interface_mac('eth0'))
-eth_mac = str(get_interface_mac('wlan0'))
-eth_mac = eth_mac.replace(":", "")
+eth_mac = get_mac().replace(":","")
 print("VERSION     : " + LOCAL_VERSION)
 print("API SERVER  : " + API_HOST)
 print("MACHINE ID  : " + MACHINE_ID)
@@ -305,13 +371,11 @@ statusInternet="OFFLINE"
 
 topicPublish = "scola/absensi/"+eth_mac
 topicSubscribe = "scola/absensi/"+eth_mac+"/subs"
+topicSubscribeAll = "scola/absensi/subscribe"
 
 
 
 try :
-    # scheduler.add_job(check_for_update, 'cron', hour=23, minute=30)
-    # scheduler.start()
-    
     check_for_update()
     lcd_init()
     gpio_control = GPIOControl()
@@ -338,10 +402,11 @@ except Exception as e:
 displayPage=0
 displayMaxPage=3
 jumlahDataNotSend=0
+threadStatus=[0,0,0]
 
 def display():
     try:
-        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage
+        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus
         lcd_clear()
         lcd_string("    SCOLA ABSEN",LCD_LINE_2)
         lcd_string("  FIRMWARE V."+LOCAL_VERSION,LCD_LINE_3)
@@ -351,9 +416,10 @@ def display():
         countTick=0
         clientMQTT.publish(topicPublish, "DISPLAY START")
         while True:
+            
             now = datetime.now()
             formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
-
+            threadStatus[0]=gettime()
             if displayPage==0 :
                 lcd_string(formatted_datetime_1,LCD_LINE_1)
                 if tick :
@@ -402,8 +468,9 @@ def display():
 
 def rfid():
     try:
-        global tagRFID,statusInsert
+        global tagRFID,statusInsert,threadStatus
         while True:
+            threadStatus[1]=gettime()
             print("Hold a tag near the reader")
             id, text = reader.read()
             tagRFID = str(id);
@@ -420,8 +487,9 @@ def rfid():
 
 def send():
     try:
-        global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend
+        global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus
         while True:
+            threadStatus[2]=gettime()
             query = "SELECT COUNT(*) FROM data_absen where status=0"
             mycursor.execute(query)
             jumlahData = mycursor.fetchone()[0]
@@ -480,9 +548,6 @@ def send():
 
                 #jika sukses maka di delete
                 
-                
-
-                
             else :
                 statusInternet = "OFFLINE"
 
@@ -490,6 +555,15 @@ def send():
             time.sleep(5)
     except Exception as e:
         print("ERROR SEND : ", e)
+
+def heartBeat():
+    try:
+        dataSystem = get_system_info()
+        payload = json.dumps(dataSystem)
+        clientMQTT.publish(topicPublish+"/heart", payload)
+        time.sleep(30)
+    except Exception as e:
+        print("ERROR HeartBeat : ", e)
 
 def mqttThread():
     try:
@@ -504,11 +578,13 @@ if __name__ == '__main__':
     t2 = threading.Thread(target=rfid, args=())
     t3 = threading.Thread(target=send, args=())
     t4 = threading.Thread(target=mqttThread, args=())
+    t5 = threading.Thread(target=heartBeat, args=())
 
     t1.start()
     t2.start()
     t3.start()
     t4.start()
+    t5.start()
   except Exception as e:
     print("ERROR : ", e)
 
