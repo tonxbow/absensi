@@ -262,7 +262,9 @@ def get_uptime():
     return str(uptime).split('.')[0]  # Hapus microseconds
 
 # Fungsi ambil data sistem
+threadStatus=[0,0,0,0]
 def get_system_info():
+    global threadStatus
     return {
         "app_version": LOCAL_VERSION,
         "mac_address": get_mac().replace(":", ""),  # Bisa juga tetap pakai ":"
@@ -271,9 +273,9 @@ def get_system_info():
         "storage_percent": psutil.disk_usage('/').percent,
         "uptime": get_uptime(),
         "device": platform.node(),  # nama host/device
-        "thread_display" : threadStatus[0],
-        "thread_rfid" : threadStatus[1],
-        "thread_send" : threadStatus[2]
+        "thread_display" : threadStatus[1],
+        "thread_rfid" : threadStatus[2],
+        "thread_send" : threadStatus[3]
     }
 
 def gettime():
@@ -335,6 +337,17 @@ command_map = {
     "update": update_app
 }
 
+def on_disconnect(client, userdata, rc):
+    print("⚠️ Terputus dari broker (rc={}), mencoba reconnect...".format(rc))
+    while True:
+        try:
+            clientMQTT.reconnect()
+            print("🔁 Reconnected!")
+            break
+        except:
+            print("⏳ Gagal reconnect, coba lagi 5 detik...")
+            time.sleep(5)
+
 def on_message(client, userdata, msg):
     try:
         cmd = msg.payload.decode().strip().lower()
@@ -349,6 +362,7 @@ def on_message(client, userdata, msg):
 
 clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
 clientMQTT.on_connect = on_connect
+clientMQTT.on_disconnect = on_disconnect
 clientMQTT.on_message = on_message
 clientMQTT.connect(broker, port)
 
@@ -402,7 +416,8 @@ except Exception as e:
 displayPage=0
 displayMaxPage=3
 jumlahDataNotSend=0
-threadStatus=[0,0,0]
+
+
 
 def display():
     try:
@@ -414,12 +429,11 @@ def display():
         lcd_clear()
         tick=True
         countTick=0
-        clientMQTT.publish(topicPublish, "DISPLAY START")
         while True:
-            
             now = datetime.now()
             formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
-            threadStatus[0]=gettime()
+            
+            # print(threadStatus[1])
             if displayPage==0 :
                 lcd_string(formatted_datetime_1,LCD_LINE_1)
                 if tick :
@@ -455,7 +469,7 @@ def display():
                tagRFID=""
                time.sleep(2)
                lcd_clear()
-
+            threadStatus[1]= gettime()
             # if gpio_control.read(BUTTON)=='0' :
             #     displayPage = displayPage + 1
             #     print("PAGE " + displayPage)
@@ -470,7 +484,7 @@ def rfid():
     try:
         global tagRFID,statusInsert,threadStatus
         while True:
-            threadStatus[1]=gettime()
+            threadStatus[2]=gettime()
             print("Hold a tag near the reader")
             id, text = reader.read()
             tagRFID = str(id);
@@ -489,7 +503,7 @@ def send():
     try:
         global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus
         while True:
-            threadStatus[2]=gettime()
+            threadStatus[3]=gettime()
             query = "SELECT COUNT(*) FROM data_absen where status=0"
             mycursor.execute(query)
             jumlahData = mycursor.fetchone()[0]
@@ -557,13 +571,17 @@ def send():
         print("ERROR SEND : ", e)
 
 def heartBeat():
-    try:
-        dataSystem = get_system_info()
-        payload = json.dumps(dataSystem)
-        clientMQTT.publish(topicPublish+"/heart", payload)
-        time.sleep(30)
-    except Exception as e:
-        print("ERROR HeartBeat : ", e)
+    while True:
+        try:
+            # print ("kirim heart")
+            dataSystem = get_system_info()
+            payload = json.dumps(dataSystem)
+            clientMQTT.publish(topicPublish+"/heart", payload)
+            # print ("kirim heartx")
+            time.sleep(30)
+            # print ("kirim heartxx")
+        except Exception as e:
+            print("ERROR HeartBeat : ", e)
 
 def mqttThread():
     try:
