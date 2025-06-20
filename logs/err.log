@@ -1142,3 +1142,22 @@
 2025-06-19 19:12:11:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
 2025-06-19 19:12:11:     lock.acquire()
 2025-06-19 19:12:11: KeyboardInterrupt: 
+2025-06-19 23:30:00: Error submitting job "check_for_update (trigger: cron[hour='23', minute='30'], next run at: 2025-06-19 23:30:00 WIB)" to executor "default"
+2025-06-19 23:30:00: Traceback (most recent call last):
+2025-06-19 23:30:00:   File "/usr/local/lib/python3.9/dist-packages/apscheduler/schedulers/base.py", line 1195, in _process_jobs
+2025-06-19 23:30:00:     executor.submit_job(job, run_times)
+2025-06-19 23:30:00:   File "/usr/local/lib/python3.9/dist-packages/apscheduler/executors/base.py", line 74, in submit_job
+2025-06-19 23:30:00:     self._do_submit_job(job, run_times)
+2025-06-19 23:30:00:   File "/usr/local/lib/python3.9/dist-packages/apscheduler/executors/pool.py", line 27, in _do_submit_job
+2025-06-19 23:30:00:     f = self._pool.submit(
+2025-06-19 23:30:00:   File "/usr/lib/python3.9/concurrent/futures/thread.py", line 163, in submit
+2025-06-19 23:30:00:     raise RuntimeError('cannot schedule new futures after '
+2025-06-19 23:30:00: RuntimeError: cannot schedule new futures after interpreter shutdown
+2025-06-20 07:37:29: Exception ignored in: 
+2025-06-20 07:37:29: <module 'threading' from '/usr/lib/python3.9/threading.py'>
+2025-06-20 07:37:29: Traceback (most recent call last):
+2025-06-20 07:37:29:   File "/usr/lib/python3.9/threading.py", line 1428, in _shutdown
+2025-06-20 07:37:29:     lock.acquire()
+2025-06-20 07:37:29: 
+2025-06-20 08:27:12: /home/orangepi/testcode/absensi/absensi.py:283: DeprecationWarning: Callback API version 1 is deprecated, update to latest version
+2025-06-20 08:27:12:   clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
