@@ -2988,3 +2988,57 @@
 2025-06-20 10:32:22: SSID: Pakebun
 2025-06-20 10:32:22: Hold a tag near the reader
 2025-06-20 10:32:22: 
+2025-06-20 10:33:16: Perintah diterima: 
+2025-06-20 10:33:16: 
+2025-06-20 10:33:16: Perintah tidak dikenali.
+2025-06-20 10:33:35: ID: 837872331242
+2025-06-20 10:33:35: Text:                                                 
+2025-06-20 10:33:36: Hold a tag near the reader
+2025-06-20 10:33:39: {"status":true,"message":"","data":{"nama":"Sutisna 1234","no":"981230","jadwal":"Absen Kehadiran"}}
+2025-06-20 10:33:39: ✅ Status: Berhasil
+2025-06-20 10:33:39: Pesan: 
+2025-06-20 10:33:39: Jadwal: Absen Kehadiran
+2025-06-20 10:33:39: Data dengan ID 162 berhasil dihapus.
+2025-06-20 10:33:39: 
+2025-06-20 10:33:41: ID: 908802599867
+2025-06-20 10:33:41: Text:                                                 
+2025-06-20 10:33:42: Hold a tag near the reader
+2025-06-20 10:33:45: {"status":false,"message":"Kartu atau mesin tidak terdaftar","data":{"jadwal":"Kartu atau mesin tidak terdaftar"}}
+2025-06-20 10:33:45: ❌ Status: Gagal
+2025-06-20 10:33:45: Pesan: Kartu atau mesin tidak terdaftar
+2025-06-20 10:33:45: Jadwal: Kartu atau mesin tidak terdaftar
+2025-06-20 10:33:46: ID: 564339348685
+2025-06-20 10:33:46: Text:                                                 
+2025-06-20 10:33:47: Hold a tag near the reader
+2025-06-20 10:33:50: {"status":false,"message":"Kartu atau mesin tidak terdaftar","data":{"jadwal":"Kartu atau mesin tidak terdaftar"}}
+2025-06-20 10:33:50: ❌ Status: Gagal
+2025-06-20 10:33:50: Pesan: Kartu atau mesin tidak terdaftar
+2025-06-20 10:33:50: Jadwal: Kartu atau mesin tidak terdaftar
+2025-06-20 10:43:22: VERSION     : 1.0.1
+2025-06-20 10:43:22: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-20 10:43:22: MACHINE ID  : 12345
+2025-06-20 10:43:22: MACADDRESS  : 2476950b4d44
+2025-06-20 10:43:22: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-20 10:43:22: 
+2025-06-20 10:43:22: VER HARD    : 1.0.1
+2025-06-20 10:43:23: {'version': '1.0.1', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-20 10:43:23: 1.0.1
+2025-06-20 10:43:23: VERSION ONLINE : 1.0.1 = 1.0.1
+2025-06-20 10:43:23: Aplikasi sudah versi terbaru.
+2025-06-20 10:43:25: SSID: Pakebun
+2025-06-20 10:43:25: Hold a tag near the reader
+2025-06-20 10:43:25: 
+2025-06-20 10:58:20: VERSION     : 1.0.1
+2025-06-20 10:58:20: API SERVER  : https://api-absensi.scola.id/foundation/kehadiran
+2025-06-20 10:58:20: MACHINE ID  : 12345
+2025-06-20 10:58:20: MACADDRESS  : 2476950b4d44
+2025-06-20 10:58:20: OTA VERSION : https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json
+2025-06-20 10:58:20: OTA APP     : https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py
+2025-06-20 10:58:20: VER HARD    : 1.0.1
+2025-06-20 10:58:20: {'version': '1.0.1', 'ota-version': 'https://raw.githubusercontent.com/tonxbow/absensi/master/ota.json', 'ota-app': 'https://raw.githubusercontent.com/tonxbow/absensi/master/absensi.py'}
+2025-06-20 10:58:20: 1.0.1
+2025-06-20 10:58:20: VERSION ONLINE : 1.0.1 = 1.0.1
+2025-06-20 10:58:20: Aplikasi sudah versi terbaru.
+2025-06-20 10:58:22: SSID: Pakebun
+2025-06-20 10:58:22: Hold a tag near the reader
+2025-06-20 10:58:22: 
