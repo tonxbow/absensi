@@ -603,6 +603,20 @@ if __name__ == '__main__':
     t3.start()
     t4.start()
     t5.start()
+    
+    while True:
+        if not t1.is_alive():
+            print("display Mati")
+        if not t2.is_alive():
+            print("rfid Mati")
+        if not t3.is_alive():
+            print("send Mati")
+        if not t4.is_alive():
+            print("mqtt Mati")
+        if not t5.is_alive():
+            print("heartbeat Mati")
+            #threads.remove(t)
+            #start_thread(i)
   except Exception as e:
     print("ERROR : ", e)
 
