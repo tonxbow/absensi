@@ -35,6 +35,7 @@ import psutil
 import uuid
 import platform
 from datetime import datetime, timedelta
+import traceback 
 
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
@@ -45,13 +46,14 @@ port = 1883
 ############################### OTA FUNCTION #######################################
 def get_online_version():
     try:
+        # print ("xxx")
         response = requests.get(VERSION_FILE_URL)
         dataVersion = response.json()
         print (dataVersion)
         print (dataVersion['version'])
         return str(dataVersion['version'])
-    except:
-        return None
+    except Exception as e:
+        print("ERROR get_online_version: ", e)
 
 def download_latest():
     print("Mengunduh versi terbaru...")
@@ -65,7 +67,7 @@ def restart_app():
 
 def check_for_update():
     online_version = get_online_version()
-    print("VERSION ONLINE : " +online_version + " = " + LOCAL_VERSION)
+    print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
     if online_version and online_version != LOCAL_VERSION:
         print(f"Versi baru tersedia: {online_version}")
         download_latest()
@@ -113,7 +115,9 @@ LCD_LINE_3 = 0x94 # LCD RAM address for the 3rd line
 LCD_LINE_4 = 0xD4 # LCD RAM address for the 4th line
 
 LCD_BACKLIGHT  = 0x08  # On
-#LCD_BACKLIGHT = 0x00  # Off
+LCD_BACKLIGHT_OFF = 0x00  # Off
+
+
 
 ENABLE = 0b00000100 # Enable bit
 
@@ -134,17 +138,20 @@ def lcd_init():
         lcd_byte(0x0C,LCD_CMD) # 001100 Display On,Cursor Off, Blink Off 
         lcd_byte(0x28,LCD_CMD) # 101000 Data length, number of lines, font size
         lcd_byte(0x01,LCD_CMD) # 000001 Clear display
-        time.sleep(E_DELAY)
-    except :
-        print ("ERROR LCD")
+        time.sleep(1)
+    except Exception as e:
+        print("ERROR lcd_init : ", e)
+
+lcd_backlight_status = LCD_BACKLIGHT
+last_scan_time = time.time()
 
 
 def lcd_clear():
     lcd_byte(0x01,LCD_CMD) # 000001 Clear display
 
 def lcd_byte(bits, mode):
-  bits_high = mode | (bits & 0xF0) | LCD_BACKLIGHT
-  bits_low = mode | ((bits<<4) & 0xF0) | LCD_BACKLIGHT
+  bits_high = mode | (bits & 0xF0) | lcd_backlight_status
+  bits_low = mode | ((bits<<4) & 0xF0) | lcd_backlight_status
 
   # High bits
   bus.write_byte(I2C_ADDR, bits_high)
@@ -210,9 +217,8 @@ def get_interface_ip(interface_name):
         if netifaces.AF_INET in addresses:
             # Return the first IPv4 address found
             return addresses[netifaces.AF_INET][0]['addr']
-    except ValueError:
-        # Handle cases where the interface name is not found
-        return None
+    except Exception as e:
+        print("ERROR get_interface_ip : ", e)
     return None
 
 def get_interface_mac(interface_name):
@@ -227,9 +233,8 @@ def get_interface_mac(interface_name):
         if netifaces.AF_INET in addresses:
             # Return the first IPv4 address found
             return addresses[netifaces.AF_LINK][0]['addr']
-    except ValueError:
-        # Handle cases where the interface name is not found
-        return None
+    except Exception as e:
+        print("ERROR get_interface_mac : ", e)
     return None
 
 def get_ssid_nmcli():
@@ -239,15 +244,15 @@ def get_ssid_nmcli():
             if line.startswith("yes:"):
                 return line.split(":")[1]
         return None
-    except subprocess.CalledProcessError:
-        return None
+    except Exception as e:
+        print("ERROR get_ssid_nmcli: ", e)
 
 def cek_internet(url='https://www.google.com/', timeout=5):
     try:
         _ = requests.get(url, timeout=timeout)
         return True
-    except requests.ConnectionError:
-        return False
+    except Exception as e:
+        print("ERROR START 3: ", e)
     
 # Fungsi ambil MAC address
 def get_mac():
@@ -305,9 +310,10 @@ API_HOST = dataSetting['api-server']
 
 BUZZER = 5
 BUTTON = 7
+button_pressed_time = 0  # buat catat kapan ditekan
 
 
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties):
     now = datetime.now()
     formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
     client.publish(topicPublish, "STARTING " + formatted_datetime_1)
@@ -360,46 +366,60 @@ def on_message(client, userdata, msg):
     except Exception as e:
         print("Error saat menjalankan perintah:", e)
 
-clientMQTT = mqtt.Client(protocol=mqtt.MQTTv311)
-clientMQTT.on_connect = on_connect
-clientMQTT.on_disconnect = on_disconnect
-clientMQTT.on_message = on_message
-clientMQTT.connect(broker, port)
+
+try :
+    # clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "123")
+    clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id="test-client")
+    clientMQTT.on_connect = on_connect
+    clientMQTT.on_disconnect = on_disconnect
+    clientMQTT.on_message = on_message
+    clientMQTT.connect(broker, port)
+except Exception as e:
+    print("Error MQTT:", e)   
 
 
 # Menjadwalkan fungsi setiap hari jam 23:30
 
-# eth_mac = str(get_interface_mac('eth0'))
-eth_mac = get_mac().replace(":","")
-print("VERSION     : " + LOCAL_VERSION)
-print("API SERVER  : " + API_HOST)
-print("MACHINE ID  : " + MACHINE_ID)
-print("MACADDRESS  : " + eth_mac)
-print("OTA VERSION : " + VERSION_FILE_URL)
-print("OTA APP     : " + MAIN_FILE_URL)
-print("VER HARD    : " + "1.0.1")
+try :
+    # eth_mac = str(get_interface_mac('eth0'))
+    eth_mac = get_mac().replace(":","")
+    print("VERSION     : " + LOCAL_VERSION)
+    print("API SERVER  : " + API_HOST)
+    print("MACHINE ID  : " + MACHINE_ID)
+    print("MACADDRESS  : " + eth_mac)
+    print("OTA VERSION : " + VERSION_FILE_URL)
+    print("OTA APP     : " + MAIN_FILE_URL)
+    print("VER HARD    : " + "1.0.1")
 
-tagRFID=""
-statusInsert=0
-statusInternet="OFFLINE"
+    tagRFID=""
+    statusInsert=0
+    statusInternet="OFFLINE"
 
-topicPublish = "scola/absensi/"+eth_mac
-topicSubscribe = "scola/absensi/"+eth_mac+"/subs"
-topicSubscribeAll = "scola/absensi/subscribe"
-
-
+    topicPublish = "scola/absensi/"+eth_mac
+    topicSubscribe = "scola/absensi/"+eth_mac+"/subs"
+    topicSubscribeAll = "scola/absensi/subscribe"
+except Exception as e:
+    print("Error MQTT:", e)   
 
 try :
-    check_for_update()
-    lcd_init()
     gpio_control = GPIOControl()
-    reader = SimpleMFRC522()
     gpio_control.mode(BUZZER, "out") #pin 11 PC6
     gpio_control.mode(BUTTON, "in") #pin13 PC5
+    gpio_control.mode(BUTTON, "up") #pin13 PC5
+    lcd_init()
+    lcd_clear()
+    lcd_string("CHECK UPDATE ....", LCD_LINE_1)
+    lcd_string("LOADING ...", LCD_LINE_2)
+    check_for_update()
+    
 
     ssid = get_ssid_nmcli()
     print("SSID:", ssid if ssid else "Tidak terhubung")
-
+except Exception as e:
+    print("ERROR START 1: ", e)   
+    
+try : 
+    reader = SimpleMFRC522()
     wlan_ip = get_interface_ip('wlan0')  # Common on Linux/Raspberry Pi
     if not wlan_ip:
         wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
@@ -409,9 +429,13 @@ try :
     
     if not eth_ip:
         eth_ip = get_interface_ip('Ethernet') # Common on Windows
-
 except Exception as e:
-    print("ERROR : ", e)
+    print("ERROR START 2: ", e)   
+
+try : 
+    reader = SimpleMFRC522()
+except Exception as e:
+    print("ERROR START 3: ", e)
 
 displayPage=0
 displayMaxPage=3
@@ -421,17 +445,50 @@ jumlahDataNotSend=0
 
 def display():
     try:
-        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus
+        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus,last_scan_time,lcd_backlight_status,button_pressed_time
         lcd_clear()
-        lcd_string("    SCOLA ABSEN",LCD_LINE_2)
-        lcd_string("  FIRMWARE V."+LOCAL_VERSION,LCD_LINE_3)
+        lcd_string("   SCOLA ABSEN", LCD_LINE_1)
+        lcd_string("FW V." + LOCAL_VERSION, LCD_LINE_2)
+        lcd_string("IP: " + (wlan_ip if wlan_ip else "-"), LCD_LINE_3)
+        lcd_string("SSID: " + (ssid if ssid else "-"), LCD_LINE_4)
         time.sleep(2)
         lcd_clear()
         tick=True
         countTick=0
+        
         while True:
             now = datetime.now()
             formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
+
+            # Cek sleep backlight
+            if time.time() - last_scan_time > 60:
+                lcd_backlight_status = LCD_BACKLIGHT_OFF
+            else:
+                lcd_backlight_status = LCD_BACKLIGHT
+
+            # Cek tombol
+            # button_state = gpio_control.read(BUTTON)
+            # if button_state == "0":  # ditekan
+            #     print("tombol ditekan")
+            #     if button_pressed_time == 0:
+            #         button_pressed_time = time.time()
+            #     else:
+            #         held_time = time.time() - button_pressed_time
+            #         if held_time >= 5:
+            #             lcd_clear()
+            #             lcd_string("TOMBOL DITEKAN", LCD_LINE_2)
+            #             lcd_string("RESTARTING....", LCD_LINE_3)
+            #             time.sleep(2)
+            #             restart_computer()
+            # else:
+            #     if button_pressed_time != 0:
+            #         held_time = time.time() - button_pressed_time
+            #         if held_time < 5:
+            #             # Tombol dilepas cepat ➜ ganti page
+            #             displayPage += 1
+            #             if displayPage > displayMaxPage:
+            #                 displayPage = 0
+            #         button_pressed_time = 0
             
             # print(threadStatus[1])
             if displayPage==0 :
@@ -461,7 +518,14 @@ def display():
             if displayPage > displayMaxPage:
                 displayPage=0
 
-            if tagRFID != "" :
+            if tagRFID == "xxx" :
+               lcd_clear()
+               lcd_string(" ANDA SUDAH ABSEN ", LCD_LINE_2)
+               lcd_string("  TUNGGU 5 MENIT ", LCD_LINE_3)
+               tagRFID=""
+               time.sleep(2)
+               lcd_clear()
+            elif tagRFID != "" :
                lcd_clear()
                lcd_string("NO RFID :" + tagRFID,LCD_LINE_1)  
                lcd_string("   BERHASIL ABSEN",LCD_LINE_2) 
@@ -469,6 +533,8 @@ def display():
                tagRFID=""
                time.sleep(2)
                lcd_clear()
+            
+               
             threadStatus[1]= gettime()
             # if gpio_control.read(BUTTON)=='0' :
             #     displayPage = displayPage + 1
@@ -478,22 +544,42 @@ def display():
             #     time.sleep(1)
             
     except Exception as e:
-        print("ERROR DISPLAY : ", e)
+        print("ERROR display : ", e)
+        traceback.print_exc()
 
+last_scan_time_rfid = {}
 def rfid():
     try:
-        global tagRFID,statusInsert,threadStatus
+        global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
         while True:
             threadStatus[2]=gettime()
             print("Hold a tag near the reader")
             id, text = reader.read()
-            tagRFID = str(id);
+            tagRFID = str(id)
             print("ID: %s\nText: %s" % (id,text))
-            statusInsert = insertdata(tagRFID)
-            gpio_control.write(5, 1)
-            sleep(1)
-            gpio_control.write(5, 0)
-            clientMQTT.publish(topicPublish+"/tag", tagRFID)
+
+            now = datetime.now()
+            last_time = last_scan_time_rfid.get(tagRFID)
+            print(last_scan_time_rfid)
+            # Jika tag pernah di scan
+            if last_time:
+                elapsed = now - last_time
+                if elapsed < timedelta(minutes=1):
+                    print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
+                    tagRFID = "xxx"
+                    gpio_control.write(5, 1)
+                    sleep(1)
+                    gpio_control.write(5, 0)
+                    continue  # skip ke loop berikutnya
+            else :            
+                statusInsert = insertdata(tagRFID)
+                last_scan_time_rfid[tagRFID] = now        # Catat waktu scan
+                last_scan_time=  time.time()        # Catat waktu scan display
+                lcd_backlight_status = LCD_BACKLIGHT  # Hidupkan backlight kalau scan
+                gpio_control.write(5, 1)
+                sleep(1)
+                gpio_control.write(5, 0)
+                clientMQTT.publish(topicPublish+"/tag", tagRFID)
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
 
     except Exception as e:
@@ -589,6 +675,10 @@ def mqttThread():
     except Exception as e:
         print("ERROR MQTT : ", e)
 
+scheduler = BackgroundScheduler()
+scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
+scheduler.start()
+
 if __name__ == '__main__':
   try:
     # main()
@@ -603,20 +693,29 @@ if __name__ == '__main__':
     t3.start()
     t4.start()
     t5.start()
-    
+    statusThread = True
     while True:
         if not t1.is_alive():
+            statusThread=False
             print("display Mati")
         if not t2.is_alive():
+            statusThread=False
             print("rfid Mati")
         if not t3.is_alive():
+            # statusThread=False
             print("send Mati")
         if not t4.is_alive():
+            # statusThread=False
             print("mqtt Mati")
         if not t5.is_alive():
+            statusThread=False
             print("heartbeat Mati")
             #threads.remove(t)
             #start_thread(i)
+        time.sleep(30)
+        if statusThread==False :
+            statusThread=True
+            restart_app()
   except Exception as e:
-    print("ERROR : ", e)
+    print("ERROR MAIN: ", e)
 
