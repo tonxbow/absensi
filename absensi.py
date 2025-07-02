@@ -273,6 +273,8 @@ def get_system_info():
     return {
         "app_version": LOCAL_VERSION,
         "mac_address": get_mac().replace(":", ""),  # Bisa juga tetap pakai ":"
+        "ip_address_wlan": (wlan_ip if wlan_ip else "-"),
+        "ip_address_eth": (eth_ip if eth_ip else "-"),
         "cpu_percent": psutil.cpu_percent(interval=1),
         "memory_percent": psutil.virtual_memory().percent,
         "storage_percent": psutil.disk_usage('/').percent,
