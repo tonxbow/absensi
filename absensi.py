@@ -334,7 +334,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.2"
+LOCAL_VERSION = "1.1.3"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
