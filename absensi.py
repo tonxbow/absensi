@@ -44,36 +44,64 @@ port = 1883
 
 
 ############################### OTA FUNCTION #######################################
-def get_online_version():
+# def get_online_version():
+#     try:
+#         # print ("xxx")
+#         response = requests.get(VERSION_FILE_URL)
+#         dataVersion = response.json()
+#         print (dataVersion)
+#         print (dataVersion['version'])
+#         return str(dataVersion['version'])
+#     except Exception as e:
+#         print("ERROR get_online_version: ", e)
+
+
+        
+def get_online_version(branch="master") : 
     try:
-        # print ("xxx")
-        response = requests.get(VERSION_FILE_URL)
-        dataVersion = response.json()
-        print (dataVersion)
-        print (dataVersion['version'])
-        return str(dataVersion['version'])
+        subprocess.run(["git", "fetch"], check=True)
+        
+        # Bandingkan HEAD lokal dengan remote
+        local = subprocess.check_output(["git", "rev-parse", branch]).strip()
+        remote = subprocess.check_output(["git", "rev-parse", f"origin/{branch}"]).strip()
+        
+        return local != remote
     except Exception as e:
         print("ERROR get_online_version: ", e)
 
-def download_latest():
-    print("Mengunduh versi terbaru...")
-    response = requests.get(MAIN_FILE_URL)
-    with open(LOCAL_FILE, 'wb') as f:
-        f.write(response.content)
+
+def download_latest(branch="master"):
+    try:
+        if get_online_version(branch):
+            print("Remote has changes, pulling...")
+            subprocess.run(["git", "pull"], check=True)
+        else:
+            print("No remote changes.")
+    except Exception as e:
+        print("ERROR download_latest: ", e)
+
+
+
+# def download_latest():
+#     print("Mengunduh versi terbaru...")
+#     response = requests.get(MAIN_FILE_URL)
+#     with open(LOCAL_FILE, 'wb') as f:
+#         f.write(response.content)
 
 def restart_app():
     print("Menjalankan ulang aplikasi...")
     os.execv(sys.executable, ['python'] + sys.argv)
 
 def check_for_update():
-    online_version = get_online_version()
-    print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
-    if online_version and online_version != LOCAL_VERSION:
-        print(f"Versi baru tersedia: {online_version}")
-        download_latest()
-        restart_app()
-    else:
-        print("Aplikasi sudah versi terbaru.")
+    download_latest("master")
+    # online_version = get_online_version()
+    # print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
+    # if online_version and online_version != LOCAL_VERSION:
+    #     print(f"Versi baru tersedia: {online_version}")
+    #     download_latest()
+    #     restart_app()
+    # else:
+    #     print("Aplikasi sudah versi terbaru.")
 
 
 ############################### MYSQL FUNCTION #######################################
@@ -573,15 +601,15 @@ def rfid():
                     sleep(1)
                     gpio_control.write(5, 0)
                     continue  # skip ke loop berikutnya
-            else :            
-                statusInsert = insertdata(tagRFID)
-                last_scan_time_rfid[tagRFID] = now        # Catat waktu scan
-                last_scan_time=  time.time()        # Catat waktu scan display
-                lcd_backlight_status = LCD_BACKLIGHT  # Hidupkan backlight kalau scan
-                gpio_control.write(5, 1)
-                sleep(1)
-                gpio_control.write(5, 0)
-                clientMQTT.publish(topicPublish+"/tag", tagRFID)
+                      
+            statusInsert = insertdata(tagRFID)
+            last_scan_time_rfid[tagRFID] = now        # Catat waktu scan
+            last_scan_time=  time.time()        # Catat waktu scan display
+            lcd_backlight_status = LCD_BACKLIGHT  # Hidupkan backlight kalau scan
+            gpio_control.write(5, 1)
+            sleep(1)
+            gpio_control.write(5, 0)
+            clientMQTT.publish(topicPublish+"/tag", tagRFID)
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
 
     except Exception as e:
