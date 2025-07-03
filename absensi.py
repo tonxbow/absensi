@@ -75,6 +75,7 @@ def download_latest(branch="master"):
         if get_online_version(branch):
             print("Remote has changes, pulling...")
             subprocess.run(["git", "pull"], check=True)
+            restart_app()
         else:
             print("No remote changes.")
     except Exception as e:
