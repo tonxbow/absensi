@@ -1,0 +1,59 @@
+# Abaikan folder build dan dist
+build/
+dist/
+
+# Abaikan folder sementara
+tmp/
+temp/
+.cache/
+
+# Abaikan output node_modules (kalau pakai Node.js)
+node_modules/
+
+# Abaikan log
+*.log
+
+# Abaikan file sistem OS
+.DS_Store
+Thumbs.db
+
+# Abaikan file editor/IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Abaikan file backup
+*.bak
+*.swp
+*.tmp
+
+# Abaikan file Python cache (jika Python)
+logs/
+
+# Abaikan file environment
+.env
+.env.local
+
+# Abaikan folder output test
+coverage/
+test-output/
+
+# Abaikan folder vendor (jika pakai composer)
+vendor/
+
+# Abaikan folder virtualenv Python
+venv/
+ENV/
+env/
+
+# Abaikan file yang dihasilkan build tools
+*.class
+*.exe
+*.dll
+*.out
+*.o
+
+# Abaikan file database lokal
+*.sqlite3
+*.db
