@@ -1,4 +1,5 @@
 # Abaikan folder build dan dist
+setting.json
 build/
 dist/
 
