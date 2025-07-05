@@ -42,6 +42,45 @@ port = 1883
 
 
 
+############################### RTC FUNCTION #######################################
+def bcd_to_dec(bcd):
+    return (bcd // 16) * 10 + (bcd % 16)
+
+def read_rtc_time():
+    try:
+        with smbus.SMBus(3) as bus:
+            data = bus.read_i2c_block_data(0x68, 0x00, 7)
+            second = bcd_to_dec(data[0])
+            minute = bcd_to_dec(data[1])
+            hour = bcd_to_dec(data[2])
+            day = bcd_to_dec(data[4])
+            month = bcd_to_dec(data[5] & 0x1F)  # Mask century bit if present
+            year = bcd_to_dec(data[6]) + 2000
+            dt = datetime(year, month, day, hour, minute, second)
+            return str(dt.strftime('%Y-%m-%d %H:%M:%S'))
+    except Exception as e:
+        print("ERROR read_rtc_time:", e)
+        return None
+
+def sync_time_with_rtc():
+    if statusInternet == "ONLINE" : 
+        dt = read_rtc_time()
+        if dt:
+            try:
+                date_str = dt.strftime('%m%d%H%M%Y.%S')
+                subprocess.run(['sudo', 'date', date_str])
+                print("Waktu sistem disinkronisasi dengan RTC:", dt)
+            except Exception as e:
+                print("ERROR RTC sync_time_with_rtc:", e)
+
+def get_datetime():
+    if statusInternet=="ONLINE" :
+        waktu = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    else :
+        waktu = read_rtc_time()
+    return waktu
+
+
 
 ############################### OTA FUNCTION #######################################
 # def get_online_version():
@@ -78,6 +117,7 @@ def download_latest(branch="master"):
             restart_app()
         else:
             print("No remote changes.")
+            return "TIDAK ADA UPDATE"
     except Exception as e:
         print("ERROR download_latest: ", e)
 
@@ -94,7 +134,7 @@ def restart_app():
     os.execv(sys.executable, ['python'] + sys.argv)
 
 def check_for_update():
-    download_latest("master")
+    return download_latest("master")
     # online_version = get_online_version()
     # print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
     # if online_version and online_version != LOCAL_VERSION:
@@ -117,7 +157,7 @@ mycursor = mydb.cursor()
 def insertdata(tagRFID):
     global mycursor,mydb
     tag = tagRFID
-    waktu = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    waktu = get_datetime()#datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     status = 0  # Misalnya 1 = Hadir
 
     # Query insert
@@ -314,11 +354,6 @@ def get_system_info():
         "thread_send" : threadStatus[3]
     }
 
-def gettime():
-    now = datetime.now()
-    formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
-    return formatted_datetime_1
-
 
 ############################### CONFIG FUNCTION #######################################
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -441,7 +476,8 @@ try :
     lcd_clear()
     lcd_string("CHECK UPDATE ....", LCD_LINE_1)
     lcd_string("LOADING ...", LCD_LINE_2)
-    check_for_update()
+    lcd_string(check_for_update(), LCD_LINE_3)
+    sync_time_with_rtc()
     
 
     ssid = get_ssid_nmcli()
@@ -479,9 +515,10 @@ def display():
         global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus,last_scan_time,lcd_backlight_status,button_pressed_time
         lcd_clear()
         lcd_string("   SCOLA ABSEN", LCD_LINE_1)
-        lcd_string("FW V." + LOCAL_VERSION, LCD_LINE_2)
-        lcd_string("IP: " + (wlan_ip if wlan_ip else "-"), LCD_LINE_3)
-        lcd_string("SSID: " + (ssid if ssid else "-"), LCD_LINE_4)
+        lcd_string("FW V." + LOCAL_VERSION + " " + MACHINE_ID, LCD_LINE_2)
+        lcd_string("W:" + (wlan_ip if wlan_ip else "-"), LCD_LINE_3)
+        lcd_string("E:" + (eth_ip if eth_ip else "-"), LCD_LINE_4)
+        # lcd_string("SSID: " + (ssid if ssid else "-"), LCD_LINE_4)
         time.sleep(2)
         lcd_clear()
         tick=True
@@ -489,7 +526,6 @@ def display():
         
         while True:
             now = datetime.now()
-            formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
 
             # Cek sleep backlight
             if time.time() - last_scan_time > 60:
@@ -523,7 +559,7 @@ def display():
             
             # print(threadStatus[1])
             if displayPage==0 :
-                lcd_string(formatted_datetime_1,LCD_LINE_1)
+                lcd_string(str(get_datetime()),LCD_LINE_1)
                 if tick :
                     lcd_string(" SILAHKAN TAP KARTU  ",LCD_LINE_2)
                 else :
@@ -566,7 +602,7 @@ def display():
                lcd_clear()
             
                
-            threadStatus[1]= gettime()
+            threadStatus[1]= get_datetime()
             # if gpio_control.read(BUTTON)=='0' :
             #     displayPage = displayPage + 1
             #     print("PAGE " + displayPage)
@@ -583,7 +619,7 @@ def rfid():
     try:
         global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
         while True:
-            threadStatus[2]=gettime()
+            threadStatus[2]=get_datetime()
             print("Hold a tag near the reader")
             id, text = reader.read()
             tagRFID = str(id)
@@ -620,7 +656,7 @@ def send():
     try:
         global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus
         while True:
-            threadStatus[3]=gettime()
+            threadStatus[3]=get_datetime()
             query = "SELECT COUNT(*) FROM data_absen where status=0"
             mycursor.execute(query)
             jumlahData = mycursor.fetchone()[0]
