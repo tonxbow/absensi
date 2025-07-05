@@ -110,28 +110,16 @@ def wifi_setup():
 
 def ethernet_setup():
     console.print("\n=== Ethernet Setup ===")
-    mode = console.input("Mode (dhcp/static): ").strip().lower()
-    connection_name = "eth0-static"
-
+    mode = console.input("Mode (dhcp/static): ")
+    connectionName = "'eth0-static'"
     if mode == "dhcp":
-        console.print("🔧 Mengatur koneksi ke DHCP dan menghapus setting IP static...")
-        run(f"nmcli connection modify {connection_name} ipv4.addresses ''")
-        run(f"nmcli connection modify {connection_name} ipv4.gateway ''")
-        run(f"nmcli connection modify {connection_name} ipv4.dns ''")
-        run(f"nmcli connection modify {connection_name} ipv4.method auto")
-        run(f"nmcli connection modify {connection_name} ipv4.never-default no")
-        run(f"nmcli connection down {connection_name}")
-        run(f"nmcli connection up {connection_name}")
-        console.print("✅ Ethernet diatur ulang ke DHCP.")
+        run("nmcli con mod "+connectionName+" ipv4.method auto && nmcli con up "+connectionName)
+        console.print("Ethernet diatur DHCP.")
     else:
         ip = console.input("Static IP (e.g., 192.168.1.100/24): ")
         gw = console.input("Gateway: ")
         dns = console.input("DNS: ")
-        cmd = (
-            f"nmcli connection modify {connection_name} "
-            f"ipv4.addresses {ip} ipv4.gateway {gw} ipv4.dns {dns} "
-            f"ipv4.method manual && nmcli connection down {connection_name} && nmcli connection up {connection_name}"
-        )
+        cmd = f"nmcli con mod  "+connectionName+"  ipv4.addresses {ip} ipv4.gateway {gw} ipv4.dns {dns} ipv4.method manual && nmcli con up  "+connectionName
         output = run(cmd)
         console.print(output)
 
@@ -156,9 +144,9 @@ def sync_rtc_ntp():
     ntp = get_ntp_time()
     if ntp:
         write_ds1307(ntp)
-        console.print("🕒 RTC disinkron ke NTP.")
+        console.print("RTC disinkron ke NTP.")
     else:
-        console.print("⚠️ Gagal sync NTP.")
+        console.print("Gagal sync NTP.")
 
 def main():
     config = load_config()
@@ -186,7 +174,7 @@ def main():
 [4] Edit Config
 [5] Keluar
 """)
-        choice = console.input("Pilih: ").strip()
+        choice = console.input("Pilih: ")
 
         if choice == "1":
             wifi_setup()
