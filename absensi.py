@@ -37,6 +37,9 @@ import platform
 from datetime import datetime, timedelta
 import traceback 
 
+import cv2
+from pyzbar.pyzbar import decode
+
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
 
@@ -213,6 +216,8 @@ def lcd_init():
 
 lcd_backlight_status = LCD_BACKLIGHT
 last_scan_time = time.time()
+# last_scan_time_rfid = {}
+last_scan_time_qr = {}
 
 
 def lcd_clear():
@@ -622,8 +627,12 @@ def rfid():
             threadStatus[2]=get_datetime()
             print("Hold a tag near the reader")
             id, text = reader.read()
-            tagRFID = str(id)
-            print("ID: %s\nText: %s" % (id,text))
+            uid_bytes = id.to_bytes(8, 'big')
+            uid_4bytes = uid_bytes[3:7]
+            tag_hex = ''.join(f'{b:02x}' for b in uid_4bytes)
+            tagRFID = str(tag_hex)
+            print("ID: %s\nText: %s" % (tagRFID))
+    
 
             now = datetime.now()
             last_time = last_scan_time_rfid.get(tagRFID)
@@ -682,6 +691,7 @@ def send():
                     'Content-Type': 'application/json'
                     }
                     response = requests.request("POST", API_HOST, headers=headers, data=payload)
+                    print(payload)
                     print(response.text)
 
                     try:
@@ -742,6 +752,47 @@ def mqttThread():
     except Exception as e:
         print("ERROR MQTT : ", e)
 
+def camThread():
+    global statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time
+    cap = cv2.VideoCapture(1)
+    if not cap.isOpened():
+        print("❌ Tidak bisa membuka kamera QR Code.")
+        return
+
+    print("📡 QR Code scanner aktif...")
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                sleep(0.5)
+                continue
+
+            decoded_objects = decode(frame)
+            for obj in decoded_objects:
+                qr_data = obj.data.decode("utf-8")
+                now = datetime.now()
+
+                last_time = last_scan_time_qr.get(qr_data)
+                if last_time and now - last_time < timedelta(minutes=1):
+                    continue
+
+                print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] QR Code: {qr_data}")
+                statusInsert = insertdata(qr_data)
+                last_scan_time_qr[qr_data] = now
+                last_scan_time = time.time()
+                lcd_backlight_status = LCD_BACKLIGHT
+                gpio_control.write(5, 1)
+                sleep(1)
+                gpio_control.write(5, 0)
+                clientMQTT.publish(topicPublish + "/tag", qr_data)
+
+            sleep(0.1)
+
+    except KeyboardInterrupt:
+        print("🛑 QR scanner berhenti")
+    finally:
+        cap.release()
+
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
 scheduler.start()
@@ -754,12 +805,14 @@ if __name__ == '__main__':
     t3 = threading.Thread(target=send, args=())
     t4 = threading.Thread(target=mqttThread, args=())
     t5 = threading.Thread(target=heartBeat, args=())
+    t6 = threading.Thread(target=camThread, args=())
 
     t1.start()
     t2.start()
     t3.start()
     t4.start()
     t5.start()
+    t6.start()
     statusThread = True
     while True:
         if not t1.is_alive():
@@ -777,6 +830,9 @@ if __name__ == '__main__':
         if not t5.is_alive():
             statusThread=False
             print("heartbeat Mati")
+        if not t6.is_alive():
+            statusThread=False
+            print("CamThread Mati")
             #threads.remove(t)
             #start_thread(i)
         time.sleep(30)
