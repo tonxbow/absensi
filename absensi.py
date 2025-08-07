@@ -626,12 +626,13 @@ def rfid():
         while True:
             threadStatus[2]=get_datetime()
             print("Hold a tag near the reader")
-            id, text = reader.read()
+            id,text = reader.read()
+            print("ID: %s" % (tagRFID))
             uid_bytes = id.to_bytes(8, 'big')
             uid_4bytes = uid_bytes[3:7]
             tag_hex = ''.join(f'{b:02x}' for b in uid_4bytes)
             tagRFID = str(tag_hex)
-            print("ID: %s\nText: %s" % (tagRFID))
+            print("ID: %s" % (tagRFID))
     
 
             now = datetime.now()
@@ -753,7 +754,7 @@ def mqttThread():
         print("ERROR MQTT : ", e)
 
 def camThread():
-    global statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time
+    global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time
     cap = cv2.VideoCapture(1)
     if not cap.isOpened():
         print("❌ Tidak bisa membuka kamera QR Code.")
@@ -773,10 +774,18 @@ def camThread():
                 now = datetime.now()
 
                 last_time = last_scan_time_qr.get(qr_data)
-                if last_time and now - last_time < timedelta(minutes=1):
-                    continue
+                print(last_scan_time_qr)
+                tagRFID = qr_data
+                if last_time :
+                    elapsed = now - last_time
+                    if elapsed < timedelta(minutes=1):
+                        print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
+                        tagRFID = "xxx"
+                        gpio_control.write(5, 1)
+                        sleep(1)
+                        gpio_control.write(5, 0)
+                        continue  # skip ke loop berikutnya
 
-                print(f"[{now.strftime('%Y-%m-%d %H:%M:%S')}] QR Code: {qr_data}")
                 statusInsert = insertdata(qr_data)
                 last_scan_time_qr[qr_data] = now
                 last_scan_time = time.time()
