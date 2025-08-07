@@ -831,7 +831,7 @@ if __name__ == '__main__':
             statusThread=False
             print("heartbeat Mati")
         if not t6.is_alive():
-            statusThread=False
+            #statusThread=False
             print("CamThread Mati")
             #threads.remove(t)
             #start_thread(i)
