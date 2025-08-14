@@ -10,10 +10,7 @@
 # buat database "absensi" dan table absen dan setting
 
 
-try:
-    import smbus2 as smbus
-except ImportError:
-    import smbus
+import smbus
 
 import time
 import threading
@@ -62,7 +59,7 @@ def read_rtc_time():
             dt = datetime(year, month, day, hour, minute, second)
             return str(dt.strftime('%Y-%m-%d %H:%M:%S'))
     except Exception as e:
-        print("ERROR read_rtc_time:", e)
+        print("ERROR read_rtc_timex:", e)
         return None
 
 def sync_time_with_rtc():
@@ -414,8 +411,8 @@ command_map = {
     "reboot": restart_computer,
     "update": update_app
 }
-
-def on_disconnect(client, userdata, rc):
+    
+def on_disconnect(client, userdata, rc, properties=None):
     print("⚠️ Terputus dari broker (rc={}), mencoba reconnect...".format(rc))
     while True:
         try:
@@ -774,10 +771,13 @@ def mqttThread():
     except Exception as e:
         print("ERROR MQTT : ", e)
 
+
+statusCamera=True
 def camThread():
-    global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time
+    global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusCamera
     cap = cv2.VideoCapture(1)
     if not cap.isOpened():
+        statusCamera=False
         print("❌ Tidak bisa membuka kamera QR Code.")
         return
 
@@ -842,7 +842,11 @@ if __name__ == '__main__':
     t3.start()
     t4.start()
     t5.start()
-    t6.start()
+
+    camThread()
+    if statusCamera==True:
+        t6.start()
+    
     statusThread = True
     while True:
         if not t1.is_alive():
@@ -866,6 +870,7 @@ if __name__ == '__main__':
             #threads.remove(t)
             #start_thread(i)
         time.sleep(30)
+        read_rtc_time()
         if statusThread==False :
             statusThread=True
             restart_app()
