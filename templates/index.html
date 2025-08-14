@@ -67,6 +67,9 @@
         <input type="text" name="api_host" value="{{ cfg['api-server'] if 'api-server' in cfg else '' }}">
         <button type="submit">Save Device Info</button>
     </form>
+    <form method="post" action="{{ url_for('restart_app') }}">
+        <button style="width: 100%; background-color: red;" class="danger" type="submit">RESTART APPLICATION</button>
+    </form>
 </div>
 
 <script>

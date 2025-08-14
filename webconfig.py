@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 import json, os, subprocess, netifaces
 import ipaddress
 
+
 app = Flask(__name__)
 app.secret_key = "scola-secret-key"
 
@@ -116,6 +117,51 @@ def save_device():
 
     save_config(cfg)
     flash("✅ Device info saved!")
+    return redirect(url_for('network'))
+
+def restart_pm2_app(app_name):
+    try:
+        # Jalankan restart
+        result = subprocess.run(
+            ["pm2", "restart", app_name],
+            capture_output=True,
+            text=True
+        )
+
+        # Cek exit code
+        if result.returncode == 0:
+            print(f"PM2 restart '{app_name}' berhasil ✅")
+            print(result.stdout)
+
+            # Cek status proses
+            status = subprocess.run(
+                ["pm2", "status", app_name],
+                capture_output=True,
+                text=True
+            )
+            print(status.stdout)
+
+            if "online" in status.stdout.lower():
+                print(f"Aplikasi '{app_name}' sedang berjalan ONLINE ✅")
+                return True
+            else:
+                print(f"Aplikasi '{app_name}' tidak online ❌")
+                return False
+
+        else:
+            print(f"Gagal restart PM2 '{app_name}' ❌")
+            print(result.stderr)
+            return False
+
+    except Exception as e:
+        print("ERROR:", e)
+        return False
+
+
+@app.route('/restart_app', methods=['POST'])
+def restart_app():
+    restart_pm2_app("scola-absen")
+    flash("✅ APP RESTART!")
     return redirect(url_for('network'))
 
 @app.route('/scan_ssid')

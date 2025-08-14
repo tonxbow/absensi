@@ -46,25 +46,32 @@ port = 1883
 def bcd_to_dec(bcd):
     return (bcd // 16) * 10 + (bcd % 16)
 
-def read_rtc_time():
+def dec_to_bcd(val):
+    return (val // 10) << 4 | (val % 10)
+
+def read_rtc_time(bus_num=3, address=0x68):
     try:
-        with smbus.SMBus(3) as bus:
-            data = bus.read_i2c_block_data(0x68, 0x00, 7)
-            second = bcd_to_dec(data[0])
-            minute = bcd_to_dec(data[1])
-            hour = bcd_to_dec(data[2])
-            day = bcd_to_dec(data[4])
-            month = bcd_to_dec(data[5] & 0x1F)  # Mask century bit if present
-            year = bcd_to_dec(data[6]) + 2000
-            dt = datetime(year, month, day, hour, minute, second)
-            return str(dt.strftime('%Y-%m-%d %H:%M:%S'))
+        bus = smbus.SMBus(bus_num)
+        data = bus.read_i2c_block_data(address, 0x00, 7)
+
+        second = bcd_to_dec(data[0] & 0x7F)  # bit 7 disable oscillator
+        minute = bcd_to_dec(data[1])
+        hour = bcd_to_dec(data[2] & 0x3F)    # 24h format
+        day = bcd_to_dec(data[4])
+        month = bcd_to_dec(data[5] & 0x1F)
+        year = bcd_to_dec(data[6]) + 2000
+
+        dt = datetime(year, month, day, hour, minute, second)
+        return dt
     except Exception as e:
-        print("ERROR read_rtc_timex:", e)
-        return None
+        return f"ERROR membaca RTC: {e}"
 
 def sync_time_with_rtc():
+    print("Masuk Sync")
+    print(statusInternet)
     if statusInternet == "ONLINE" : 
         dt = read_rtc_time()
+        print(dt)
         if dt:
             try:
                 date_str = dt.strftime('%m%d%H%M%Y.%S')
@@ -72,6 +79,28 @@ def sync_time_with_rtc():
                 print("Waktu sistem disinkronisasi dengan RTC:", dt)
             except Exception as e:
                 print("ERROR RTC sync_time_with_rtc:", e)
+
+def sync_rtc_with_system():
+    try:
+        bus = smbus.SMBus(3)  # Sesuaikan dengan I2C bus kamu
+        now = datetime.now()  # Waktu dari sistem (NTP)
+
+        bus.write_i2c_block_data(0x68, 0x00, [
+            dec_to_bcd(now.second),
+            dec_to_bcd(now.minute),
+            dec_to_bcd(now.hour),
+            0,  # Day of week (optional, bisa 0)
+            dec_to_bcd(now.day),
+            dec_to_bcd(now.month),
+            dec_to_bcd(now.year - 2000)
+        ])
+        bus.close()
+
+        print(f"RTC berhasil disinkronisasi: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        return True
+    except Exception as e:
+        print("ERROR sync_rtc_with_system:", e)
+        return False
 
 def get_datetime():
     if statusInternet=="ONLINE" :
@@ -477,14 +506,18 @@ try :
     #gpio_control.mode(BUTTON, "up") #pin13 PC5
     lcd_init()
     lcd_clear()
-    lcd_string("CHECK UPDATE ....", LCD_LINE_1)
-    lcd_string("LOADING ...", LCD_LINE_2)
-    lcd_string(check_for_update(), LCD_LINE_3)
-    sync_time_with_rtc()
+    
+   
     
 
     ssid = get_ssid_nmcli()
     print("SSID:", ssid if ssid else "Tidak terhubung")
+    if cek_internet(API_HOST,3) : 
+        statusInternet = "ONLINE"
+        lcd_string("CHECK UPDATE ....", LCD_LINE_1)
+        lcd_string("LOADING ...", LCD_LINE_2)
+        lcd_string(check_for_update(), LCD_LINE_3)
+        sync_rtc_with_system()
 except Exception as e:
     print("ERROR START 1: ", e)   
     
