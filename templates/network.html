@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Network & Device Settings</title>
+<style>
+    body { font-family: Arial; margin: 20px; }
+    h2 { color: #333; }
+    form { margin-top: 15px; padding: 15px; border: 1px solid #ccc; width: 350px; display: none; }
+    label { display: block; margin-top: 8px; }
+    input { width: 100%; padding: 6px; margin-top: 4px; }
+    button { margin-top: 10px; padding: 6px 12px; }
+
+    .info { margin-bottom: 15px; background: #f8f8f8; padding: 10px; border: 1px solid #ccc; }
+
+    .flash {
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border: 1px solid;
+        opacity: 1;
+        transition: opacity 0.5s;
+    }
+    .flash.success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+    .flash.error   { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+</style>
+<script>
+function showForm() {
+    var selected = document.getElementById('formSelect').value;
+    document.getElementById('ethernetForm').style.display = (selected == 'ethernet') ? 'block' : 'none';
+    document.getElementById('wifiForm').style.display = (selected == 'wifi') ? 'block' : 'none';
+    document.getElementById('deviceForm').style.display = (selected == 'device') ? 'block' : 'none';
+}
+
+// Auto-hide flash message setelah 5 detik
+window.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.flash').forEach(flashMsg => {
+        setTimeout(() => {
+            flashMsg.style.opacity = "0";
+            setTimeout(() => flashMsg.remove(), 500);
+        }, 5000);
+    });
+});
+</script>
+</head>
+<body>
+<h1>Network & Device Settings</h1>
+
+<!-- Flash message -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+<div class="info">
+    <p><b>Current Ethernet IP:</b> {{ eth_ip }}</p>
+    <p><b>Current WiFi IP:</b> {{ wlan_ip }}</p>
+    <p><b>Machine ID:</b> {{ cfg.get('machine-id', '-') }}</p>
+    <p><b>API Server:</b> {{ cfg.get('api-server', '-') }}</p>
+</div>
+
+<label>Pilih Form Setting:</label>
+<select id="formSelect" onchange="showForm()">
+    <option value="">-- Pilih --</option>
+    <option value="ethernet">Ethernet</option>
+    <option value="wifi">WiFi</option>
+    <option value="device">Device</option>
+</select>
+
+<form method="POST" action="/save_all">
+    <!-- ETHERNET FORM -->
+    <div id="ethernetForm">
+        <h2>Ethernet Settings</h2>
+        <label>IP Address:</label>
+        <input type="text" name="ip" value="{{ cfg.get('ethernet', {}).get('ip', '') }}">
+        <label>Subnet Mask:</label>
+        <input type="text" name="subnet" value="{{ cfg.get('ethernet', {}).get('subnet', '') }}">
+        <label>Gateway:</label>
+        <input type="text" name="gateway" value="{{ cfg.get('ethernet', {}).get('gateway', '') }}">
+    </div>
+
+    <!-- WIFI FORM -->
+    <div id="wifiForm">
+        <h2>WiFi Settings</h2>
+        <label>SSID:</label>
+        <input type="text" name="ssid" value="{{ cfg.get('wifi', {}).get('ssid', '') }}">
+        <label>Password:</label>
+        <input type="password" name="password" value="{{ cfg.get('wifi', {}).get('password', '') }}">
+    </div>
+
+    <!-- DEVICE FORM -->
+    <div id="deviceForm">
+        <h2>Device Settings</h2>
+        <label>Machine ID:</label>
+        <input type="text" name="machine_id" value="{{ cfg.get('machine-id', '') }}">
+        <label>API Address:</label>
+        <input type="text" name="api_host" value="{{ cfg.get('api-server', '') }}">
+    </div>
+
+    <button type="submit">Save All Settings</button>
+</form>
+</body>
+</html>
