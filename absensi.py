@@ -257,8 +257,9 @@ class GPIOControl:
         pass
 
     def read(self, pin_number):
-        command = f"gpio read {pin_number}"
-        result = os.system(command)
+        command = ["gpio", "read", str(pin_number)]
+        result = subprocess.check_output(command).decode().strip()
+        return int(result)
 
     def write(self, pin_number, value):
         command = f"gpio write {pin_number} {value}"
@@ -374,7 +375,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.3"
+LOCAL_VERSION = "1.1.4"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -476,7 +477,7 @@ try :
     gpio_control = GPIOControl()
     gpio_control.mode(BUZZER, "out") #pin 11 PC6
     gpio_control.mode(BUTTON, "in") #pin13 PC5
-    gpio_control.mode(BUTTON, "up") #pin13 PC5
+    #gpio_control.mode(BUTTON, "up") #pin13 PC5
     lcd_init()
     lcd_clear()
     lcd_string("CHECK UPDATE ....", LCD_LINE_1)
@@ -510,14 +511,15 @@ except Exception as e:
     print("ERROR START 3: ", e)
 
 displayPage=0
-displayMaxPage=3
+displayMaxPage=1
 jumlahDataNotSend=0
 
-
+siswaNis = ""
+siswaNama = ""
 
 def display():
     try:
-        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus,last_scan_time,lcd_backlight_status,button_pressed_time
+        global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus,last_scan_time,lcd_backlight_status,button_pressed_time,statusSend,siswaNis,siswaNama
         lcd_clear()
         lcd_string("   SCOLA ABSEN", LCD_LINE_1)
         lcd_string("FW V." + LOCAL_VERSION + " " + MACHINE_ID, LCD_LINE_2)
@@ -539,28 +541,31 @@ def display():
                 lcd_backlight_status = LCD_BACKLIGHT
 
             # Cek tombol
-            # button_state = gpio_control.read(BUTTON)
-            # if button_state == "0":  # ditekan
-            #     print("tombol ditekan")
-            #     if button_pressed_time == 0:
-            #         button_pressed_time = time.time()
-            #     else:
-            #         held_time = time.time() - button_pressed_time
-            #         if held_time >= 5:
-            #             lcd_clear()
-            #             lcd_string("TOMBOL DITEKAN", LCD_LINE_2)
-            #             lcd_string("RESTARTING....", LCD_LINE_3)
-            #             time.sleep(2)
-            #             restart_computer()
-            # else:
-            #     if button_pressed_time != 0:
-            #         held_time = time.time() - button_pressed_time
-            #         if held_time < 5:
-            #             # Tombol dilepas cepat ➜ ganti page
-            #             displayPage += 1
-            #             if displayPage > displayMaxPage:
-            #                 displayPage = 0
-            #         button_pressed_time = 0
+            button_state = gpio_control.read(BUTTON)
+            if button_state == 1:  # ditekan
+                last_scan_time=  time.time()        # Catat waktu scan display
+                lcd_backlight_status = LCD_BACKLIGHT
+                if button_pressed_time == 0:
+                    button_pressed_time = time.time()
+                else:
+                    held_time = time.time() - button_pressed_time
+                    if held_time >= 5:
+                        lcd_clear()
+                        lcd_string("TOMBOL DITEKAN", LCD_LINE_2)
+                        lcd_string("RESTARTING....", LCD_LINE_3)
+                        time.sleep(2)
+                        #setdafault
+                        restart_computer()
+            else:
+                if button_pressed_time != 0:
+                    held_time = time.time() - button_pressed_time
+                    if held_time < 5:
+                        # Tombol dilepas cepat ➜ ganti page
+                        lcd_clear()
+                        displayPage += 1
+                        if displayPage > displayMaxPage:
+                            displayPage = 0
+                    button_pressed_time = 0
             
             # print(threadStatus[1])
             if displayPage==0 :
@@ -574,9 +579,10 @@ def display():
                 
 
             if displayPage==1 :
-                lcd_string("S : " + str(ssid),LCD_LINE_1)  
-                lcd_string("W : " + str(wlan_ip),LCD_LINE_2)  
-                lcd_string("E : " + str(eth_ip),LCD_LINE_3)  
+                lcd_string("FW V." + LOCAL_VERSION + " " + MACHINE_ID, LCD_LINE_1)
+                lcd_string("S : " + str(ssid),LCD_LINE_2)  
+                lcd_string("W : " + str(wlan_ip),LCD_LINE_3)  
+                lcd_string("E : " + str(eth_ip),LCD_LINE_4)  
             
             time.sleep(0.5)
             tick = not tick
@@ -584,7 +590,7 @@ def display():
 
             if countTick>10 :
                 lcd_clear()
-                #displayPage +=1
+                # displayPage +=1
                 countTick=0
 
             if displayPage > displayMaxPage:
@@ -599,13 +605,21 @@ def display():
                lcd_clear()
             elif tagRFID != "" :
                lcd_clear()
-               lcd_string("NO RFID :" + tagRFID,LCD_LINE_1)  
-               lcd_string("   BERHASIL ABSEN",LCD_LINE_2) 
-               lcd_string("ID " + str(statusInsert),LCD_LINE_3) 
+               lcd_string("NO : " + tagRFID,LCD_LINE_2)  
+               lcd_string("   BERHASIL ABSEN",LCD_LINE_1) 
+               lcd_string("ID : " + str(statusInsert),LCD_LINE_3) 
                tagRFID=""
                time.sleep(2)
                lcd_clear()
             
+            if statusSend :
+                statusSend=False
+                lcd_clear()
+                lcd_string("INFORMASI ",LCD_LINE_1) 
+                lcd_string("NIS  :" + siswaNis,LCD_LINE_2)  
+                lcd_string("NAMA :" + siswaNama,LCD_LINE_3) 
+                time.sleep(1.5)
+                lcd_clear()
                
             threadStatus[1]= get_datetime()
             # if gpio_control.read(BUTTON)=='0' :
@@ -618,7 +632,7 @@ def display():
     except Exception as e:
         print("ERROR display : ", e)
         traceback.print_exc()
-
+statusSend=False
 last_scan_time_rfid = {}
 def rfid():
     try:
@@ -653,6 +667,7 @@ def rfid():
             last_scan_time_rfid[tagRFID] = now        # Catat waktu scan
             last_scan_time=  time.time()        # Catat waktu scan display
             lcd_backlight_status = LCD_BACKLIGHT  # Hidupkan backlight kalau scan
+
             gpio_control.write(5, 1)
             sleep(1)
             gpio_control.write(5, 0)
@@ -664,7 +679,7 @@ def rfid():
 
 def send():
     try:
-        global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus
+        global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus,statusSend,siswaNis,siswaNama
         while True:
             threadStatus[3]=get_datetime()
             query = "SELECT COUNT(*) FROM data_absen where status=0"
@@ -709,6 +724,9 @@ def send():
                             mycursor.execute(query, (id,))
                             mydb.commit()
                             print(f"Data dengan ID {id} berhasil dihapus.")
+                            statusSend=True
+                            siswaNis = message
+                            siswaNama = jadwal
                         else:
                             print("❌ Status: Gagal")
                             print("Pesan:", message)
@@ -717,6 +735,9 @@ def send():
                             query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
                             mycursor.execute(query, (id,))
                             mydb.commit()
+                            statusSend=True
+                            siswaNis = message
+                            siswaNama = jadwal
 
                     except ValueError:
                         print("⚠️ Response bukan format JSON yang valid:")
