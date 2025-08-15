@@ -90,7 +90,7 @@ def save_ethernet():
 def save_wifi():
     ssid = request.form.get('ssid', '')
     password = request.form.get('password', '')
-
+    print (ssid + "- " +password )
     cfg = load_config()
     if ssid:
         subprocess.run(["nmcli", "con", "delete", ssid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -101,7 +101,6 @@ def save_wifi():
         cfg['wifi'] = {'ssid': ssid, 'password': password}
         save_config(cfg)
         flash("✅ Wi-Fi settings saved!")
-
     return redirect(url_for('network'))
 
 @app.route('/save_device', methods=['POST'])
