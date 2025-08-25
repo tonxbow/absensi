@@ -34,14 +34,23 @@ import platform
 from datetime import datetime, timedelta
 import traceback 
 
+from typing import Any, Dict, Optional
+
+
 import cv2
 from pyzbar.pyzbar import decode
 
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
+statusInternet=False
 
+def printDebug(*args):
+    text = " ".join(str(a) for a in args)
+    print(f"[{get_datetime()}] {text}")
 
-
+def printDebugEx(text, e):
+    print(f"[{get_datetime()}] {text} {str(e)}")
+    traceback.print_exc()
 ############################### RTC FUNCTION #######################################
 def bcd_to_dec(bcd):
     return (bcd // 16) * 10 + (bcd % 16)
@@ -67,8 +76,8 @@ def read_rtc_time(bus_num=3, address=0x68):
         return f"ERROR membaca RTC: {e}"
 
 def sync_time_with_rtc():
-    print("Masuk Sync")
-    print(statusInternet)
+    printDebug("Masuk Sync")
+    printDebug(statusInternet)
     if statusInternet == "ONLINE" : 
         dt = read_rtc_time()
         print(dt)
@@ -76,9 +85,9 @@ def sync_time_with_rtc():
             try:
                 date_str = dt.strftime('%m%d%H%M%Y.%S')
                 subprocess.run(['sudo', 'date', date_str])
-                print("Waktu sistem disinkronisasi dengan RTC:", dt)
+                printDebug("Waktu sistem disinkronisasi dengan RTC:", dt)
             except Exception as e:
-                print("ERROR RTC sync_time_with_rtc:", e)
+                printDebugEx("ERROR RTC sync_time_with_rtc:", e)
 
 def sync_rtc_with_system():
     try:
@@ -96,10 +105,10 @@ def sync_rtc_with_system():
         ])
         bus.close()
 
-        print(f"RTC berhasil disinkronisasi: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        printDebug(f"RTC berhasil disinkronisasi: {now.strftime('%Y-%m-%d %H:%M:%S')}")
         return True
     except Exception as e:
-        print("ERROR sync_rtc_with_system:", e)
+        printDebugEx("ERROR sync_rtc_with_system:", e)
         return False
 
 def get_datetime():
@@ -135,20 +144,20 @@ def get_online_version(branch="master") :
         
         return local != remote
     except Exception as e:
-        print("ERROR get_online_version: ", e)
+        printDebugEx("ERROR get_online_version: ", e)
 
 
 def download_latest(branch="master"):
     try:
         if get_online_version(branch):
-            print("Remote has changes, pulling...")
+            printDebug("Remote has changes, pulling...")
             subprocess.run(["git", "pull"], check=True)
             restart_app()
         else:
-            print("No remote changes.")
+            printDebug("No remote changes.")
             return "TIDAK ADA UPDATE"
     except Exception as e:
-        print("ERROR download_latest: ", e)
+        printDebugEx("ERROR download_latest: ", e)
 
 
 
@@ -159,7 +168,7 @@ def download_latest(branch="master"):
 #         f.write(response.content)
 
 def restart_app():
-    print("Menjalankan ulang aplikasi...")
+    printDebug("Menjalankan ulang aplikasi...")
     os.execv(sys.executable, ['python'] + sys.argv)
 
 def check_for_update():
@@ -238,7 +247,7 @@ def lcd_init():
         lcd_byte(0x01,LCD_CMD) # 000001 Clear display
         time.sleep(1)
     except Exception as e:
-        print("ERROR lcd_init : ", e)
+        printDebugEx("ERROR lcd_init : ", e)
 
 lcd_backlight_status = LCD_BACKLIGHT
 last_scan_time = time.time()
@@ -276,6 +285,67 @@ def lcd_string(message,line):
     lcd_byte(ord(message[i]),LCD_CHR)
 
 
+# ...existing code...
+def post_to_localhost(endpoint: str, payload: Dict[str, Any], timeout: float = 5.0) -> Optional[Dict[str, Any]]:
+    """
+    Kirim POST JSON ke localhost.
+    - endpoint: full URL (mis. 'http://localhost:8000/attendance') atau path ('/attendance').
+    - payload: dict yang dikirim sebagai JSON.
+    - timeout: detik.
+    Mengembalikan dict hasil JSON atau None jika gagal.
+    """
+    if not endpoint.startswith("http"):
+        endpoint = endpoint if endpoint.startswith("/") else "/" + endpoint
+        endpoint = f"http://localhost:8080{endpoint}" if ":8080" not in endpoint else f"http://localhost{endpoint}"
+
+    headers = {"Content-Type": "application/json"}
+    try:
+        resp = requests.post(endpoint, json=payload, headers=headers, timeout=timeout)
+        resp.raise_for_status()
+        try:
+            return resp.json()
+        except ValueError:
+            return {"status_code": resp.status_code, "text": resp.text}
+    except requests.RequestException as exc:
+        print(f"[post_to_localhost] request error: {exc}")
+        return None
+
+def send_network_config(
+    ethernet_mode: str = "dhcp",
+    ip: str = "",
+    subnet: str = "",
+    gateway: str = "",
+    endpoint: str = "/network/settings",
+    timeout: float = 5.0,
+) -> Optional[Dict[str, Any]]:
+    """
+    Kirim POST form-urlencoded ke localhost dengan payload:
+      ethernet_mode=dhcp&ip=&subnet=&gateway=
+    - endpoint: path (mis. '/network/settings') atau full URL.
+    - mengembalikan JSON response sebagai dict, atau None jika gagal.
+    """
+    if not endpoint.startswith("http"):
+        endpoint = endpoint if endpoint.startswith("/") else "/" + endpoint
+        endpoint = f"http://localhost:8080{endpoint}"
+
+    data = {
+        "ethernet_mode": ethernet_mode,
+        "ip": ip,
+        "subnet": subnet,
+        "gateway": gateway,
+    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+
+    try:
+        resp = requests.post(endpoint, data=data, headers=headers, timeout=timeout)
+        resp.raise_for_status()
+        try:
+            return resp.json()
+        except ValueError:
+            return {"status_code": resp.status_code, "text": resp.text}
+    except requests.RequestException as exc:
+        print(f"[send_network_config] request error: {exc}")
+        return None
 
 ############################### GPIO FUNCTION #######################################
 class GPIOControl:
@@ -299,9 +369,9 @@ class GPIOControl:
         for pin_number in pin_numbers:
             if 0 <= pin_number <= 20: # Ensure the pin number is within the valid range
                 value = self.read(pin_number)
-                print(f"Pin {pin_number} value: {value}")
+                printDebug(f"Pin {pin_number} value: {value}")
             else:
-                print(f"Invalid pin number: {pin_number}")
+                printDebug(f"Invalid pin number: {pin_number}")
 
 
 
@@ -319,7 +389,7 @@ def get_interface_ip(interface_name):
             # Return the first IPv4 address found
             return addresses[netifaces.AF_INET][0]['addr']
     except Exception as e:
-        print("ERROR get_interface_ip : ", e)
+        printDebugEx("ERROR get_interface_ip : ", e)
     return None
 
 def get_interface_mac(interface_name):
@@ -335,7 +405,7 @@ def get_interface_mac(interface_name):
             # Return the first IPv4 address found
             return addresses[netifaces.AF_LINK][0]['addr']
     except Exception as e:
-        print("ERROR get_interface_mac : ", e)
+        printDebugEx("ERROR get_interface_mac : ", e)
     return None
 
 def get_ssid_nmcli():
@@ -346,14 +416,14 @@ def get_ssid_nmcli():
                 return line.split(":")[1]
         return None
     except Exception as e:
-        print("ERROR get_ssid_nmcli: ", e)
+        printDebugEx("ERROR get_ssid_nmcli: ", e)
 
 def cek_internet(url='https://www.google.com/', timeout=5):
     try:
         _ = requests.get(url, timeout=timeout)
         return True
     except Exception as e:
-        print("ERROR START 3: ", e)
+        printDebugEx("ERROR START 3: ", e)
     
 # Fungsi ambil MAC address
 def get_mac():
@@ -420,18 +490,18 @@ def on_connect(client, userdata, flags, rc, properties):
 
 # Fungsi: Jalankan ulang aplikasi Python saat ini
 def restart_app():
-    print("Menjalankan ulang aplikasi...")
+    printDebug("Menjalankan ulang aplikasi...")
     python = sys.executable
     os.execl(python, python, *sys.argv)
 
 # Fungsi: Restart komputer (Linux)
 def restart_computer():
-    print("Merestart komputer...")
+    printDebug("Merestart komputer...")
     subprocess.run(["sudo", "reboot"])
 
 # Fungsi: Update aplikasi dari repo Git
 def update_app():
-    print("Melakukan update aplikasi...")
+    printDebug("Melakukan update aplikasi...")
     check_for_update()
 
 # Mapping perintah ke fungsi
@@ -446,23 +516,23 @@ def on_disconnect(client, userdata, rc, properties=None):
     while True:
         try:
             clientMQTT.reconnect()
-            print("🔁 Reconnected!")
+            printDebug("🔁 Reconnected!")
             break
         except:
-            print("⏳ Gagal reconnect, coba lagi 5 detik...")
+            printDebug("⏳ Gagal reconnect, coba lagi 5 detik...")
             time.sleep(5)
 
 def on_message(client, userdata, msg):
     try:
         cmd = msg.payload.decode().strip().lower()
-        print(f"Perintah diterima: {cmd}")
+        printDebug(f"Perintah diterima: {cmd}")
 
         if cmd in command_map:
             command_map[cmd]()  # Jalankan fungsi sesuai perintah
         else:
-            print("Perintah tidak dikenali.")
+            printDebug("Perintah tidak dikenali.")
     except Exception as e:
-        print("Error saat menjalankan perintah:", e)
+        printDebugEx("Error saat menjalankan perintah:", e)
 
 
 try :
@@ -473,7 +543,7 @@ try :
     clientMQTT.on_message = on_message
     clientMQTT.connect(broker, port)
 except Exception as e:
-    print("Error MQTT:", e)   
+    printDebug("Error MQTT:", e)   
 
 
 # Menjadwalkan fungsi setiap hari jam 23:30
@@ -481,13 +551,13 @@ except Exception as e:
 try :
     # eth_mac = str(get_interface_mac('eth0'))
     eth_mac = get_mac().replace(":","")
-    print("VERSION     : " + LOCAL_VERSION)
-    print("API SERVER  : " + API_HOST)
-    print("MACHINE ID  : " + MACHINE_ID)
-    print("MACADDRESS  : " + eth_mac)
-    print("OTA VERSION : " + VERSION_FILE_URL)
-    print("OTA APP     : " + MAIN_FILE_URL)
-    print("VER HARD    : " + "1.0.1")
+    printDebug("VERSION     : " + LOCAL_VERSION)
+    printDebug("API SERVER  : " + API_HOST)
+    printDebug("MACHINE ID  : " + MACHINE_ID)
+    printDebug("MACADDRESS  : " + eth_mac)
+    printDebug("OTA VERSION : " + VERSION_FILE_URL)
+    printDebug("OTA APP     : " + MAIN_FILE_URL)
+    printDebug("VER HARD    : " + "1.0.1")
 
     tagRFID=""
     statusInsert=0
@@ -497,7 +567,7 @@ try :
     topicSubscribe = "scola/absensi/"+eth_mac+"/subs"
     topicSubscribeAll = "scola/absensi/subscribe"
 except Exception as e:
-    print("Error MQTT:", e)   
+    printDebugEx("Error MQTT:", e)   
 
 try :
     gpio_control = GPIOControl()
@@ -511,7 +581,7 @@ try :
     
 
     ssid = get_ssid_nmcli()
-    print("SSID:", ssid if ssid else "Tidak terhubung")
+    printDebug("SSID:", ssid if ssid else "Tidak terhubung")
     if cek_internet(API_HOST,3) : 
         statusInternet = "ONLINE"
         lcd_string("CHECK UPDATE ....", LCD_LINE_1)
@@ -519,7 +589,7 @@ try :
         lcd_string(check_for_update(), LCD_LINE_3)
         sync_rtc_with_system()
 except Exception as e:
-    print("ERROR START 1: ", e)   
+    printDebugEx("ERROR START 1: ", e)   
     
 try : 
     reader = SimpleMFRC522()
@@ -533,12 +603,12 @@ try :
     if not eth_ip:
         eth_ip = get_interface_ip('Ethernet') # Common on Windows
 except Exception as e:
-    print("ERROR START 2: ", e)   
+    printDebugEx("ERROR START 2: ", e)   
 
 try : 
     reader = SimpleMFRC522()
 except Exception as e:
-    print("ERROR START 3: ", e)
+    printDebugEx("ERROR START 3: ", e)
 
 displayPage=0
 displayMaxPage=1
@@ -581,11 +651,14 @@ def display():
                     held_time = time.time() - button_pressed_time
                     if held_time >= 5:
                         lcd_clear()
-                        lcd_string("TOMBOL DITEKAN", LCD_LINE_2)
+                        lcd_string("TOMBOL DITEKAN", LCD_LINE_1)
+                        lcd_string("SETTING DEFAULT", LCD_LINE_2)
                         lcd_string("RESTARTING....", LCD_LINE_3)
+                        lcd_string("TUNGGU +-3 MENIT", LCD_LINE_4)
+                        print(send_network_config(ethernet_mode="dhcp", ip="", subnet="", gateway="", endpoint="/save_ethernet"))
                         time.sleep(2)
                         #setdafault
-                        restart_computer()
+                        # restart_computer()
             else:
                 if button_pressed_time != 0:
                     held_time = time.time() - button_pressed_time
@@ -642,12 +715,20 @@ def display():
                time.sleep(2)
                lcd_clear()
             
-            if statusSend :
-                statusSend=False
+            if statusSend == 1 :
+                statusSend=0
                 lcd_clear()
                 lcd_string("INFORMASI ",LCD_LINE_1) 
                 lcd_string("NIS  :" + siswaNis,LCD_LINE_2)  
                 lcd_string("NAMA :" + siswaNama,LCD_LINE_3) 
+                time.sleep(1.5)
+                lcd_clear()
+            
+            if statusSend == 2 :
+                statusSend=0
+                lcd_clear()
+                lcd_string("INFORMASI ",LCD_LINE_1) 
+                lcd_string("ERROR :" + siswaNama,LCD_LINE_2)  
                 time.sleep(1.5)
                 lcd_clear()
                
@@ -660,33 +741,33 @@ def display():
             #     time.sleep(1)
             
     except Exception as e:
-        print("ERROR display : ", e)
+        printDebugEx("ERROR display : ", e)
         traceback.print_exc()
-statusSend=False
+statusSend=0
 last_scan_time_rfid = {}
 def rfid():
     try:
         global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
         while True:
             threadStatus[2]=get_datetime()
-            print("Hold a tag near the reader")
+            printDebug("Hold a tag near the reader")
             id,text = reader.read()
-            print("ID: %s" % (tagRFID))
+            printDebug("ID: %s" % (tagRFID))
             uid_bytes = id.to_bytes(8, 'big')
             uid_4bytes = uid_bytes[3:7]
             tag_hex = ''.join(f'{b:02x}' for b in uid_4bytes)
             tagRFID = str(tag_hex)
-            print("ID: %s" % (tagRFID))
+            printDebug("ID: %s" % (tagRFID))
     
 
             now = datetime.now()
             last_time = last_scan_time_rfid.get(tagRFID)
-            print(last_scan_time_rfid)
+            printDebug(last_scan_time_rfid)
             # Jika tag pernah di scan
             if last_time:
                 elapsed = now - last_time
                 if elapsed < timedelta(minutes=1):
-                    print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
+                    printDebug(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
                     tagRFID = "xxx"
                     gpio_control.write(5, 1)
                     sleep(1)
@@ -705,7 +786,7 @@ def rfid():
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
 
     except Exception as e:
-        print("ERROR RFID : ", e) 
+        printDebugEx("ERROR RFID : ", e) 
 
 def send():
     try:
@@ -737,41 +818,44 @@ def send():
                     'Content-Type': 'application/json'
                     }
                     response = requests.request("POST", API_HOST, headers=headers, data=payload)
-                    print(payload)
-                    print(response.text)
+                    printDebug(payload)
+                    printDebug(response.text)
 
                     try:
                         res_json = response.json()
                         status = res_json.get("status", False)
                         message = res_json.get("message", "")
                         jadwal = res_json.get("data", {}).get("jadwal", "")
-
+                        siswaNama = res_json.get("data", {}).get("nama", "")
+                        siswaNis = res_json.get("data", {}).get("no", "")
                         if status:
-                            print("✅ Status: Berhasil")
-                            print("Pesan:", message)
-                            print("Jadwal:", jadwal)
+                            printDebug("✅ Status: Berhasil")
+                            printDebug("Pesan  : " + message)
+                            printDebug("Jadwal : " + jadwal)
                             query = "DELETE FROM data_absen WHERE id = %s"
                             mycursor.execute(query, (id,))
                             mydb.commit()
-                            print(f"Data dengan ID {id} berhasil dihapus.")
-                            statusSend=True
-                            siswaNis = message
-                            siswaNama = jadwal
+                            printDebug(f"Data dengan ID {id} berhasil dihapus.")
+                            statusSend=1
                         else:
-                            print("❌ Status: Gagal")
-                            print("Pesan:", message)
-                            print("Jadwal:", jadwal)
-                            message = message.replace("'", "").replace('"', "")
-                            query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
-                            mycursor.execute(query, (id,))
-                            mydb.commit()
-                            statusSend=True
-                            siswaNis = message
-                            siswaNama = jadwal
+                            StatusError = res_json.get("error", "")
+                            # siswaNis = res_json.get("statusCode","")
+                            printDebug("❌ Status: Gagal")
+                            printDebug("Pesan : " +  message)
+                            printDebug("Error : " +  StatusError)
+                            siswaNama = "API URL SALAH"
+                            statusSend=2
+                            if StatusError!="Not Found" :
+                                message = message.replace("'", "").replace('"', "")
+                                query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
+                                mycursor.execute(query, (id,))
+                                mydb.commit()
+                                
+                            
 
                     except ValueError:
-                        print("⚠️ Response bukan format JSON yang valid:")
-                        print(response.text)
+                        printDebug("⚠️ Response bukan format JSON yang valid:")
+                        printDebug(response.text)
                 #else:
                     #print("Data tidak ditemukan.")
 
@@ -783,7 +867,7 @@ def send():
             
             time.sleep(5)
     except Exception as e:
-        print("ERROR SEND : ", e)
+        printDebugEx("ERROR SEND : ", e)
 
 def heartBeat():
     while True:
@@ -796,13 +880,13 @@ def heartBeat():
             time.sleep(30)
             # print ("kirim heartxx")
         except Exception as e:
-            print("ERROR HeartBeat : ", e)
+            printDebugEx("ERROR HeartBeat : ", e)
 
 def mqttThread():
     try:
         clientMQTT.loop_forever()  # listen terus
     except Exception as e:
-        print("ERROR MQTT : ", e)
+        printDebugEx("ERROR MQTT : ", e)
 
 
 statusCamera=True
@@ -811,10 +895,10 @@ def camThread():
     cap = cv2.VideoCapture(1)
     if not cap.isOpened():
         statusCamera=False
-        print("❌ Tidak bisa membuka kamera QR Code.")
+        printDebug("❌ Tidak bisa membuka kamera QR Code.")
         return
 
-    print("📡 QR Code scanner aktif...")
+    printDebug("📡 QR Code scanner aktif...")
     try:
         while True:
             ret, frame = cap.read()
@@ -828,7 +912,7 @@ def camThread():
                 now = datetime.now()
 
                 last_time = last_scan_time_qr.get(qr_data)
-                print(last_scan_time_qr)
+                printDebug(last_scan_time_qr)
                 tagRFID = qr_data
                 if last_time :
                     elapsed = now - last_time
@@ -852,7 +936,7 @@ def camThread():
             sleep(0.1)
 
     except KeyboardInterrupt:
-        print("🛑 QR scanner berhenti")
+        printDebug("🛑 QR scanner berhenti")
     finally:
         cap.release()
 
@@ -884,22 +968,22 @@ if __name__ == '__main__':
     while True:
         if not t1.is_alive():
             statusThread=False
-            print("display Mati")
+            printDebug("display Mati")
         if not t2.is_alive():
             statusThread=False
-            print("rfid Mati")
+            printDebug("rfid Mati")
         if not t3.is_alive():
             # statusThread=False
-            print("send Mati")
+            printDebug("send Mati")
         if not t4.is_alive():
             # statusThread=False
-            print("mqtt Mati")
+            printDebug("mqtt Mati")
         if not t5.is_alive():
             statusThread=False
-            print("heartbeat Mati")
+            printDebug("heartbeat Mati")
         if not t6.is_alive():
             #statusThread=False
-            print("CamThread Mati")
+            printDebug("CamThread Mati")
             #threads.remove(t)
             #start_thread(i)
         time.sleep(30)
@@ -908,5 +992,5 @@ if __name__ == '__main__':
             statusThread=True
             restart_app()
   except Exception as e:
-    print("ERROR MAIN: ", e)
+    printDebugEx("ERROR MAIN: ", e)
 
