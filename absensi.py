@@ -658,7 +658,7 @@ def display():
                         print(send_network_config(ethernet_mode="dhcp", ip="", subnet="", gateway="", endpoint="/save_ethernet"))
                         time.sleep(2)
                         #setdafault
-                        # restart_computer()
+                        restart_computer()
             else:
                 if button_pressed_time != 0:
                     held_time = time.time() - button_pressed_time
