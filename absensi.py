@@ -471,7 +471,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.4"
+LOCAL_VERSION = "1.1.5"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -843,9 +843,11 @@ def send():
                             printDebug("❌ Status: Gagal")
                             printDebug("Pesan : " +  message)
                             printDebug("Error : " +  StatusError)
-                            siswaNama = "API URL SALAH"
                             statusSend=2
+                            siswaNama = "API URL SALAH"
+                            
                             if StatusError!="Not Found" :
+                                siswaNama = message
                                 message = message.replace("'", "").replace('"', "")
                                 query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
                                 mycursor.execute(query, (id,))
