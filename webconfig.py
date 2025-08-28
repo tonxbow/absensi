@@ -31,6 +31,16 @@ def get_interface_ip(interface_name):
         return None
     return None
 
+def get_current_timezone():
+    try:
+        result = subprocess.run(['timedatectl', 'show', '--property=Timezone', '--value'], capture_output=True, text=True)
+        if result.returncode == 0:
+            return result.stdout.strip()
+        else:
+            return 'UTC'
+    except:
+        return 'UTC'
+
 def scan_wifi():
     try:
         output = subprocess.check_output(['nmcli', '-t', '-f', 'SSID', 'dev', 'wifi']).decode().splitlines()
@@ -46,13 +56,15 @@ def network():
     wlan_ip = get_interface_ip('wlan0')
     ethernet_cfg = cfg.get('ethernet', None)
     wifi_cfg = cfg.get('wifi', None)
+    timezone = get_current_timezone()
     return render_template(
         'index.html',
         cfg=cfg,
         eth_ip=eth_ip,
         wlan_ip=wlan_ip,
         ethernet_cfg=ethernet_cfg,
-        wifi_cfg=wifi_cfg
+        wifi_cfg=wifi_cfg,
+        timezone=timezone
     )
 
 @app.route('/save_ethernet', methods=['POST'])
@@ -116,6 +128,19 @@ def save_device():
 
     save_config(cfg)
     flash("✅ Device info saved!")
+    return redirect(url_for('network'))
+
+@app.route('/save_timezone', methods=['POST'])
+def save_timezone():
+    tz = request.form.get('timezone', 'UTC')
+    cfg = load_config()
+    try:
+        subprocess.run(['timedatectl', 'set-timezone', tz], check=True)
+        cfg['timezone'] = tz
+        save_config(cfg)
+        flash("✅ Timezone saved!")
+    except subprocess.CalledProcessError:
+        flash("❌ Failed to set timezone")
     return redirect(url_for('network'))
 
 def restart_pm2_app(app_name):
