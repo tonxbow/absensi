@@ -9,38 +9,196 @@
 # sudo apt install default-mysql-server
 # buat database "absensi" dan table absen dan setting
 
+import sys
+import subprocess
+import os
 
-import smbus
+def install_package(package_name, pip_name=None):
+    """
+    Automatically install a Python package if it's not available
+    package_name: the name used in import statement
+    pip_name: the name used for pip install (if different from package_name)
+    """
+    if pip_name is None:
+        pip_name = package_name
+    
+    try:
+        print(f"🔄 Installing missing module: {pip_name}")
+        
+        # Special handling for certain packages
+        if pip_name == "smbus":
+            # Try different smbus packages for different systems
+            smbus_packages = ["smbus", "smbus2", "smbus-cffi"]
+            for pkg in smbus_packages:
+                try:
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+                    print(f"✅ Successfully installed: {pkg}")
+                    return True
+                except subprocess.CalledProcessError:
+                    continue
+            print("❌ Failed to install any smbus package")
+            return False
+        
+        elif pip_name == "evdev":
+            # evdev might need system packages on some systems
+            try:
+                subprocess.check_call([sys.executable, "-m", "pip", "install", "evdev"])
+                print(f"✅ Successfully installed: {pip_name}")
+                return True
+            except subprocess.CalledProcessError:
+                print("❌ evdev installation failed. You might need to install system packages:")
+                print("   sudo apt-get install python3-dev python3-pip")
+                print("   sudo apt-get install linux-headers-$(uname -r)")
+                return False
+        
+        else:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
+            print(f"✅ Successfully installed: {pip_name}")
+            return True
+            
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to install {pip_name}: {e}")
+        print(f"💡 Try installing manually: pip3 install {pip_name}")
+        return False
+
+def create_requirements_file():
+    """Create requirements.txt file with all required packages"""
+    requirements = [
+        "requests>=2.25.0",
+        "netifaces>=0.11.0", 
+        "mysql-connector-python>=8.0.0",
+        "APScheduler>=3.8.0",
+        "paho-mqtt>=1.5.0",
+        "psutil>=5.8.0",
+        "opencv-python>=4.5.0",
+        "pyzbar>=0.1.8",
+        "evdev>=1.4.0",
+        "mfrc522>=0.0.7",
+        "smbus2>=0.4.0"
+    ]
+    
+    try:
+        with open("requirements.txt", "w") as f:
+            for req in requirements:
+                f.write(req + "\n")
+        print("📝 Created requirements.txt file")
+        print("💡 You can install all packages with: pip3 install -r requirements.txt")
+    except Exception as e:
+        print(f"❌ Failed to create requirements.txt: {e}")
+
+def try_import(module_name, pip_name=None, from_module=None):
+    """
+    Try to import a module, install it if missing, then import again
+    module_name: name of the module to import
+    pip_name: pip package name (if different from module_name)
+    from_module: if it's a 'from X import Y' statement, specify X
+    """
+    try:
+        if from_module:
+            exec(f"from {from_module} import {module_name}")
+        else:
+            exec(f"import {module_name}")
+        return True
+    except ImportError:
+        package_to_install = pip_name if pip_name else (from_module if from_module else module_name)
+        if install_package(module_name, package_to_install):
+            try:
+                if from_module:
+                    exec(f"from {from_module} import {module_name}")
+                else:
+                    exec(f"import {module_name}")
+                return True
+            except ImportError:
+                print(f"❌ Still unable to import {module_name} after installation")
+                return False
+        return False
+
+# Core imports (usually available)
+try:
+    import smbus
+except ImportError:
+    if install_package("smbus"):
+        try:
+            import smbus
+        except ImportError:
+            try:
+                import smbus2 as smbus
+                print("✅ Using smbus2 as smbus alternative")
+            except ImportError:
+                print("❌ Unable to import any smbus module")
 
 import time
 import threading
 from datetime import datetime
 from time import sleep
-import sys, os
-from mfrc522 import SimpleMFRC522
-import socket
-import netifaces
-import requests
 import json
-import subprocess
-
-import mysql.connector
-from apscheduler.schedulers.background import BackgroundScheduler
-
-import paho.mqtt.client as mqtt
-import psutil
+import socket
 import uuid
 import platform
 from datetime import datetime, timedelta
 import traceback 
-
 from typing import Any, Dict, Optional
 
+# Try to import modules with auto-install
+try:
+    from mfrc522 import SimpleMFRC522
+except ImportError:
+    if install_package("mfrc522", "mfrc522"):
+        from mfrc522 import SimpleMFRC522
 
-import cv2
-from pyzbar.pyzbar import decode
+try:
+    import netifaces
+except ImportError:
+    if install_package("netifaces"):
+        import netifaces
 
-from evdev import InputDevice, categorize, ecodes
+try:
+    import requests
+except ImportError:
+    if install_package("requests"):
+        import requests
+
+try:
+    import mysql.connector
+except ImportError:
+    if install_package("mysql.connector", "mysql-connector-python"):
+        import mysql.connector
+
+try:
+    from apscheduler.schedulers.background import BackgroundScheduler
+except ImportError:
+    if install_package("apscheduler"):
+        from apscheduler.schedulers.background import BackgroundScheduler
+
+try:
+    import paho.mqtt.client as mqtt
+except ImportError:
+    if install_package("paho.mqtt", "paho-mqtt"):
+        import paho.mqtt.client as mqtt
+
+try:
+    import psutil
+except ImportError:
+    if install_package("psutil"):
+        import psutil
+
+try:
+    import cv2
+except ImportError:
+    if install_package("cv2", "opencv-python"):
+        import cv2
+
+try:
+    from pyzbar.pyzbar import decode
+except ImportError:
+    if install_package("pyzbar"):
+        from pyzbar.pyzbar import decode
+
+try:
+    from evdev import InputDevice, categorize, ecodes
+except ImportError:
+    if install_package("evdev"):
+        from evdev import InputDevice, categorize, ecodes
 
 
 
@@ -1014,12 +1172,78 @@ scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
 scheduler.start()
 
 if __name__ == '__main__':
+  # Create requirements.txt file if it doesn't exist
+  if not os.path.exists("requirements.txt"):
+      create_requirements_file()
+  
   try:
     # main()
+    print("🚀 Starting Absensi Application...")
+    print("📦 All required modules loaded successfully!")
+    
     t1 = threading.Thread(target=display, args=())
     t2 = threading.Thread(target=rfid, args=())
     t3 = threading.Thread(target=send, args=())
     t4 = threading.Thread(target=mqttThread, args=())
+    t5 = threading.Thread(target=heartBeat, args=())
+    t6 = threading.Thread(target=camThread, args=())
+
+    t1.start()
+    t2.start()
+    t3.start()
+    t4.start()
+    t5.start()
+
+    # Only start QR scanner thread if enabled in configuration
+    if QR_ENABLED and QR_DEVICE_PATH:
+        printDebug(f"Starting QR Scanner thread with device: {QR_DEVICE_PATH}")
+        t6.start()
+    else:
+        printDebug("QR Scanner disabled - camThread will not start")
+        statusCamera = False
+    
+    statusThread = True
+    while True:
+        if not t1.is_alive():
+            statusThread=False
+            printDebug("display Mati")
+        if not t2.is_alive():
+            statusThread=False
+            printDebug("rfid Mati")
+        if not t3.is_alive():
+            # statusThread=False
+            printDebug("send Mati")
+        if not t4.is_alive():
+            # statusThread=False
+            printDebug("mqtt Mati")
+        if not t5.is_alive():
+            statusThread=False
+            printDebug("heartbeat Mati")
+        # Only check QR thread if it was started
+        try:
+            if QR_ENABLED and QR_DEVICE_PATH and not t6.is_alive():
+                #statusThread=False
+                printDebug("CamThread Mati")
+        except (NameError, UnboundLocalError):
+            # QR variables not defined, skip check
+            pass
+        time.sleep(30)
+        read_rtc_time()
+        if statusThread==False :
+            statusThread=True
+            restart_app()
+  except Exception as e:
+    printDebugEx("ERROR START: ", e)
+  except ImportError as e:
+    print(f"❌ Import Error: {e}")
+    print("🔧 Some required modules are missing!")
+    print("📋 Try installing with:")
+    print("   pip3 install -r requirements.txt")
+    print("🔧 Or install individual packages:")
+    print("   pip3 install evdev paho-mqtt mysql-connector-python")
+    print("   pip3 install requests netifaces psutil APScheduler")
+    print("   pip3 install opencv-python pyzbar mfrc522 smbus2")
+    sys.exit(1)
     t5 = threading.Thread(target=heartBeat, args=())
     t6 = threading.Thread(target=camThread, args=())
 
