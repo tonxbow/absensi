@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 import json, os, subprocess, netifaces
 import ipaddress
+import glob
 
 
 app = Flask(__name__)
@@ -49,6 +50,54 @@ def scan_wifi():
     except subprocess.CalledProcessError:
         return []
 
+def scan_usb_input_devices():
+    """Scan for USB input devices that could be QR code scanners using /dev/input/by-id/"""
+    try:
+        devices = []
+        
+        # Check if the directory exists
+        by_id_path = '/dev/input/by-id/'
+        if not os.path.exists(by_id_path):
+            print("Directory /dev/input/by-id/ does not exist")
+            return devices
+            
+        # Use ls command to list devices in /dev/input/by-id/
+        try:
+            result = subprocess.run(['ls', by_id_path], capture_output=True, text=True, check=True)
+            device_files = result.stdout.strip().split('\n')
+        except subprocess.CalledProcessError:
+            print("Failed to list devices in /dev/input/by-id/")
+            return devices
+        
+        for device_file in device_files:
+            if not device_file.strip():
+                continue
+                
+            # Look for USB keyboard devices (typically contain 'usb' and 'kbd' or 'event-kbd')
+            if 'usb-' in device_file and ('kbd' in device_file or 'event-kbd' in device_file):
+                full_path = os.path.join(by_id_path, device_file)
+                
+                # Extract device information from the filename
+                # Format is usually: usb-Vendor_Product_SerialNumber-event-kbd
+                device_parts = device_file.replace('usb-', '').replace('-event-kbd', '').replace('_', ' ')
+                
+                # Clean up the device name
+                device_name = device_parts.replace('-', ' ').title()
+                if not device_name:
+                    device_name = "USB Keyboard Device"
+                
+                devices.append({
+                    'id': device_file,
+                    'name': device_name,
+                    'path': full_path
+                })
+                
+        return devices
+        
+    except Exception as e:
+        print(f"Error scanning USB devices: {e}")
+        return []
+
 @app.route('/')
 def network():
     cfg = load_config()
@@ -56,7 +105,10 @@ def network():
     wlan_ip = get_interface_ip('wlan0')
     ethernet_cfg = cfg.get('ethernet', None)
     wifi_cfg = cfg.get('wifi', None)
+    qr_cfg = cfg.get('qr_device', None)
     timezone = get_current_timezone()
+    usb_devices = scan_usb_input_devices()
+    
     return render_template(
         'index.html',
         cfg=cfg,
@@ -64,7 +116,9 @@ def network():
         wlan_ip=wlan_ip,
         ethernet_cfg=ethernet_cfg,
         wifi_cfg=wifi_cfg,
-        timezone=timezone
+        qr_cfg=qr_cfg,
+        timezone=timezone,
+        usb_devices=usb_devices
     )
 
 @app.route('/save_ethernet', methods=['POST'])
@@ -143,6 +197,40 @@ def save_timezone():
         flash("❌ Failed to set timezone")
     return redirect(url_for('network'))
 
+@app.route('/save_qr_device', methods=['POST'])
+def save_qr_device():
+    qr_device = request.form.get('qr_device', 'none')
+    
+    cfg = load_config()
+    if qr_device == 'none':
+        cfg['qr_device'] = {
+            'enabled': False,
+            'device_id': '',
+            'device_path': '',
+            'device_name': 'No QR Scanner'
+        }
+    else:
+        # Find device name and path from the scanned devices
+        devices = scan_usb_input_devices()
+        device_name = 'Unknown Device'
+        device_path = ''
+        for device in devices:
+            if device['id'] == qr_device:
+                device_name = device['name']
+                device_path = device['path']
+                break
+                
+        cfg['qr_device'] = {
+            'enabled': True,
+            'device_id': qr_device,
+            'device_path': device_path,
+            'device_name': device_name
+        }
+    
+    save_config(cfg)
+    flash("✅ QR Scanner settings saved!")
+    return redirect(url_for('network'))
+
 def restart_pm2_app(app_name):
     try:
         # Jalankan restart
@@ -192,6 +280,11 @@ def restart_app():
 def scan_ssid():
     ssids = scan_wifi()
     return jsonify(ssids)
+
+@app.route('/scan_usb_devices')
+def scan_usb_devices():
+    devices = scan_usb_input_devices()
+    return jsonify(devices)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)

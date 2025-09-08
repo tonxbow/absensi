@@ -87,6 +87,25 @@
         </select>
         <button type="submit">Save Timezone</button>
     </form>
+
+    <h2>QR Code Scanner</h2>
+    <form method="post" action="{{ url_for('save_qr_device') }}">
+        <label>QR Scanner Device:</label>
+        <select name="qr_device" id="qr-device-select">
+            <option value="none" {% if not qr_cfg or not qr_cfg.enabled %}selected{% endif %}>No QR Scanner</option>
+            {% for device in usb_devices %}
+                <option value="{{ device.id }}" 
+                    {% if qr_cfg and qr_cfg.enabled and qr_cfg.device_id == device.id %}selected{% endif %}>
+                    {{ device.name }} ({{ device.id }})
+                </option>
+            {% endfor %}
+        </select>
+        <button type="button" onclick="refreshUSBDevices()">Refresh USB Devices</button>
+        <div style="margin-top: 10px; font-size: 12px; color: #666;">
+            Current: {{ qr_cfg.device_name if qr_cfg else 'No QR Scanner' }}
+        </div>
+        <button type="submit">Save QR Scanner</button>
+    </form>
     <form method="post" action="{{ url_for('restart_app') }}">
         <button style="width: 100%; background-color: red;" class="danger" type="submit">RESTART APPLICATION</button>
     </form>
@@ -104,6 +123,45 @@ function refreshSSID(){
             opt.value = ssid;
             datalist.appendChild(opt);
         });
+    });
+}
+
+function refreshUSBDevices(){
+    fetch('/scan_usb_devices')
+    .then(res => res.json())
+    .then(data => {
+        let select = document.getElementById('qr-device-select');
+        let currentValue = select.value;
+        
+        // Clear all options except "No QR Scanner"
+        select.innerHTML = '<option value="none">No QR Scanner</option>';
+        
+        // Add new devices
+        data.forEach(device => {
+            let opt = document.createElement('option');
+            opt.value = device.id;
+            opt.textContent = `${device.name} (${device.id})`;
+            select.appendChild(opt);
+        });
+        
+        // Try to restore previous selection
+        if (currentValue !== 'none') {
+            let found = false;
+            for (let option of select.options) {
+                if (option.value === currentValue) {
+                    option.selected = true;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                select.value = 'none';
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Error refreshing USB devices:', err);
+        alert('Failed to refresh USB devices');
     });
 }
 </script>

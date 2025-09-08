@@ -40,6 +40,10 @@ from typing import Any, Dict, Optional
 import cv2
 from pyzbar.pyzbar import decode
 
+from evdev import InputDevice, categorize, ecodes
+
+
+
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
 statusInternet=False
@@ -476,6 +480,12 @@ LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
 
+# QR Device configuration
+QR_CONFIG = dataSetting.get('qr_device', {'enabled': False, 'device_id': '', 'device_path': '', 'device_name': 'No QR Scanner'})
+QR_ENABLED = QR_CONFIG.get('enabled', False)
+QR_DEVICE_ID = QR_CONFIG.get('device_id', '')
+QR_DEVICE_PATH = QR_CONFIG.get('device_path', '')
+
 BUZZER = 5
 BUTTON = 7
 button_pressed_time = 0  # buat catat kapan ditekan
@@ -893,54 +903,111 @@ def mqttThread():
 
 statusCamera=True
 def camThread():
-    global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusCamera
-    cap = cv2.VideoCapture(1)
-    if not cap.isOpened():
-        statusCamera=False
-        printDebug("❌ Tidak bisa membuka kamera QR Code.")
-        return
-
-    printDebug("📡 QR Code scanner aktif...")
     try:
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                sleep(0.5)
-                continue
+        global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusCamera
+        
+        # Check if QR scanner is enabled
+        if not QR_ENABLED or not QR_DEVICE_PATH:
+            printDebug("QR Scanner disabled in configuration")
+            statusCamera = False
+            return
+            
+        # ganti dengan device QR reader kamu
+        # dev = InputDevice('/dev/input/by-id/usb-YuRiot_ScanCode_Box_00000000011C-event-kbd')
+        try:
+            dev = InputDevice(QR_DEVICE_PATH)
+            printDebug(f"QR Scanner initialized: {QR_DEVICE_PATH}")
+        except Exception as e:
+            printDebugEx(f"Failed to initialize QR device {QR_DEVICE_PATH}: ", e)
+            statusCamera = False
+            return
+            
+        buffer = ''
 
-            decoded_objects = decode(frame)
-            for obj in decoded_objects:
-                qr_data = obj.data.decode("utf-8")
-                now = datetime.now()
+        for event in dev.read_loop():
+            if event.type == ecodes.EV_KEY:
+                data = categorize(event)
+                if data.keystate == 1:  # key down
+                    key = data.keycode
+                    if key == 'KEY_ENTER':
+                        print("QR Code scanned:", buffer)
+                        now = datetime.now()
+                        qr_data = buffer
+                        last_time = last_scan_time_qr.get(qr_data)
+                        printDebug(last_scan_time_qr)
+                        tagRFID = qr_data
+                        if last_time :
+                            elapsed = now - last_time
+                            if elapsed < timedelta(minutes=1):
+                                print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
+                                tagRFID = "xxx"
+                                gpio_control.write(5, 1)
+                                sleep(1)
+                                gpio_control.write(5, 0)
+                                continue  # skip ke loop berikutnya
 
-                last_time = last_scan_time_qr.get(qr_data)
-                printDebug(last_scan_time_qr)
-                tagRFID = qr_data
-                if last_time :
-                    elapsed = now - last_time
-                    if elapsed < timedelta(minutes=1):
-                        print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
-                        tagRFID = "xxx"
+                        statusInsert = insertdata(qr_data)
+                        last_scan_time_qr[qr_data] = now
+                        last_scan_time = time.time()
+                        lcd_backlight_status = LCD_BACKLIGHT
                         gpio_control.write(5, 1)
                         sleep(1)
                         gpio_control.write(5, 0)
-                        continue  # skip ke loop berikutnya
+                        clientMQTT.publish(topicPublish + "/tag", qr_data)
+                        buffer = ''
+                    elif key.startswith('KEY_'):
+                        # ambil karakter terakhir dari keycode, simple mapping
+                        char = key.replace('KEY_', '')
+                        if len(char) == 1:
+                            buffer += char.lower()  # sesuaikan jika huruf besar/kecil
+    # global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusCamera
+    # cap = cv2.VideoCapture(1)
+    # if not cap.isOpened():
+    #     statusCamera=False
+    #     printDebug("❌ Tidak bisa membuka kamera QR Code.")
+    #     return
 
-                statusInsert = insertdata(qr_data)
-                last_scan_time_qr[qr_data] = now
-                last_scan_time = time.time()
-                lcd_backlight_status = LCD_BACKLIGHT
-                gpio_control.write(5, 1)
-                sleep(1)
-                gpio_control.write(5, 0)
-                clientMQTT.publish(topicPublish + "/tag", qr_data)
+    # printDebug("📡 QR Code scanner aktif...")
+    # try:
+    #     while True:
+    #         ret, frame = cap.read()
+    #         if not ret:
+    #             sleep(0.5)
+    #             continue
 
-            sleep(0.1)
+    #         decoded_objects = decode(frame)
+    #         for obj in decoded_objects:
+    #             qr_data = obj.data.decode("utf-8")
+    #             now = datetime.now()
+
+    #             last_time = last_scan_time_qr.get(qr_data)
+    #             printDebug(last_scan_time_qr)
+    #             tagRFID = qr_data
+    #             if last_time :
+    #                 elapsed = now - last_time
+    #                 if elapsed < timedelta(minutes=1):
+    #                     print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
+    #                     tagRFID = "xxx"
+    #                     gpio_control.write(5, 1)
+    #                     sleep(1)
+    #                     gpio_control.write(5, 0)
+    #                     continue  # skip ke loop berikutnya
+
+    #             statusInsert = insertdata(qr_data)
+    #             last_scan_time_qr[qr_data] = now
+    #             last_scan_time = time.time()
+    #             lcd_backlight_status = LCD_BACKLIGHT
+    #             gpio_control.write(5, 1)
+    #             sleep(1)
+    #             gpio_control.write(5, 0)
+    #             clientMQTT.publish(topicPublish + "/tag", qr_data)
+
+    #         sleep(0.1)
 
     except KeyboardInterrupt:
         printDebug("🛑 QR scanner berhenti")
-    finally:
-        cap.release()
+    except Exception as e:
+        printDebugEx("ERROR QR Scanner: ", e)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
@@ -962,9 +1029,13 @@ if __name__ == '__main__':
     t4.start()
     t5.start()
 
-    camThread()
-    if statusCamera==True:
+    # Only start QR scanner thread if enabled in configuration
+    if QR_ENABLED and QR_DEVICE_PATH:
+        printDebug(f"Starting QR Scanner thread with device: {QR_DEVICE_PATH}")
         t6.start()
+    else:
+        printDebug("QR Scanner disabled - camThread will not start")
+        statusCamera = False
     
     statusThread = True
     while True:
@@ -983,7 +1054,8 @@ if __name__ == '__main__':
         if not t5.is_alive():
             statusThread=False
             printDebug("heartbeat Mati")
-        if not t6.is_alive():
+        # Only check QR thread if it was started
+        if QR_ENABLED and QR_DEVICE_PATH and not t6.is_alive():
             #statusThread=False
             printDebug("CamThread Mati")
             #threads.remove(t)
