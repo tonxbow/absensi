@@ -15,9 +15,9 @@ import os
 
 def install_package(package_name, pip_name=None):
     """
-    Automatically install a Python package if it's not available
+    Automatically install a Python package using pip3
     package_name: the name used in import statement
-    pip_name: the name used for pip install (if different from package_name)
+    pip_name: the name used for pip3 install (if different from package_name)
     """
     if pip_name is None:
         pip_name = package_name
@@ -31,7 +31,11 @@ def install_package(package_name, pip_name=None):
             smbus_packages = ["smbus", "smbus2", "smbus-cffi"]
             for pkg in smbus_packages:
                 try:
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
+                    # Try pip3 first, then fallback to python -m pip
+                    try:
+                        subprocess.check_call(["pip3", "install", pkg])
+                    except (subprocess.CalledProcessError, FileNotFoundError):
+                        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
                     print(f"✅ Successfully installed: {pkg}")
                     return True
                 except subprocess.CalledProcessError:
@@ -42,7 +46,11 @@ def install_package(package_name, pip_name=None):
         elif pip_name == "evdev":
             # evdev might need system packages on some systems
             try:
-                subprocess.check_call([sys.executable, "-m", "pip", "install", "evdev"])
+                # Try pip3 first
+                try:
+                    subprocess.check_call(["pip3", "install", "evdev"])
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    subprocess.check_call([sys.executable, "-m", "pip", "install", "evdev"])
                 print(f"✅ Successfully installed: {pip_name}")
                 return True
             except subprocess.CalledProcessError:
@@ -52,7 +60,11 @@ def install_package(package_name, pip_name=None):
                 return False
         
         else:
-            subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
+            # Try pip3 first, then fallback to python -m pip
+            try:
+                subprocess.check_call(["pip3", "install", pip_name])
+            except (subprocess.CalledProcessError, FileNotFoundError):
+                subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
             print(f"✅ Successfully installed: {pip_name}")
             return True
             
@@ -62,7 +74,7 @@ def install_package(package_name, pip_name=None):
         return False
 
 def create_requirements_file():
-    """Create requirements.txt file with all required packages"""
+    """Create requirements.txt file with all required packages for pip3 installation"""
     requirements = [
         "requests>=2.25.0",
         "netifaces>=0.11.0", 
@@ -83,6 +95,7 @@ def create_requirements_file():
                 f.write(req + "\n")
         print("📝 Created requirements.txt file")
         print("💡 You can install all packages with: pip3 install -r requirements.txt")
+        print("💡 Or install individually: pip3 install <package_name>")
     except Exception as e:
         print(f"❌ Failed to create requirements.txt: {e}")
 
