@@ -1009,6 +1009,9 @@ def send():
                         jadwal = res_json.get("data", {}).get("jadwal", "")
                         siswaNama = res_json.get("data", {}).get("nama", "")
                         siswaNis = res_json.get("data", {}).get("no", "")
+                        jadwal = jadwal or ""
+                        siswaNama = siswaNama or ""
+                        siswaNis = siswaNis or ""
                         if status:
                             printDebug("✅ Status: Berhasil")
                             printDebug("Pesan  : " + message)
