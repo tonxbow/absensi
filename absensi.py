@@ -855,6 +855,7 @@ def display():
             if displayPage==0 :
                 lcd_string(str(get_datetime()),LCD_LINE_1)
                 message1 = " SILAHKAN TAP KARTU  "
+                message2 = " "
                 if QR_ENABLED:
                     message1 = " SILAHKAN  TAP/SCAN "
                     message2 = " KARTU RFID/QR CODE "
