@@ -646,7 +646,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.6"
+LOCAL_VERSION = "1.1.7"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -854,10 +854,16 @@ def display():
             # print(threadStatus[1])
             if displayPage==0 :
                 lcd_string(str(get_datetime()),LCD_LINE_1)
+                message1 = " SILAHKAN TAP KARTU  "
+                if QR_ENABLED:
+                    message1 = " SILAHKAN  TAP/SCAN "
+                    message2 = " KARTU RFID/QR CODE "
                 if tick :
-                    lcd_string(" SILAHKAN TAP KARTU  ",LCD_LINE_2)
+                    lcd_string(message1,LCD_LINE_2)
+                    lcd_string(message2,LCD_LINE_3)
                 else :
                     lcd_string("           ",LCD_LINE_2)
+                    lcd_string("           ",LCD_LINE_3)
 
                 lcd_string("I:"+statusInternet+" D:"+str(jumlahDataNotSend),LCD_LINE_4)
                 
