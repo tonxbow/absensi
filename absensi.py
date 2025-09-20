@@ -290,7 +290,7 @@ def get_datetime():
     if statusInternet=="ONLINE" :
         waktu = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     else :
-        waktu = read_rtc_time()
+        waktu = read_rtc_time().strftime('%Y-%m-%d %H:%M:%S')
     return waktu
 
 
@@ -550,6 +550,7 @@ class GPIOControl:
 
 
 
+
 ############################### NETWORK FUNCTION #######################################
 def get_interface_ip(interface_name):
     """
@@ -557,6 +558,12 @@ def get_interface_ip(interface_name):
     Returns None if the interface or address is not found.
     """
     try:
+        # Cek apakah interface tersedia di sistem
+        available_interfaces = netifaces.interfaces()
+        if interface_name not in available_interfaces:
+            printDebug(f"Interface '{interface_name}' tidak ditemukan. Interface tersedia: {available_interfaces}")
+            return None
+        
         # Get addresses for the specified interface
         addresses = netifaces.ifaddresses(interface_name)
         # Check if IPv4 addresses exist for this interface
@@ -569,15 +576,21 @@ def get_interface_ip(interface_name):
 
 def get_interface_mac(interface_name):
     """
-    Retrieves the IPv4 address for a specified network interface.
+    Retrieves the MAC address for a specified network interface.
     Returns None if the interface or address is not found.
     """
     try:
+        # Cek apakah interface tersedia di sistem
+        available_interfaces = netifaces.interfaces()
+        if interface_name not in available_interfaces:
+            printDebug(f"Interface '{interface_name}' tidak ditemukan. Interface tersedia: {available_interfaces}")
+            return None
+        
         # Get addresses for the specified interface
         addresses = netifaces.ifaddresses(interface_name)
-        # Check if IPv4 addresses exist for this interface
-        if netifaces.AF_INET in addresses:
-            # Return the first IPv4 address found
+        # Check if MAC addresses exist for this interface
+        if netifaces.AF_LINK in addresses:
+            # Return the first MAC address found
             return addresses[netifaces.AF_LINK][0]['addr']
     except Exception as e:
         printDebugEx("ERROR get_interface_mac : ", e)
@@ -618,9 +631,12 @@ def get_system_info():
     global threadStatus
     return {
         "app_version": LOCAL_VERSION,
+        "machine_id": MACHINE_ID,
+        "api_server": API_HOST,
         "mac_address": get_mac().replace(":", ""),  # Bisa juga tetap pakai ":"
         "ip_address_wlan": (wlan_ip if wlan_ip else "-"),
         "ip_address_eth": (eth_ip if eth_ip else "-"),
+        "ip_address_vpn": (vpn_ip if vpn_ip else "-"),
         "cpu_percent": psutil.cpu_percent(interval=1),
         "memory_percent": psutil.virtual_memory().percent,
         "storage_percent": psutil.disk_usage('/').percent,
@@ -646,7 +662,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.7"
+LOCAL_VERSION = "1.1.8"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -692,7 +708,7 @@ command_map = {
     "update": update_app
 }
     
-def on_disconnect(client, userdata, rc, properties=None):
+def on_disconnect(client, userdata, rc, properties=None, *args):
     print("⚠️ Terputus dari broker (rc={}), mencoba reconnect...".format(rc))
     while True:
         try:
@@ -778,6 +794,7 @@ try :
     if not wlan_ip:
         wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
 
+    vpn_ip = get_interface_ip('tailscale0')  # Common on Linux/Raspberry Pi
     # Get IP for Ethernet (common names: eth0, Ethernet)
     eth_ip = get_interface_ip('eth0')  # Common on Linux/Raspberry Pi
     
