@@ -359,29 +359,83 @@ def check_for_update():
 
 
 ############################### MYSQL FUNCTION #######################################
-mydb = mysql.connector.connect(
-  host="localhost",
-  user="scola",
-  password="scolaabsen",
-  database="absensi"
-)
-mycursor = mydb.cursor()
+def init_mysql_connection():
+    """Initialize MySQL connection with error handling"""
+    try:
+        mydb = mysql.connector.connect(
+            host="localhost",
+            user="scola",
+            password="scolaabsen",
+            database="absensi",
+            autocommit=False,
+            connection_timeout=10,
+            auth_plugin='mysql_native_password'
+        )
+        mycursor = mydb.cursor()
+        return mydb, mycursor
+    except Exception as e:
+        printDebugEx("ERROR init_mysql_connection: ", e)
+        return None, None
+
+def ensure_mysql_connection():
+    """Ensure MySQL connection is alive, reconnect if needed"""
+    global mydb, mycursor
+    try:
+        if mydb is None or not mydb.is_connected():
+            printDebug("Reconnecting to MySQL...")
+            mydb, mycursor = init_mysql_connection()
+            if mydb is None:
+                return False
+        
+        # Test connection with a simple query
+        mycursor.execute("SELECT 1")
+        mycursor.fetchone()
+        return True
+    except Exception as e:
+        printDebugEx("ERROR ensure_mysql_connection: ", e)
+        try:
+            mydb, mycursor = init_mysql_connection()
+            return mydb is not None
+        except:
+            return False
+
+# Initialize connection
+mydb, mycursor = init_mysql_connection()
 
 def insertdata(tagRFID):
-    global mycursor,mydb
-    tag = tagRFID
-    waktu = get_datetime()#datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    status = 0  # Misalnya 1 = Hadir
+    global mycursor, mydb
+    try:
+        if not ensure_mysql_connection():
+            printDebug("MySQL connection failed, cannot insert data")
+            return None
+            
+        tag = tagRFID
+        waktu = get_datetime()
+        status = 0  # Misalnya 1 = Hadir
 
-    # Query insert
-    query = "INSERT INTO data_absen (tag, datetime, status) VALUES (%s, %s, %s)"
-    values = (tag, waktu, status)
+        # Query insert
+        query = "INSERT INTO data_absen (tag, datetime, status) VALUES (%s, %s, %s)"
+        values = (tag, waktu, status)
 
-    # Eksekusi dan commit
-    mycursor.execute(query, values)
-    mydb.commit()
-    return mycursor.lastrowid
-    # print("Data berhasil disimpan, ID:", mycursor.lastrowid)
+        # Eksekusi dan commit
+        mycursor.execute(query, values)
+        mydb.commit()
+        return mycursor.lastrowid
+        
+    except mysql.connector.Error as e:
+        printDebugEx("MySQL error in insertdata: ", e)
+        # Try to reconnect and retry once
+        try:
+            if ensure_mysql_connection():
+                mycursor.execute(query, values)
+                mydb.commit()
+                return mycursor.lastrowid
+        except Exception as retry_e:
+            printDebugEx("Retry failed in insertdata: ", retry_e)
+        return None
+    except Exception as e:
+        printDebugEx("ERROR insertdata: ", e)
+        return None
 
 ############################### LCD FUNCTION #######################################
 I2C_ADDR  = 0x27 # I2C device address
@@ -608,10 +662,17 @@ def get_ssid_nmcli():
 
 def cek_internet(url='https://www.google.com/', timeout=5):
     try:
-        _ = requests.get(url, timeout=timeout)
-        return True
+        response = requests.get(url, timeout=timeout)
+        return response.status_code == 200
+    except (requests.exceptions.ConnectionError, 
+            requests.exceptions.Timeout, 
+            requests.exceptions.DNSLookupError,
+            requests.exceptions.RequestException) as e:
+        printDebug(f"Network error in cek_internet: {str(e)}")
+        return False
     except Exception as e:
-        printDebugEx("ERROR START 3: ", e)
+        printDebugEx("ERROR cek_internet: ", e)
+        return False
     
 # Fungsi ambil MAC address
 def get_mac():
@@ -662,7 +723,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.8"
+LOCAL_VERSION = "1.1.9"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -709,14 +770,14 @@ command_map = {
 }
     
 def on_disconnect(client, userdata, rc, properties=None, *args):
-    print("⚠️ Terputus dari broker (rc={}), mencoba reconnect...".format(rc))
+    # print("⚠️ Terputus dari broker (rc={}), mencoba reconnect...".format(rc))
     while True:
         try:
             clientMQTT.reconnect()
-            printDebug("🔁 Reconnected!")
+            # printDebug("🔁 Reconnected!")
             break
         except:
-            printDebug("⏳ Gagal reconnect, coba lagi 5 detik...")
+            # printDebug("⏳ Gagal reconnect, coba lagi 5 detik...")
             time.sleep(5)
 
 def on_message(client, userdata, msg):
@@ -998,16 +1059,37 @@ def send():
         global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus,statusSend,siswaNis,siswaNama
         while True:
             threadStatus[3]=get_datetime()
-            query = "SELECT COUNT(*) FROM data_absen where status=0"
-            mycursor.execute(query)
-            jumlahData = mycursor.fetchone()[0]
-            jumlahDataNotSend = jumlahData
+            
+            # Ensure MySQL connection before executing queries
+            if not ensure_mysql_connection():
+                printDebug("MySQL connection failed in send thread")
+                time.sleep(5)
+                continue
+                
+            try:
+                query = "SELECT COUNT(*) FROM data_absen where status=0"
+                mycursor.execute(query)
+                result = mycursor.fetchone()
+                jumlahData = result[0] if result else 0
+                jumlahDataNotSend = jumlahData
+                printDebug("JUMLAH DATA NOT SEND : " + str(jumlahDataNotSend))
+            except Exception as e:
+                printDebugEx("ERROR counting unsent data: ", e)
+                jumlahDataNotSend = 0
 
             if cek_internet(API_HOST,3) : 
                 statusInternet = "ONLINE"
                 #check data yang belum ke kirim di database
-                mycursor.execute("SELECT * FROM data_absen WHERE status=0 ORDER BY id ASC LIMIT 1")
-                row = mycursor.fetchone()
+                try:
+                    if not ensure_mysql_connection():
+                        time.sleep(5)
+                        continue
+                        
+                    mycursor.execute("SELECT * FROM data_absen WHERE status=0 ORDER BY id ASC LIMIT 1")
+                    row = mycursor.fetchone()
+                except Exception as e:
+                    printDebugEx("ERROR fetching data for send: ", e)
+                    row = None
     
                 if row:
                     id = row[0]
@@ -1040,10 +1122,14 @@ def send():
                             printDebug("✅ Status: Berhasil")
                             printDebug("Pesan  : " + message)
                             printDebug("Jadwal : " + jadwal)
-                            query = "DELETE FROM data_absen WHERE id = %s"
-                            mycursor.execute(query, (id,))
-                            mydb.commit()
-                            printDebug(f"Data dengan ID {id} berhasil dihapus.")
+                            try:
+                                if ensure_mysql_connection():
+                                    query = "DELETE FROM data_absen WHERE id = %s"
+                                    mycursor.execute(query, (id,))
+                                    mydb.commit()
+                                    printDebug(f"Data dengan ID {id} berhasil dihapus.")
+                            except Exception as e:
+                                printDebugEx("ERROR deleting data: ", e)
                             statusSend=1
                         else:
                             StatusError = res_json.get("error", "")
@@ -1057,9 +1143,13 @@ def send():
                             if StatusError!="Not Found" :
                                 siswaNama = message
                                 message = message.replace("'", "").replace('"', "")
-                                query = "UPDATE data_absen SET status = 2,keterangan = '"+message+"' WHERE id = %s"
-                                mycursor.execute(query, (id,))
-                                mydb.commit()
+                                try:
+                                    if ensure_mysql_connection():
+                                        query = "UPDATE data_absen SET status = 2,keterangan = %s WHERE id = %s"
+                                        mycursor.execute(query, (message, id))
+                                        mydb.commit()
+                                except Exception as e:
+                                    printDebugEx("ERROR updating data: ", e)
                                 
                             
 
@@ -1235,11 +1325,15 @@ if __name__ == '__main__':
     t5.start()
 
     # Only start QR scanner thread if enabled in configuration
-    if QR_ENABLED and QR_DEVICE_PATH:
-        printDebug(f"Starting QR Scanner thread with device: {QR_DEVICE_PATH}")
-        t6.start()
-    else:
-        printDebug("QR Scanner disabled - camThread will not start")
+    try:
+        if QR_ENABLED and QR_DEVICE_PATH:
+            printDebug(f"Starting QR Scanner thread with device: {QR_DEVICE_PATH}")
+            t6.start()
+        else:
+            printDebug("QR Scanner disabled - camThread will not start")
+            statusCamera = False
+    except NameError:
+        printDebug("QR configuration not found - camThread will not start")
         statusCamera = False
     
     statusThread = True
@@ -1261,9 +1355,9 @@ if __name__ == '__main__':
             printDebug("heartbeat Mati")
         # Only check QR thread if it was started
         try:
-            if QR_ENABLED and QR_DEVICE_PATH and not t6.is_alive():
-                #statusThread=False
-                printDebug("CamThread Mati")
+            if 'QR_ENABLED' in globals() and 'QR_DEVICE_PATH' in globals():
+                if QR_ENABLED and QR_DEVICE_PATH and 't6' in locals() and not t6.is_alive():
+                    printDebug("CamThread Mati")
         except (NameError, UnboundLocalError):
             # QR variables not defined, skip check
             pass
@@ -1284,51 +1378,6 @@ if __name__ == '__main__':
     print("   pip3 install requests netifaces psutil APScheduler")
     print("   pip3 install opencv-python pyzbar mfrc522 smbus2")
     sys.exit(1)
-    t5 = threading.Thread(target=heartBeat, args=())
-    t6 = threading.Thread(target=camThread, args=())
-
-    t1.start()
-    t2.start()
-    t3.start()
-    t4.start()
-    t5.start()
-
-    # Only start QR scanner thread if enabled in configuration
-    if QR_ENABLED and QR_DEVICE_PATH:
-        printDebug(f"Starting QR Scanner thread with device: {QR_DEVICE_PATH}")
-        t6.start()
-    else:
-        printDebug("QR Scanner disabled - camThread will not start")
-        statusCamera = False
-    
-    statusThread = True
-    while True:
-        if not t1.is_alive():
-            statusThread=False
-            printDebug("display Mati")
-        if not t2.is_alive():
-            statusThread=False
-            printDebug("rfid Mati")
-        if not t3.is_alive():
-            # statusThread=False
-            printDebug("send Mati")
-        if not t4.is_alive():
-            # statusThread=False
-            printDebug("mqtt Mati")
-        if not t5.is_alive():
-            statusThread=False
-            printDebug("heartbeat Mati")
-        # Only check QR thread if it was started
-        if QR_ENABLED and QR_DEVICE_PATH and not t6.is_alive():
-            #statusThread=False
-            printDebug("CamThread Mati")
-            #threads.remove(t)
-            #start_thread(i)
-        time.sleep(30)
-        read_rtc_time()
-        if statusThread==False :
-            statusThread=True
-            restart_app()
   except Exception as e:
     printDebugEx("ERROR MAIN: ", e)
 
