@@ -151,6 +151,7 @@ import platform
 from datetime import datetime, timedelta
 import traceback 
 from typing import Any, Dict, Optional
+from urllib.parse import urlparse
 
 # Try to import modules with auto-install
 try:
@@ -660,16 +661,73 @@ def get_ssid_nmcli():
     except Exception as e:
         printDebugEx("ERROR get_ssid_nmcli: ", e)
 
-def cek_internet(url='https://www.google.com/', timeout=5):
+def get_base_url(url):
+    """Extract base URL from full URL"""
     try:
-        response = requests.get(url, timeout=timeout)
-        return response.status_code == 200
+        parsed = urlparse(url)
+        return f"{parsed.scheme}://{parsed.netloc}"
+    except:
+        return url
+
+def cek_internet(url='https://www.google.com/', timeout=5):
+    """
+    Cek konektivitas internet. 
+    Jika URL adalah endpoint API, akan cek base URL terlebih dahulu.
+    """
+    try:
+        # If URL looks like an API endpoint, extract base URL for connectivity test
+        if '/foundation/' in url or '/api/' in url or len(url.split('/')) > 3:
+            base_url = get_base_url(url)
+            test_url = base_url
+            # printDebug(f"API endpoint detected: {url}")
+            # printDebug(f"Testing base URL connectivity: {test_url}")
+        else:
+            test_url = url
+            # printDebug(f"Testing direct connectivity to: {test_url}")
+            
+        response = requests.get(test_url, timeout=timeout)
+        # printDebug(f"Response status code: {response.status_code}")
+        
+        # For base URL connectivity test, accept more status codes
+        if test_url != url:
+            # For base URL test, any response (even 404, 403) means server is reachable
+            # Only server errors (5xx) or connection errors indicate real connectivity issues
+            is_connected = response.status_code < 500
+            # printDebug(f"Base URL connectivity: {'ONLINE' if is_connected else 'OFFLINE'}")
+            
+            # If base URL is reachable, also try the original endpoint with HEAD method
+            if is_connected:
+                try:
+                    head_response = requests.head(url, timeout=timeout/2)
+                    # printDebug(f"HEAD request to {url}: {head_response.status_code}")
+                    # If HEAD returns 405 (Method Not Allowed), the endpoint exists but doesn't support HEAD
+                    if head_response.status_code in [200, 405]:
+                        printDebug("Endpoint appears to be valid")
+                except:
+                    printDebug("HEAD request failed, but base URL is reachable")
+            
+            return is_connected
+        else:
+            is_connected = response.status_code == 200
+            printDebug(f"Direct URL connectivity: {'ONLINE' if is_connected else 'OFFLINE'}")
+            return is_connected
+            
     except (requests.exceptions.ConnectionError, 
             requests.exceptions.Timeout, 
             requests.exceptions.DNSLookupError,
             requests.exceptions.RequestException) as e:
-        printDebug(f"Network error in cek_internet: {str(e)}")
-        return False
+        printDebug(f"Network connectivity failed for {url}: {str(e)}")
+        
+        # Fallback: try Google DNS to confirm internet connectivity
+        try:
+            fallback_response = requests.get('https://www.google.com', timeout=3)
+            if fallback_response.status_code == 200:
+                printDebug("Internet connection OK (Google reachable), but target server unreachable")
+            return False
+        except:
+            printDebug("No internet connection detected")
+            return False
+            
     except Exception as e:
         printDebugEx("ERROR cek_internet: ", e)
         return False
@@ -811,6 +869,7 @@ try :
     eth_mac = get_mac().replace(":","")
     printDebug("VERSION     : " + LOCAL_VERSION)
     printDebug("API SERVER  : " + API_HOST)
+    printDebug("BASE URL    : " + get_base_url(API_HOST))
     printDebug("MACHINE ID  : " + MACHINE_ID)
     printDebug("MACADDRESS  : " + eth_mac)
     printDebug("OTA VERSION : " + VERSION_FILE_URL)
@@ -1072,7 +1131,7 @@ def send():
                 result = mycursor.fetchone()
                 jumlahData = result[0] if result else 0
                 jumlahDataNotSend = jumlahData
-                printDebug("JUMLAH DATA NOT SEND : " + str(jumlahDataNotSend))
+                
             except Exception as e:
                 printDebugEx("ERROR counting unsent data: ", e)
                 jumlahDataNotSend = 0
@@ -1104,11 +1163,38 @@ def send():
                     headers = {
                     'Content-Type': 'application/json'
                     }
+                    printDebug(f"Sending POST request to: {API_HOST}")
+                    printDebug(f"Payload: {payload}")
+                    printDebug(f"Headers: {headers}")
+                    
                     response = requests.request("POST", API_HOST, headers=headers, data=payload)
-                    printDebug(payload)
-                    printDebug(response.text)
+                    
+                    printDebug(f"Response status code: {response.status_code}")
+                    printDebug(f"Response headers: {dict(response.headers)}")
+                    printDebug(f"Response text: {response.text}")
+                    
+                    if response.status_code == 404:
+                        printDebug("❌ ERROR 404: API endpoint not found!")
+                        printDebug("⚠️  Check if the API_HOST URL is correct in setting.json")
 
                     try:
+                        if response.status_code == 404:
+                            printDebug("❌ API endpoint returns 404 - endpoint tidak ditemukan")
+                            # Handle 404 as API error, not network error
+                            siswaNama = "ENDPOINT TIDAK DITEMUKAN"
+                            statusSend = 2
+                            
+                            # Mark data as error instead of retrying
+                            try:
+                                if ensure_mysql_connection():
+                                    query = "UPDATE data_absen SET status = 2, keterangan = %s WHERE id = %s"
+                                    mycursor.execute(query, ("API endpoint not found (404)", id))
+                                    mydb.commit()
+                                    printDebug(f"Data ID {id} marked as API error (404)")
+                            except Exception as e:
+                                printDebugEx("ERROR updating data for 404: ", e)
+                            continue  # Skip to next iteration
+                            
                         res_json = response.json()
                         status = res_json.get("status", False)
                         message = res_json.get("message", "")
@@ -1155,7 +1241,24 @@ def send():
 
                     except ValueError:
                         printDebug("⚠️ Response bukan format JSON yang valid:")
-                        printDebug(response.text)
+                        printDebug(f"Status code: {response.status_code}")
+                        printDebug(f"Response text: {response.text}")
+                        
+                        # Handle non-JSON responses
+                        if response.status_code == 404:
+                            siswaNama = "API ENDPOINT NOT FOUND"
+                            statusSend = 2
+                            try:
+                                if ensure_mysql_connection():
+                                    query = "UPDATE data_absen SET status = 2, keterangan = %s WHERE id = %s"
+                                    mycursor.execute(query, (f"HTTP {response.status_code}: {response.text[:100]}", id))
+                                    mydb.commit()
+                            except:
+                                pass
+                        elif response.status_code >= 500:
+                            printDebug("Server error (5xx) - will retry later")
+                        else:
+                            printDebug(f"Unexpected response code: {response.status_code}")
                 #else:
                     #print("Data tidak ditemukan.")
 
@@ -1163,7 +1266,8 @@ def send():
                 
             else :
                 statusInternet = "OFFLINE"
-
+            printDebug("JUMLAH DATA NOT SEND : " + str(jumlahDataNotSend))
+            printDebug("STATUS : " + str(statusInternet))
             
             time.sleep(5)
     except Exception as e:
