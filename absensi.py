@@ -669,68 +669,112 @@ def get_base_url(url):
     except:
         return url
 
+# def cek_internet(url='https://www.google.com/', timeout=5):
+#     """
+#     Cek konektivitas internet. 
+#     Jika URL adalah endpoint API, akan cek base URL terlebih dahulu.
+#     """
+#     try:
+#         # If URL looks like an API endpoint, extract base URL for connectivity test
+#         if '/foundation/' in url or '/api/' in url or len(url.split('/')) > 3:
+#             base_url = get_base_url(url)
+#             test_url = base_url
+#             # printDebug(f"API endpoint detected: {url}")
+#             # printDebug(f"Testing base URL connectivity: {test_url}")
+#         else:
+#             test_url = url
+#             # printDebug(f"Testing direct connectivity to: {test_url}")
+            
+#         response = requests.get(test_url, timeout=timeout)
+#         # printDebug(f"Response status code: {response.status_code}")
+        
+#         # For base URL connectivity test, accept more status codes
+#         if test_url != url:
+#             # For base URL test, any response (even 404, 403) means server is reachable
+#             # Only server errors (5xx) or connection errors indicate real connectivity issues
+#             is_connected = response.status_code < 500
+#             # printDebug(f"Base URL connectivity: {'ONLINE' if is_connected else 'OFFLINE'}")
+            
+#             # If base URL is reachable, also try the original endpoint with HEAD method
+#             if is_connected:
+#                 try:
+#                     head_response = requests.head(url, timeout=timeout/2)
+#                     # printDebug(f"HEAD request to {url}: {head_response.status_code}")
+#                     # If HEAD returns 405 (Method Not Allowed), the endpoint exists but doesn't support HEAD
+#                     if head_response.status_code in [200, 405]:
+#                         printDebug("Endpoint appears to be valid")
+#                 except:
+#                     printDebug("HEAD request failed, but base URL is reachable")
+            
+#             return is_connected
+#         else:
+#             is_connected = response.status_code == 200
+#             printDebug(f"Direct URL connectivity: {'ONLINE' if is_connected else 'OFFLINE'}")
+#             return is_connected
+            
+#     except (requests.exceptions.ConnectionError, 
+#             requests.exceptions.Timeout, 
+#             requests.exceptions.DNSLookupError,
+#             requests.exceptions.RequestException) as e:
+#         printDebug(f"Network connectivity failed for {url}: {str(e)}")
+        
+#         # Fallback: try Google DNS to confirm internet connectivity
+#         try:
+#             fallback_response = requests.get('https://www.google.com', timeout=3)
+#             if fallback_response.status_code == 200:
+#                 printDebug("Internet connection OK (Google reachable), but target server unreachable")
+#             return False
+#         except:
+#             printDebug("No internet connection detected")
+#             return False
+            
+#     except Exception as e:
+#         printDebugEx("ERROR cek_internet: ", e)
+#         return False
+
+import requests
+import socket
+
 def cek_internet(url='https://www.google.com/', timeout=5):
     """
-    Cek konektivitas internet. 
+    Cek konektivitas internet.
     Jika URL adalah endpoint API, akan cek base URL terlebih dahulu.
     """
     try:
-        # If URL looks like an API endpoint, extract base URL for connectivity test
+        # Deteksi API endpoint → ambil base URL
         if '/foundation/' in url or '/api/' in url or len(url.split('/')) > 3:
-            base_url = get_base_url(url)
-            test_url = base_url
-            # printDebug(f"API endpoint detected: {url}")
-            # printDebug(f"Testing base URL connectivity: {test_url}")
+            test_url = get_base_url(url)
         else:
             test_url = url
-            # printDebug(f"Testing direct connectivity to: {test_url}")
-            
+
         response = requests.get(test_url, timeout=timeout)
-        # printDebug(f"Response status code: {response.status_code}")
-        
-        # For base URL connectivity test, accept more status codes
+
+        # Jika hanya tes base URL → status < 500 dianggap online
         if test_url != url:
-            # For base URL test, any response (even 404, 403) means server is reachable
-            # Only server errors (5xx) or connection errors indicate real connectivity issues
-            is_connected = response.status_code < 500
-            # printDebug(f"Base URL connectivity: {'ONLINE' if is_connected else 'OFFLINE'}")
-            
-            # If base URL is reachable, also try the original endpoint with HEAD method
-            if is_connected:
-                try:
-                    head_response = requests.head(url, timeout=timeout/2)
-                    # printDebug(f"HEAD request to {url}: {head_response.status_code}")
-                    # If HEAD returns 405 (Method Not Allowed), the endpoint exists but doesn't support HEAD
-                    if head_response.status_code in [200, 405]:
-                        printDebug("Endpoint appears to be valid")
-                except:
-                    printDebug("HEAD request failed, but base URL is reachable")
-            
-            return is_connected
-        else:
-            is_connected = response.status_code == 200
-            printDebug(f"Direct URL connectivity: {'ONLINE' if is_connected else 'OFFLINE'}")
-            return is_connected
-            
-    except (requests.exceptions.ConnectionError, 
-            requests.exceptions.Timeout, 
-            requests.exceptions.DNSLookupError,
-            requests.exceptions.RequestException) as e:
-        printDebug(f"Network connectivity failed for {url}: {str(e)}")
-        
-        # Fallback: try Google DNS to confirm internet connectivity
-        try:
-            fallback_response = requests.get('https://www.google.com', timeout=3)
-            if fallback_response.status_code == 200:
-                printDebug("Internet connection OK (Google reachable), but target server unreachable")
-            return False
-        except:
-            printDebug("No internet connection detected")
-            return False
-            
-    except Exception as e:
-        printDebugEx("ERROR cek_internet: ", e)
+            return response.status_code < 500
+
+        return response.status_code == 200
+
+    except requests.exceptions.ReadTimeout:
+        printDebug("⏱️ Read timeout")
         return False
+
+    except requests.exceptions.ConnectionError as e:
+        # Deteksi DNS error
+        if isinstance(e.__cause__, socket.gaierror):
+            printDebug("🌐 DNS lookup gagal")
+        else:
+            printDebug(f"🔌 Connection error: {e}")
+        return False
+
+    except requests.exceptions.RequestException as e:
+        printDebug(f"📡 Request error: {e}")
+        return False
+
+    except Exception as e:
+        printDebugEx("❌ ERROR cek_internet:", e)
+        return False
+
     
 # Fungsi ambil MAC address
 def get_mac():
@@ -781,7 +825,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.9"
+LOCAL_VERSION = "1.1.10"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
