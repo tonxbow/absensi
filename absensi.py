@@ -825,7 +825,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.10"
+LOCAL_VERSION = "1.1.11"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -897,7 +897,9 @@ def on_message(client, userdata, msg):
 
 try :
     # clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "123")
-    clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id="test-client")
+    eth_mac = get_mac().replace(":","")
+    clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id="absensi-client-"+eth_mac)
+    clientMQTT.username_pw_set(username="penta",password="penta123")
     clientMQTT.on_connect = on_connect
     clientMQTT.on_disconnect = on_disconnect
     clientMQTT.on_message = on_message
