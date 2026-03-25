@@ -1170,7 +1170,9 @@ def read_rdm6300_rfid():
             return None
 
         frame = rdm6300_buffer[1:etx_idx]
-        rdm6300_buffer = rdm6300_buffer[etx_idx + 1:]
+        # Buang seluruh sisa buffer setelah ETX — jika RDM6300 kirim 2+ frame sekaligus,
+        # hanya 1 yang diproses per tap agar tidak double insert
+        rdm6300_buffer = b''
 
         # Payload harus 12 chars ASCII HEX: 10 data + 2 checksum
         if len(frame) != 12:
@@ -1197,6 +1199,7 @@ def read_rdm6300_rfid():
         # Konsisten dengan format UID 4-byte RC522 (8 hex terakhir)
         tag_str = tag_hex.lower()
         printDebug(f"RDM6300 parsed tag: {tag_str}")
+        sleep(0.8)  # Debounce delay untuk hindari double read
         return tag_str
     except Exception as e:
         printDebugEx("ERROR read_rdm6300_rfid:", e)
@@ -1204,7 +1207,7 @@ def read_rdm6300_rfid():
 
 def rfid():
     try:
-        global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
+        global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time,rdm6300_buffer
         while True:
             threadStatus[2]=get_datetime()
             # printDebug("Hold a tag near the reader")
@@ -1239,6 +1242,10 @@ def rfid():
                 if elapsed < timedelta(minutes=1):
                     printDebug(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
                     tagRFID = "xxx"
+                    # Flush buffer agar frame duplikat dari tap yang sama tidak terbaca lagi
+                    rdm6300_buffer = b''
+                    if ser is not None:
+                        ser.reset_input_buffer()
                     gpio_control.write(5, 1)
                     sleep(1)
                     gpio_control.write(5, 0)
@@ -1246,8 +1253,12 @@ def rfid():
                       
             statusInsert = insertdata(tagRFID)
             last_scan_time_rfid[tagRFID] = now        # Catat waktu scan
-            last_scan_time=  time.time()        # Catat waktu scan display
-            lcd_backlight_status = LCD_BACKLIGHT  # Hidupkan backlight kalau scan
+            last_scan_time = time.time()              # Catat waktu scan display
+            lcd_backlight_status = LCD_BACKLIGHT      # Hidupkan backlight kalau scan
+            # Flush buffer segera setelah insert agar frame duplikat dibuang
+            rdm6300_buffer = b''
+            if ser is not None:
+                ser.reset_input_buffer()
 
             gpio_control.write(5, 1)
             sleep(1)
