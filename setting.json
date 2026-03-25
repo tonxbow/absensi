@@ -1,8 +1,8 @@
 {
-    "api-server": "https://api-absensi.scola.id/foundation/kehadiran",
-    "machine-id": "0000005",
+    "api-server": "https://scola-absensi-smaantarda-760231931842.asia-southeast2.run.app/foundation/kehadiran",
+    "machine-id": "0000004",
     "wifi": {
-        "ssid": "Pakebun_lt1",
+        "ssid": "Pakebun",
         "password": "pakebunjaya123"
     }
 }

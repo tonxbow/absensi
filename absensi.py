@@ -86,7 +86,8 @@ def create_requirements_file():
         "pyzbar>=0.1.8",
         "evdev>=1.4.0",
         "mfrc522>=0.0.7",
-        "smbus2>=0.4.0"
+        "smbus2>=0.4.0",
+        "pyserial>=3.5"
     ]
     
     try:
@@ -214,11 +215,28 @@ except ImportError:
     if install_package("evdev"):
         from evdev import InputDevice, categorize, ecodes
 
+try:
+    import serial
+except ImportError:
+    if install_package("serial", "pyserial"):
+        import serial
+
 
 
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
 statusInternet=False
+
+ser = None
+try:
+    ser = serial.Serial(
+        port='/dev/ttyS5',
+        baudrate=9600,
+        timeout=1
+    )
+    print("✅ RDM6300 UART ready at /dev/ttyS5")
+except Exception as e:
+    print(f"⚠️ RDM6300 UART not ready: {e}")
 
 def printDebug(*args):
     text = " ".join(str(a) for a in args)
@@ -1116,18 +1134,99 @@ def display():
         traceback.print_exc()
 statusSend=0
 last_scan_time_rfid = {}
+rdm6300_buffer = b''
+
+def read_rdm6300_rfid():
+    """
+    Baca 1 kartu dari RDM6300 melalui UART.
+    Format frame RDM6300: 0x02 + 10 ASCII HEX + 2 checksum + 0x03
+    Return tag hex (lowercase) atau None jika belum ada data valid.
+    """
+    global ser, rdm6300_buffer
+    try:
+        if ser is None:
+            return None
+
+        if ser.in_waiting <= 0:
+            return None
+
+        rdm6300_buffer += ser.read(ser.in_waiting)
+
+        # Cari frame lengkap: STX (0x02) ... ETX (0x03)
+        stx_idx = rdm6300_buffer.find(b'\x02')
+        if stx_idx < 0:
+            rdm6300_buffer = b''
+            return None
+
+        # Buang noise sebelum STX
+        if stx_idx > 0:
+            rdm6300_buffer = rdm6300_buffer[stx_idx:]
+
+        etx_idx = rdm6300_buffer.find(b'\x03', 1)
+        if etx_idx < 0:
+            # Belum dapat frame utuh
+            if len(rdm6300_buffer) > 64:
+                rdm6300_buffer = rdm6300_buffer[-32:]
+            return None
+
+        frame = rdm6300_buffer[1:etx_idx]
+        rdm6300_buffer = rdm6300_buffer[etx_idx + 1:]
+
+        # Payload harus 12 chars ASCII HEX: 10 data + 2 checksum
+        if len(frame) != 12:
+            return None
+
+        try:
+            frame_text = frame.decode('ascii').upper()
+            tag_hex = frame_text[:10]
+            checksum_hex = frame_text[10:12]
+            int(tag_hex, 16)
+            recv_checksum = int(checksum_hex, 16)
+        except Exception:
+            return None
+
+        # Verifikasi checksum XOR per byte data
+        calc_checksum = 0
+        for i in range(0, 10, 2):
+            calc_checksum ^= int(tag_hex[i:i + 2], 16)
+
+        if calc_checksum != recv_checksum:
+            printDebug(f"RDM6300 checksum mismatch: data={tag_hex} recv={checksum_hex} calc={calc_checksum:02X}")
+            return None
+
+        # Konsisten dengan format UID 4-byte RC522 (8 hex terakhir)
+        tag_str = tag_hex.lower()
+        printDebug(f"RDM6300 parsed tag: {tag_str}")
+        return tag_str
+    except Exception as e:
+        printDebugEx("ERROR read_rdm6300_rfid:", e)
+        return None
+
 def rfid():
     try:
         global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
         while True:
             threadStatus[2]=get_datetime()
-            printDebug("Hold a tag near the reader")
-            id,text = reader.read()
-            printDebug("ID: %s" % (tagRFID))
-            uid_bytes = id.to_bytes(8, 'big')
-            uid_4bytes = uid_bytes[3:7]
-            tag_hex = ''.join(f'{b:02x}' for b in uid_4bytes)
-            tagRFID = str(tag_hex)
+            # printDebug("Hold a tag near the reader")
+
+            # Prioritas baca dari RDM6300 (UART)
+            uart_tag = read_rdm6300_rfid()
+            if uart_tag:
+                tagRFID = uart_tag
+            else:
+                # Jika UART aktif, jangan blocking ke RC522
+                if ser is not None:
+                    time.sleep(0.1)
+                    continue
+
+                # Fallback ke RC522 jika UART tidak aktif
+                id,text = reader.read()
+                printDebug("ID: %s" % (tagRFID))
+                uid_bytes = id.to_bytes(8, 'big')
+                uid_4bytes = uid_bytes[3:7]
+                tag_hex = ''.join(f'{b:02x}' for b in uid_4bytes)
+                tagRFID = str(tag_hex)
+
             printDebug("ID: %s" % (tagRFID))
     
 
