@@ -366,7 +366,7 @@ def restart_app():
     os.execv(sys.executable, ['python'] + sys.argv)
 
 def check_for_update():
-    return download_latest("master")
+    return download_latest("rdm6300")
     # online_version = get_online_version()
     # print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
     # if online_version and online_version != LOCAL_VERSION:
