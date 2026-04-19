@@ -1135,6 +1135,10 @@ def display():
 statusSend=0
 last_scan_time_rfid = {}
 rdm6300_buffer = b''
+last_rdm_tag = None
+last_rdm_time = 0.0
+RDM_FAST_DEBOUNCE_SECONDS = 2.0
+BEEP_DURATION_SECONDS = 0.15
 
 def read_rdm6300_rfid():
     """
@@ -1199,7 +1203,6 @@ def read_rdm6300_rfid():
         # Konsisten dengan format UID 4-byte RC522 (8 hex terakhir)
         tag_str = tag_hex.lower()
         printDebug(f"RDM6300 parsed tag: {tag_str}")
-        sleep(0.8)  # Debounce delay untuk hindari double read
         return tag_str
     except Exception as e:
         printDebugEx("ERROR read_rdm6300_rfid:", e)
@@ -1208,6 +1211,7 @@ def read_rdm6300_rfid():
 def rfid():
     try:
         global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time,rdm6300_buffer
+        global last_rdm_tag, last_rdm_time
         while True:
             threadStatus[2]=get_datetime()
             # printDebug("Hold a tag near the reader")
@@ -1215,6 +1219,12 @@ def rfid():
             # Prioritas baca dari RDM6300 (UART)
             uart_tag = read_rdm6300_rfid()
             if uart_tag:
+                now_fast = time.time()
+                if uart_tag == last_rdm_tag and (now_fast - last_rdm_time) < RDM_FAST_DEBOUNCE_SECONDS:
+                    # Fast debounce: abaikan frame duplikat dari tap yang sama
+                    continue
+                last_rdm_tag = uart_tag
+                last_rdm_time = now_fast
                 tagRFID = uart_tag
             else:
                 # Jika UART aktif, jangan blocking ke RC522
@@ -1247,7 +1257,7 @@ def rfid():
                     if ser is not None:
                         ser.reset_input_buffer()
                     gpio_control.write(5, 1)
-                    sleep(1)
+                    sleep(BEEP_DURATION_SECONDS)
                     gpio_control.write(5, 0)
                     continue  # skip ke loop berikutnya
                       
@@ -1261,7 +1271,7 @@ def rfid():
                 ser.reset_input_buffer()
 
             gpio_control.write(5, 1)
-            sleep(1)
+            sleep(BEEP_DURATION_SECONDS)
             gpio_control.write(5, 0)
             clientMQTT.publish(topicPublish+"/tag", tagRFID)
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
