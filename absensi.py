@@ -344,7 +344,7 @@ def get_datetime():
 
 
         
-def get_online_version(branch="master") : 
+def get_online_version(branch="zero2") : 
     try:
         subprocess.run(["git", "fetch"], check=True)
         
@@ -357,7 +357,7 @@ def get_online_version(branch="master") :
         printDebugEx("ERROR get_online_version: ", e)
 
 
-def download_latest(branch="master"):
+def download_latest(branch="zero2"):
     try:
         if get_online_version(branch):
             printDebug("Remote has changes, pulling...")
@@ -382,7 +382,7 @@ def restart_app():
     os.execv(sys.executable, ['python'] + sys.argv)
 
 def check_for_update():
-    return download_latest("master")
+    return download_latest("zero2")
     # online_version = get_online_version()
     # print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
     # if online_version and online_version != LOCAL_VERSION:
