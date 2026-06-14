@@ -13,6 +13,39 @@ import sys
 import subprocess
 import os
 
+
+def is_running_in_venv():
+    return (
+        hasattr(sys, "real_prefix")
+        or sys.prefix != getattr(sys, "base_prefix", sys.prefix)
+    )
+
+
+def _pip_install(pkg_name):
+    """Install package with python -m pip and handle PEP 668 gracefully."""
+    cmd = [sys.executable, "-m", "pip", "install", pkg_name]
+
+    # Optional escape hatch (not recommended): allow overriding PEP 668.
+    if os.environ.get("ALLOW_BREAK_SYSTEM_PACKAGES") == "1":
+        cmd.append("--break-system-packages")
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode == 0:
+        return True
+
+    error_text = f"{result.stdout}\n{result.stderr}".lower()
+    if "externally-managed-environment" in error_text:
+        print("❌ PEP 668: environment is externally managed.")
+        print("💡 Recommended fixes:")
+        print("   1) Create venv: python3 -m venv .venv && source .venv/bin/activate")
+        print("   2) Install deps: python -m pip install -r requirements.txt")
+        print("   3) For OS package: sudo apt install python3-<package>")
+        print("💡 Last resort: set ALLOW_BREAK_SYSTEM_PACKAGES=1")
+        return False
+
+    print(f"❌ pip install failed for {pkg_name}:\n{result.stderr}")
+    return False
+
 def install_package(package_name, pip_name=None):
     """
     Automatically install a Python package using pip3
@@ -31,42 +64,37 @@ def install_package(package_name, pip_name=None):
             smbus_packages = ["smbus", "smbus2", "smbus-cffi"]
             for pkg in smbus_packages:
                 try:
-                    # Try pip3 first, then fallback to python -m pip
-                    try:
-                        subprocess.check_call(["pip3", "install", pkg])
-                    except (subprocess.CalledProcessError, FileNotFoundError):
-                        subprocess.check_call([sys.executable, "-m", "pip", "install", pkg])
-                    print(f"✅ Successfully installed: {pkg}")
-                    return True
-                except subprocess.CalledProcessError:
-                    continue
+                    if _pip_install(pkg):
+                        print(f"✅ Successfully installed: {pkg}")
+                        return True
+                except Exception as e:
+                    print(f"❌ Failed installing candidate {pkg}: {e}")
             print("❌ Failed to install any smbus package")
             return False
         
         elif pip_name == "evdev":
             # evdev might need system packages on some systems
             try:
-                # Try pip3 first
-                try:
-                    subprocess.check_call(["pip3", "install", "evdev"])
-                except (subprocess.CalledProcessError, FileNotFoundError):
-                    subprocess.check_call([sys.executable, "-m", "pip", "install", "evdev"])
-                print(f"✅ Successfully installed: {pip_name}")
-                return True
-            except subprocess.CalledProcessError:
+                if _pip_install("evdev"):
+                    print(f"✅ Successfully installed: {pip_name}")
+                    return True
+            except Exception:
                 print("❌ evdev installation failed. You might need to install system packages:")
                 print("   sudo apt-get install python3-dev python3-pip")
                 print("   sudo apt-get install linux-headers-$(uname -r)")
                 return False
         
         else:
-            # Try pip3 first, then fallback to python -m pip
-            try:
-                subprocess.check_call(["pip3", "install", pip_name])
-            except (subprocess.CalledProcessError, FileNotFoundError):
-                subprocess.check_call([sys.executable, "-m", "pip", "install", pip_name])
-            print(f"✅ Successfully installed: {pip_name}")
-            return True
+            # On Debian/Armbian system Python (PEP 668), skip runtime install unless in venv.
+            if not is_running_in_venv() and os.environ.get("ALLOW_BREAK_SYSTEM_PACKAGES") != "1":
+                print("⚠️ Runtime pip install skipped: system Python is externally managed.")
+                print("💡 Activate virtualenv first, then run this app.")
+                return False
+
+            if _pip_install(pip_name):
+                print(f"✅ Successfully installed: {pip_name}")
+                return True
+            return False
             
     except subprocess.CalledProcessError as e:
         print(f"❌ Failed to install {pip_name}: {e}")
@@ -130,7 +158,13 @@ def try_import(module_name, pip_name=None, from_module=None):
 try:
     import smbus
 except ImportError:
-    if install_package("smbus"):
+    try:
+        import smbus2 as smbus
+        print("✅ Using smbus2 as smbus alternative")
+    except ImportError:
+        pass
+
+    if "smbus" not in globals() and install_package("smbus"):
         try:
             import smbus
         except ImportError:
