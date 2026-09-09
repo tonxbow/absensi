@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Network Config</title>
     <style>
+        * { box-sizing: border-box; }
         body { font-family: Arial; background: #f4f4f4; margin: 0; padding: 0; }
-        .container { width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
+        .container { width: 100%; max-width: 850px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; }
         h2 { background: #007BFF; color: white; padding: 10px; border-radius: 5px; }
         form { margin-bottom: 20px; }
         label { display: block; margin-top: 10px; }
@@ -12,6 +15,14 @@
         button { background: #007BFF; color: white; border: none; padding: 10px; margin-top: 10px; cursor: pointer; }
         .status { padding: 10px; background: #eee; margin-bottom: 20px; border-radius: 5px; }
         .flash { background: #d4edda; padding: 10px; margin-bottom: 10px; border: 1px solid #c3e6cb; border-radius: 5px; }
+        .tabs { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid #ddd; padding-bottom: 12px; }
+        .tabs a { display: block; padding: 10px 14px; border-radius: 5px; color: #0056b3; background: #edf4ff; text-decoration: none; }
+        .tabs a[aria-current="page"] { background: #007BFF; color: white; }
+        a:focus-visible, button:focus-visible { outline: 3px solid #ffbf47; outline-offset: 2px; }
+        button:disabled { opacity: .6; cursor: wait; }
+        small { display: block; color: #555; margin-top: 6px; line-height: 1.5; }
+        .status { overflow-wrap: anywhere; line-height: 1.6; }
+        h3 { margin-top: 28px; }
     </style>
 </head>
 <body>
@@ -26,10 +37,70 @@
 
     <div class="status">
         <b>Ethernet IP:</b> {{ eth_ip or '—' }} |
-        <b>WiFi IP:</b> {{ wlan_ip or '—' }}
+        <b>WiFi IP:</b> {{ wlan_ip or '—' }} |
+        <b>Tailscale IP:</b> {{ tailscale.ips | join(', ') or '—' }}
     </div>
 
-    <h2>Ethernet</h2>
+    <nav class="tabs" aria-label="Pengaturan perangkat">
+        {% for tab_id, tab_label in settings_tabs %}
+        <a href="{{ url_for('network', tab=tab_id) }}" {% if active_tab == tab_id %}aria-current="page"{% endif %}>{{ tab_label }}</a>
+        {% endfor %}
+    </nav>
+
+    {% if active_tab == 'tailscale' %}
+    <section aria-labelledby="heading-tailscale">
+    <h2 id="heading-tailscale">Tailscale</h2>
+    <div class="status">
+        <b>Status:</b> {{ tailscale.status }}<br>
+        <b>IP:</b> {{ tailscale.ips | join(', ') or '—' }}<br>
+        <b>Nama node:</b> {{ tailscale.hostname or '—' }}<br>
+        <b>Nama DNS:</b> {{ tailscale.dns_name or '—' }}<br>
+        <b>Node key expiry (status lokal):</b> {{ tailscale.key_expiry or 'Tidak ada tanggal expiry yang dilaporkan; gunakan Cek Status API untuk memastikan.' }}
+        {% if tailscale.expired %}<br><b>Node key sudah kedaluwarsa.</b>{% endif %}
+        {% for message in tailscale.health %}
+            <div>{{ message }}</div>
+        {% endfor %}
+    </div>
+
+    <h3>Daftar ulang Tailscale</h3>
+    <form method="post" action="{{ url_for('reregister_tailscale') }}" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'Mendaftarkan ulang…';">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
+        <label for="tailscale-new-hostname">Nama node</label>
+        <input id="tailscale-new-hostname" name="hostname" placeholder="scola-absen-XXXXXX" type="text" maxlength="63"
+               pattern="[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?"
+               value="{{ tailscale.hostname or cfg.get('tailscale', {}).get('hostname', '') }}" placeholder="Kosongkan untuk nama dari sistem operasi">
+        <label for="tailscale-auth-key">Auth key Tailscale:</label>
+        <input type="password" id="tailscale-auth-key" name="auth_key" required
+               placeholder="tskey-auth-..." autocomplete="off" spellcheck="false" maxlength="511">
+        <label>
+            <input type="checkbox" name="confirm_reset" value="yes" required style="width: auto;">
+            Saya setuju menghapus identitas Tailscale lama pada perangkat ini dan mendaftarkan ulang.
+        </label>
+        <button type="submit">Daftar Ulang </button>
+    </form>
+
+    <h3>Node key expiry</h3>
+    <form method="post" action="{{ url_for('set_tailscale_expiry') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
+        <label for="tailscale-api-token">API access token:</label>
+        <input type="password" id="tailscale-api-token" name="api_token" required maxlength="510"
+               autocomplete="off" spellcheck="false" placeholder="tskey-api-...">
+        <label for="expiry-action">Pengaturan:</label>
+        <select id="expiry-action" name="expiry_action">
+            <option value="disable">Disable Key Expiry — node tidak kedaluwarsa</option>
+            <option value="enable">Enable Key Expiry — aktifkan kembali masa berlaku</option>
+        </select>
+        <button type="submit">Set Expired</button>
+    </form>
+
+    
+
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'ethernet' %}
+    <section aria-labelledby="heading-ethernet">
+    <h2 id="heading-ethernet">Ethernet</h2>
     <form method="post" action="{{ url_for('save_ethernet') }}">
         <label>Mode:</label>
         <select name="ethernet_mode">
@@ -45,7 +116,12 @@
         <button type="submit">Save Ethernet</button>
     </form>
 
-    <h2>WiFi</h2>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'wifi' %}
+    <section aria-labelledby="heading-wifi">
+    <h2 id="heading-wifi">WiFi</h2>
     <form method="post" action="{{ url_for('save_wifi') }}">
         <label>SSID:</label>
         <input type="text" name="ssid" id="ssid-input" list="ssid-list" value="{{ wifi_cfg.ssid if wifi_cfg else '' }}">
@@ -60,7 +136,12 @@
         <button type="submit">Save WiFi</button>
     </form>
 
-    <h2>Device Info</h2>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'device' %}
+    <section aria-labelledby="heading-device">
+    <h2 id="heading-device">Device Info</h2>
     <form method="post" action="{{ url_for('save_device') }}">
         <label>Machine ID:</label>
         <input type="text" name="machine_id" value="{{ cfg['machine-id'] if 'machine-id' in cfg else '' }}">
@@ -69,7 +150,12 @@
         <button type="submit">Save Device Info</button>
     </form>
 
-    <h2>Timezone</h2>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'timezone' %}
+    <section aria-labelledby="heading-timezone">
+    <h2 id="heading-timezone">Timezone</h2>
     <form method="post" action="{{ url_for('save_timezone') }}">
         <label>Timezone:</label>
         <select name="timezone">
@@ -88,7 +174,12 @@
         <button type="submit">Save Timezone</button>
     </form>
 
-    <h2>QR Code Scanner</h2>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'qr' %}
+    <section aria-labelledby="heading-qr">
+    <h2 id="heading-qr">QR Code Scanner</h2>
     <form method="post" action="{{ url_for('save_qr_device') }}">
         <label>QR Scanner Device:</label>
         <select name="qr_device" id="qr-device-select">
@@ -106,9 +197,18 @@
         </div>
         <button type="submit">Save QR Scanner</button>
     </form>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'application' %}
+    <section aria-labelledby="heading-application">
+    <h2 id="heading-application">Aplikasi</h2>
+    <p>Restart aplikasi absensi untuk menerapkan pengaturan perangkat.</p>
     <form method="post" action="{{ url_for('restart_app') }}">
         <button style="width: 100%; background-color: red;" class="danger" type="submit">RESTART APPLICATION</button>
     </form>
+    </section>
+    {% endif %}
 </div>
 
 <script>

@@ -1,14 +1,217 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session, abort
 import json, os, subprocess, netifaces
 import ipaddress
 import glob
+import secrets
+import re
+import tempfile
+import threading
+import base64
+import http.client
+from urllib.parse import quote
 
 
 app = Flask(__name__)
-app.secret_key = "scola-secret-key"
+app.secret_key = os.environ.get('FLASK_SECRET_KEY') or secrets.token_hex(32)
 
 CONFIG_FILE = "setting.json"
 ETH_CONN_NAME = "eth0-static"
+tailscale_reset_lock = threading.Lock()
+SETTINGS_TABS = [('ethernet', 'Ethernet'), ('wifi', 'WiFi'), ('tailscale', 'Tailscale'),
+                 ('device', 'Device Info'), ('timezone', 'Timezone'),
+                 ('qr', 'QR Scanner'), ('application', 'Aplikasi')]
+
+def settings_redirect(tab):
+    return redirect(url_for('network', tab=tab))
+
+def check_tailscale_csrf():
+    token = session.get('tailscale_csrf', '')
+    if not token or not secrets.compare_digest(token.encode(), request.form.get('csrf_token', '').encode()):
+        abort(400, description='Form kedaluwarsa. Muat ulang halaman konfigurasi.')
+
+def valid_tailscale_hostname(hostname):
+    return re.fullmatch(r'[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?', hostname) is not None
+
+def get_tailscale_info():
+    info = {'ips': [], 'status': 'Tidak tersedia', 'health': [], 'hostname': '',
+            'dns_name': '', 'device_id': '', 'key_expiry': '', 'expired': False}
+    try:
+        result = subprocess.run(['tailscale', 'status', '--json'],
+                                capture_output=True, text=True, timeout=5)
+        if result.returncode != 0:
+            info['status'] = 'Tidak dapat membaca status tailscaled'
+            return info
+        data = json.loads(result.stdout)
+        info['ips'] = data.get('TailscaleIPs') or []
+        info['status'] = data.get('BackendState') or 'Tidak diketahui'
+        info['health'] = data.get('Health') or []
+        node = data.get('Self') or {}
+        info['hostname'] = node.get('HostName') or ''
+        info['dns_name'] = (node.get('DNSName') or '').rstrip('.')
+        info['device_id'] = node.get('ID') or ''
+        info['key_expiry'] = node.get('KeyExpiry') or ''
+        info['expired'] = bool(node.get('Expired'))
+    except FileNotFoundError:
+        info['status'] = 'Tailscale belum terpasang'
+    except (OSError, subprocess.TimeoutExpired, ValueError, AttributeError):
+        info['status'] = 'Status Tailscale tidak dapat dibaca'
+    return info
+
+def run_tailscale_admin(args, timeout=30):
+    # Non-interactive sudo: never leave the web request waiting for a password.
+    prefix = [] if os.geteuid() == 0 else ['sudo', '-n']
+    subprocess.run(prefix + args, check=True, capture_output=True,
+                   text=True, timeout=timeout)
+
+def tailscale_device_api(api_token, device_id, method='GET', payload=None):
+    # Fixed HTTPS destination, no redirects and no credentials in URLs or logs.
+    path = '/api/v2/device/' + quote(device_id, safe='')
+    if method == 'POST':
+        path += '/key'
+    authorization = base64.b64encode((api_token + ':').encode()).decode()
+    headers = {'Authorization': 'Basic ' + authorization, 'Accept': 'application/json'}
+    body = None
+    if payload is not None:
+        body = json.dumps(payload)
+        headers['Content-Type'] = 'application/json'
+    connection = http.client.HTTPSConnection('api.tailscale.com', timeout=15)
+    try:
+        connection.request(method, path, body=body, headers=headers)
+        response = connection.getresponse()
+        raw = response.read()
+        if response.status in (401, 403):
+            raise ValueError('API token tidak valid, kedaluwarsa, atau tidak memiliki izin mengelola perangkat ini.')
+        if response.status == 404:
+            raise ValueError('Node tidak ditemukan di tailnet pemilik API token.')
+        if not 200 <= response.status < 300:
+            raise ValueError('Tailscale API gagal merespons (HTTP %s). Coba lagi.' % response.status)
+        if method == 'GET':
+            try:
+                data = json.loads(raw)
+            except (ValueError, UnicodeError):
+                raise ValueError('Respons Tailscale API tidak dapat dibaca. Cek status lagi.') from None
+            if not isinstance(data, dict) or not isinstance(data.get('keyExpiryDisabled'), bool):
+                raise ValueError('Status key expiry dari API tidak dapat dibaca.')
+            return data
+        return None
+    finally:
+        connection.close()
+
+@app.route('/save_tailscale_name', methods=['POST'])
+def save_tailscale_name():
+    check_tailscale_csrf()
+    hostname = request.form.get('hostname', '').strip().lower()
+    if not valid_tailscale_hostname(hostname):
+        flash('❌ Nama harus 1–63 karakter: huruf, angka, atau tanda hubung; awal dan akhir harus huruf/angka.')
+        return settings_redirect('tailscale')
+    if not tailscale_reset_lock.acquire(blocking=False):
+        flash('⏳ Perubahan Tailscale sedang berjalan. Coba lagi setelah selesai.')
+        return settings_redirect('tailscale')
+    try:
+        run_tailscale_admin(['tailscale', 'set', '--hostname=' + hostname])
+        try:
+            cfg = load_config()
+            cfg.setdefault('tailscale', {})['hostname'] = hostname
+            save_config(cfg)
+            flash('✅ Nama Tailscale diubah menjadi ' + hostname + '.')
+        except (OSError, ValueError, TypeError):
+            flash('ℹ️ Nama Tailscale sudah diubah, tetapi gagal disimpan ke setting.json untuk daftar ulang berikutnya.')
+    except (OSError, subprocess.SubprocessError):
+        flash('❌ Nama gagal diubah. Pastikan tailscaled berjalan, CLI mendukung tailscale set, dan akses root/sudo tersedia.')
+    finally:
+        tailscale_reset_lock.release()
+    return settings_redirect('tailscale')
+
+@app.route('/set_tailscale_expiry', methods=['POST'])
+def set_tailscale_expiry():
+    check_tailscale_csrf()
+    api_token = request.form.get('api_token', '').strip()
+    action = request.form.get('expiry_action', '')
+    if not re.fullmatch(r'tskey-api-[A-Za-z0-9_-]{10,500}', api_token):
+        flash('❌ Isi API access token (tskey-api-...), bukan auth key (tskey-auth-...).')
+        return settings_redirect('tailscale')
+    if action not in ('check', 'disable', 'enable'):
+        abort(400)
+    if not tailscale_reset_lock.acquire(blocking=False):
+        flash('⏳ Perubahan Tailscale sedang berjalan. Coba lagi setelah selesai.')
+        return settings_redirect('tailscale')
+    try:
+        device_id = get_tailscale_info()['device_id']
+        if not device_id:
+            flash('❌ Identitas node belum tersedia. Hubungkan atau daftarkan Tailscale dahulu.')
+            return settings_redirect('tailscale')
+        if action != 'check':
+            tailscale_device_api(api_token, device_id, 'POST', {'keyExpiryDisabled': action == 'disable'})
+        data = tailscale_device_api(api_token, device_id)
+        disabled = data['keyExpiryDisabled']
+        if action != 'check' and disabled != (action == 'disable'):
+            flash('❌ API belum mengonfirmasi pengaturan yang diminta. Periksa status lagi.')
+        elif disabled:
+            flash('✅ Dikonfirmasi Tailscale API: key expiry node ini dinonaktifkan.')
+        else:
+            flash('✅ Dikonfirmasi Tailscale API: key expiry node ini aktif. Expiry: ' + str(data.get('expires') or 'tidak tersedia'))
+    except ValueError as error:
+        flash('❌ ' + str(error))
+    except (OSError, http.client.HTTPException):
+        flash('❌ Tidak dapat menghubungi Tailscale API. Periksa internet lalu cek status lagi; perubahan mungkin sudah diterapkan.')
+    finally:
+        tailscale_reset_lock.release()
+    return settings_redirect('tailscale')
+
+@app.route('/reregister_tailscale', methods=['POST'])
+def reregister_tailscale():
+    check_tailscale_csrf()
+    hostname = request.form.get('hostname', '').strip().lower()
+    if hostname and not valid_tailscale_hostname(hostname):
+        flash('❌ Nama node baru tidak valid. Gunakan 1–63 karakter huruf, angka, atau tanda hubung.')
+        return settings_redirect('tailscale')
+    auth_key = request.form.get('auth_key', '').strip()
+    if not re.fullmatch(r'tskey-auth-[A-Za-z0-9_-]{10,500}', auth_key):
+        flash('❌ Isi auth key Tailscale yang valid (tskey-auth-...).')
+        return settings_redirect('tailscale')
+    if request.form.get('confirm_reset') != 'yes':
+        flash('❌ Konfirmasi penghapusan identitas Tailscale terlebih dahulu.')
+        return settings_redirect('tailscale')
+    if not tailscale_reset_lock.acquire(blocking=False):
+        flash('⏳ Daftar ulang Tailscale sedang berjalan. Tunggu lalu muat ulang halaman.')
+        return settings_redirect('tailscale')
+    step = 'menyiapkan auth key'
+    try:
+        # Mode 0600, removed on exit; the key is never in argv, config, or logs.
+        with tempfile.NamedTemporaryFile(mode='w', prefix='tailscale-auth-') as key_file:
+            key_file.write(auth_key)
+            key_file.flush()
+            step = 'menghentikan tailscaled'
+            try:
+                run_tailscale_admin(['systemctl', 'stop', 'tailscaled'])
+                step = 'menghapus identitas lama'
+                run_tailscale_admin(['rm', '-f', '/var/lib/tailscale/tailscaled.state'])
+            finally:
+                # Also restore the service if removing the state fails.
+                try:
+                    run_tailscale_admin(['systemctl', 'start', 'tailscaled'])
+                except (OSError, subprocess.SubprocessError):
+                    step = 'menyalakan kembali tailscaled'
+                    raise
+            step = 'mendaftarkan node (periksa auth key dan koneksi internet)'
+            up_args = ['tailscale', 'up', '--auth-key=file:' + key_file.name,
+                       '--accept-dns=false', '--timeout=60s']
+            if hostname:
+                up_args.append('--hostname=' + hostname)
+            run_tailscale_admin(up_args, timeout=75)
+        info = get_tailscale_info()
+        if info['status'] == 'Running' and info['ips']:
+            flash('✅ Tailscale berhasil didaftarkan ulang. IP: ' + ', '.join(info['ips']))
+        else:
+            flash('ℹ️ Perintah daftar ulang selesai. Periksa status Tailscale dan persetujuan node di admin console.')
+    except (OSError, subprocess.SubprocessError):
+        # Do not expose subprocess output, which may contain credentials.
+        flash('❌ Daftar ulang gagal saat ' + step +
+              '. Pastikan layanan tersedia dan aplikasi memiliki akses root/sudo tanpa password. '
+              'Jika identitas sudah dihapus, isi auth key dan coba lagi melalui IP LAN.')
+    finally:
+        tailscale_reset_lock.release()
+    return settings_redirect('tailscale')
 
 def subnet_to_prefix(subnet):
     return sum(bin(int(x)).count('1') for x in subnet.split('.'))
@@ -100,6 +303,11 @@ def scan_usb_input_devices():
 
 @app.route('/')
 def network():
+    if 'tailscale_csrf' not in session:
+        session['tailscale_csrf'] = secrets.token_urlsafe(32)
+    active_tab = request.args.get('tab', 'ethernet')
+    if active_tab not in dict(SETTINGS_TABS):
+        active_tab = 'ethernet'
     cfg = load_config()
     eth_ip = get_interface_ip('eth0')
     wlan_ip = get_interface_ip('wlan0')
@@ -112,13 +320,17 @@ def network():
     return render_template(
         'index.html',
         cfg=cfg,
+        settings_tabs=SETTINGS_TABS,
+        active_tab=active_tab,
         eth_ip=eth_ip,
         wlan_ip=wlan_ip,
         ethernet_cfg=ethernet_cfg,
         wifi_cfg=wifi_cfg,
         qr_cfg=qr_cfg,
         timezone=timezone,
-        usb_devices=usb_devices
+        usb_devices=usb_devices,
+        tailscale=get_tailscale_info(),
+        tailscale_csrf=session['tailscale_csrf']
     )
 
 @app.route('/save_ethernet', methods=['POST'])
@@ -150,7 +362,7 @@ def save_ethernet():
     subprocess.run(["nmcli", "con", "up", ETH_CONN_NAME], check=False)
     save_config(cfg)
     flash("✅ Ethernet settings saved!")
-    return redirect(url_for('network'))
+    return settings_redirect('ethernet')
 
 @app.route('/save_wifi', methods=['POST'])
 def save_wifi():
@@ -167,7 +379,7 @@ def save_wifi():
         cfg['wifi'] = {'ssid': ssid, 'password': password}
         save_config(cfg)
         flash("✅ Wi-Fi settings saved!")
-    return redirect(url_for('network'))
+    return settings_redirect('wifi')
 
 @app.route('/save_device', methods=['POST'])
 def save_device():
@@ -182,7 +394,7 @@ def save_device():
 
     save_config(cfg)
     flash("✅ Device info saved!")
-    return redirect(url_for('network'))
+    return settings_redirect('device')
 
 @app.route('/save_timezone', methods=['POST'])
 def save_timezone():
@@ -195,7 +407,7 @@ def save_timezone():
         flash("✅ Timezone saved!")
     except subprocess.CalledProcessError:
         flash("❌ Failed to set timezone")
-    return redirect(url_for('network'))
+    return settings_redirect('timezone')
 
 @app.route('/save_qr_device', methods=['POST'])
 def save_qr_device():
@@ -229,7 +441,7 @@ def save_qr_device():
     
     save_config(cfg)
     flash("✅ QR Scanner settings saved!")
-    return redirect(url_for('network'))
+    return settings_redirect('qr')
 
 def restart_pm2_app(app_name):
     try:
@@ -274,7 +486,7 @@ def restart_pm2_app(app_name):
 def restart_app():
     restart_pm2_app("scola-absen")
     flash("✅ APP RESTART!")
-    return redirect(url_for('network'))
+    return settings_redirect('application')
 
 @app.route('/scan_ssid')
 def scan_ssid():
