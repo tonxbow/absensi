@@ -12,6 +12,10 @@
 import sys
 import subprocess
 import os
+import shutil
+
+# Bus I2C untuk LCD dan RTC pada perangkat Orange Pi LTS ini.
+I2C_BUS = 0
 
 def install_package(package_name, pip_name=None):
     """
@@ -82,8 +86,6 @@ def create_requirements_file():
         "APScheduler>=3.8.0",
         "paho-mqtt>=1.5.0",
         "psutil>=5.8.0",
-        "opencv-python>=4.5.0",
-        "pyzbar>=0.1.8",
         "evdev>=1.4.0",
         "mfrc522>=0.0.7",
         "smbus2>=0.4.0"
@@ -197,18 +199,6 @@ except ImportError:
         import psutil
 
 try:
-    import cv2
-except ImportError:
-    if install_package("cv2", "opencv-python"):
-        import cv2
-
-try:
-    from pyzbar.pyzbar import decode
-except ImportError:
-    if install_package("pyzbar"):
-        from pyzbar.pyzbar import decode
-
-try:
     from evdev import InputDevice, categorize, ecodes
 except ImportError:
     if install_package("evdev"):
@@ -234,7 +224,7 @@ def bcd_to_dec(bcd):
 def dec_to_bcd(val):
     return (val // 10) << 4 | (val % 10)
 
-def read_rtc_time(bus_num=3, address=0x68):
+def read_rtc_time(bus_num=I2C_BUS, address=0x68):
     try:
         bus = smbus.SMBus(bus_num)
         data = bus.read_i2c_block_data(address, 0x00, 7)
@@ -267,7 +257,7 @@ def sync_time_with_rtc():
 
 def sync_rtc_with_system():
     try:
-        bus = smbus.SMBus(3)  # Sesuaikan dengan I2C bus kamu
+        bus = smbus.SMBus(I2C_BUS)
         now = datetime.now()  # Waktu dari sistem (NTP)
 
         bus.write_i2c_block_data(0x68, 0x00, [
@@ -310,7 +300,7 @@ def get_datetime():
 
 
         
-def get_online_version(branch="master") : 
+def get_online_version(branch="zerolts") : 
     try:
         subprocess.run(["git", "fetch"], check=True)
         
@@ -323,7 +313,7 @@ def get_online_version(branch="master") :
         printDebugEx("ERROR get_online_version: ", e)
 
 
-def download_latest(branch="master"):
+def download_latest(branch="zerolts"):
     try:
         if get_online_version(branch):
             printDebug("Remote has changes, pulling...")
@@ -348,7 +338,7 @@ def restart_app():
     os.execv(sys.executable, ['python'] + sys.argv)
 
 def check_for_update():
-    return download_latest("master")
+    return download_latest("zerolts")
     # online_version = get_online_version()
     # print("VERSION ONLINE : " + str(online_version) + " = " + LOCAL_VERSION)
     # if online_version and online_version != LOCAL_VERSION:
@@ -462,9 +452,8 @@ ENABLE = 0b00000100 # Enable bit
 E_PULSE = 0.0005
 E_DELAY = 0.0005
 
-#Open I2C interface
-#bus = smbus.SMBus(0)  # Rev 1 Pi uses 0
-bus = smbus.SMBus(3) # Rev 2 Pi uses 1
+# Open the LCD on the same I2C bus as the RTC.
+bus = smbus.SMBus(I2C_BUS)
 
 def lcd_init():
     try :
@@ -580,20 +569,31 @@ def send_network_config(
 ############################### GPIO FUNCTION #######################################
 class GPIOControl:
     def __init__(self):
-        pass
+        self.command = shutil.which("gpio")
+        self.available = bool(self.command)
+        if not self.available:
+            print("⚠️ Perintah gpio tidak ditemukan. Buzzer/tombol belum aktif; pasang GPIO tool yang sesuai model board.")
+
+    def _run(self, *args):
+        if not self.available:
+            return None
+        try:
+            return subprocess.check_output([self.command] + list(args),
+                                           stderr=subprocess.STDOUT, timeout=3).decode().strip()
+        except (OSError, subprocess.SubprocessError) as error:
+            self.available = False
+            print("⚠️ GPIO gagal; buzzer/tombol dinonaktifkan sampai aplikasi direstart:", error)
+            return None
 
     def read(self, pin_number):
-        command = ["gpio", "read", str(pin_number)]
-        result = subprocess.check_output(command).decode().strip()
-        return int(result)
+        result = self._run("read", str(pin_number))
+        return int(result) if result in ("0", "1") else None
 
     def write(self, pin_number, value):
-        command = f"gpio write {pin_number} {value}"
-        result = os.system(command)
+        return self._run("write", str(pin_number), str(value)) is not None
 
     def mode(self, pin_number, mode):
-        command = f"gpio mode {pin_number} {mode}"
-        result = os.system(command)
+        return self._run("mode", str(pin_number), mode) is not None
 
     def readm(self, pin_numbers):
         for pin_number in pin_numbers:
@@ -788,6 +788,15 @@ def get_uptime():
     uptime = now - boot_time
     return str(uptime).split('.')[0]  # Hapus microseconds
 
+def get_cpu_temperature():
+    """Baca suhu CPU Orange Pi dalam Celsius; None jika sensor tidak tersedia."""
+    try:
+        with open('/sys/class/thermal/thermal_zone0/temp', 'r') as sensor:
+            return round(int(sensor.read().strip()) / 1000.0, 2)
+    except (OSError, ValueError):
+        return None
+
+
 # Fungsi ambil data sistem
 threadStatus=[0,0,0,0]
 def get_system_info():
@@ -801,10 +810,13 @@ def get_system_info():
         "ip_address_eth": (eth_ip if eth_ip else "-"),
         "ip_address_vpn": (vpn_ip if vpn_ip else "-"),
         "cpu_percent": psutil.cpu_percent(interval=1),
+        "cpu_temperature": get_cpu_temperature(),
         "memory_percent": psutil.virtual_memory().percent,
         "storage_percent": psutil.disk_usage('/').percent,
         "uptime": get_uptime(),
         "device": platform.node(),  # nama host/device
+        "gpio_available": gpio_control.available,
+        "rfid_available": reader is not None,
         "thread_display" : threadStatus[1],
         "thread_rfid" : threadStatus[2],
         "thread_send" : threadStatus[3]
@@ -825,7 +837,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "1.1.11"
+LOCAL_VERSION = "2.0.1"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -841,7 +853,10 @@ BUTTON = 7
 button_pressed_time = 0  # buat catat kapan ditekan
 
 
-def on_connect(client, userdata, flags, rc, properties):
+def on_connect(client, userdata, flags, rc, properties=None):
+    if rc != 0:
+        printDebug("MQTT connection rejected:", rc)
+        return
     now = datetime.now()
     formatted_datetime_1 = now.strftime("%Y-%m-%d  %H:%M:%S")
     client.publish(topicPublish, "STARTING " + formatted_datetime_1)
@@ -871,16 +886,9 @@ command_map = {
     "update": update_app
 }
     
-def on_disconnect(client, userdata, rc, properties=None, *args):
-    # print("⚠️ Terputus dari broker (rc={}), mencoba reconnect...".format(rc))
-    while True:
-        try:
-            clientMQTT.reconnect()
-            # printDebug("🔁 Reconnected!")
-            break
-        except:
-            # printDebug("⏳ Gagal reconnect, coba lagi 5 detik...")
-            time.sleep(5)
+def on_disconnect(client, userdata, *args):
+    # Paho's network loop handles reconnection; never block its callback thread.
+    printDebug("MQTT terputus; network loop akan mencoba menghubungkan kembali.")
 
 def on_message(client, userdata, msg):
     try:
@@ -895,18 +903,42 @@ def on_message(client, userdata, msg):
         printDebugEx("Error saat menjalankan perintah:", e)
 
 
-try :
-    # clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "123")
-    eth_mac = get_mac().replace(":","")
-    clientMQTT = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2,client_id="absensi-client-"+eth_mac)
-    clientMQTT.username_pw_set(username="penta",password="penta123")
-    clientMQTT.on_connect = on_connect
-    clientMQTT.on_disconnect = on_disconnect
-    clientMQTT.on_message = on_message
-    clientMQTT.connect(broker, port)
-except Exception as e:
-    printDebug("Error MQTT:", e)   
+clientMQTT = None
 
+def create_mqtt_client():
+    options = {"client_id": "absensi-client-" + get_mac().replace(":", "")}
+    if hasattr(mqtt, 'CallbackAPIVersion'):
+        options['callback_api_version'] = mqtt.CallbackAPIVersion.VERSION2
+    client = mqtt.Client(**options)
+    client.username_pw_set(username="penta", password="penta123")
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    client.on_message = on_message
+    client.reconnect_delay_set(min_delay=1, max_delay=30)
+    client.connect_async(broker, port)
+    return client
+
+def publish_mqtt(topic, payload):
+    # Attendance is saved separately in MySQL even when MQTT is unavailable.
+    if clientMQTT is None:
+        return False
+    try:
+        result = clientMQTT.publish(topic, payload)
+        return result.rc == mqtt.MQTT_ERR_SUCCESS
+    except Exception as error:
+        printDebug("MQTT publish gagal:", error)
+        return False
+
+# Initialize shared state before any optional hardware operation can fail.
+wlan_ip = eth_ip = vpn_ip = None
+ssid = None
+reader = None
+tagRFID = ""
+statusInsert = 0
+eth_mac = get_mac().replace(":", "")
+topicPublish = "scola/absensi/" + eth_mac
+topicSubscribe = topicPublish + "/subs"
+topicSubscribeAll = "scola/absensi/subscribe"
 
 # Menjadwalkan fungsi setiap hari jam 23:30
 
@@ -955,7 +987,6 @@ except Exception as e:
     printDebugEx("ERROR START 1: ", e)   
     
 try : 
-    reader = SimpleMFRC522()
     wlan_ip = get_interface_ip('wlan0')  # Common on Linux/Raspberry Pi
     if not wlan_ip:
         wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
@@ -969,10 +1000,14 @@ try :
 except Exception as e:
     printDebugEx("ERROR START 2: ", e)   
 
-try : 
-    reader = SimpleMFRC522()
-except Exception as e:
-    printDebugEx("ERROR START 3: ", e)
+def initialize_rfid():
+    try:
+        return SimpleMFRC522()
+    except FileNotFoundError:
+        print("⚠️ RFID belum aktif: perangkat SPI yang diminta driver tidak ditemukan. Periksa /dev/spidev* dan bus/device di mfrc522/MFRC522.py.")
+    except Exception as error:
+        print("⚠️ RFID gagal diinisialisasi:", error)
+    return None
 
 displayPage=0
 displayMaxPage=1
@@ -1042,6 +1077,12 @@ def display():
                 if QR_ENABLED:
                     message1 = " SILAHKAN  TAP/SCAN "
                     message2 = " KARTU RFID/QR CODE "
+                if reader is None:
+                    message1 = "  RFID BELUM SIAP  "
+                    message2 = " PERIKSA SPI/DRIVER "
+                    if QR_ENABLED and QR_DEVICE_PATH:
+                        message1 = " SILAHKAN SCAN QR "
+                        message2 = " RFID BELUM SIAP "
                 if tick :
                     lcd_string(message1,LCD_LINE_2)
                     lcd_string(message2,LCD_LINE_3)
@@ -1117,8 +1158,13 @@ def display():
 statusSend=0
 last_scan_time_rfid = {}
 def rfid():
+    global reader,tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
+    while reader is None:
+        reader = initialize_rfid()
+        if reader is None:
+            threadStatus[2] = "RFID unavailable: check SPI/driver"
+            time.sleep(30)
     try:
-        global tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
         while True:
             threadStatus[2]=get_datetime()
             printDebug("Hold a tag near the reader")
@@ -1153,7 +1199,7 @@ def rfid():
             gpio_control.write(5, 1)
             sleep(1)
             gpio_control.write(5, 0)
-            clientMQTT.publish(topicPublish+"/tag", tagRFID)
+            publish_mqtt(topicPublish+"/tag", tagRFID)
             #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
 
     except Exception as e:
@@ -1322,32 +1368,35 @@ def send():
 def heartBeat():
     while True:
         try:
-            # print ("kirim heart")
             dataSystem = get_system_info()
             payload = json.dumps(dataSystem)
-            clientMQTT.publish(topicPublish+"/heart", payload)
-            # print ("kirim heartx")
-            time.sleep(30)
-            # print ("kirim heartxx")
+            publish_mqtt(topicPublish + "/heart", payload)
         except Exception as e:
             printDebugEx("ERROR HeartBeat : ", e)
+        finally:
+            time.sleep(30)
 
 def mqttThread():
-    try:
-        clientMQTT.loop_forever()  # listen terus
-    except Exception as e:
-        printDebugEx("ERROR MQTT : ", e)
+    global clientMQTT
+    while True:
+        try:
+            if clientMQTT is None:
+                clientMQTT = create_mqtt_client()
+            clientMQTT.loop_forever(retry_first_connection=True)
+        except Exception as e:
+            printDebugEx("ERROR MQTT : ", e)
+        time.sleep(5)
 
 
-statusCamera=True
-def camThread():
+statusQRScanner=True
+def qrScannerThread():
     try:
-        global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusCamera
+        global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusQRScanner
         
         # Check if QR scanner is enabled
         if not QR_ENABLED or not QR_DEVICE_PATH:
             printDebug("QR Scanner disabled in configuration")
-            statusCamera = False
+            statusQRScanner = False
             return
             
         # ganti dengan device QR reader kamu
@@ -1357,7 +1406,7 @@ def camThread():
             printDebug(f"QR Scanner initialized: {QR_DEVICE_PATH}")
         except Exception as e:
             printDebugEx(f"Failed to initialize QR device {QR_DEVICE_PATH}: ", e)
-            statusCamera = False
+            statusQRScanner = False
             return
             
         buffer = ''
@@ -1391,56 +1440,13 @@ def camThread():
                         gpio_control.write(5, 1)
                         sleep(1)
                         gpio_control.write(5, 0)
-                        clientMQTT.publish(topicPublish + "/tag", qr_data)
+                        publish_mqtt(topicPublish + "/tag", qr_data)
                         buffer = ''
                     elif key.startswith('KEY_'):
                         # ambil karakter terakhir dari keycode, simple mapping
                         char = key.replace('KEY_', '')
                         if len(char) == 1:
                             buffer += char.lower()  # sesuaikan jika huruf besar/kecil
-    # global tagRFID,statusInsert, last_scan_time_qr, lcd_backlight_status, last_scan_time, statusCamera
-    # cap = cv2.VideoCapture(1)
-    # if not cap.isOpened():
-    #     statusCamera=False
-    #     printDebug("❌ Tidak bisa membuka kamera QR Code.")
-    #     return
-
-    # printDebug("📡 QR Code scanner aktif...")
-    # try:
-    #     while True:
-    #         ret, frame = cap.read()
-    #         if not ret:
-    #             sleep(0.5)
-    #             continue
-
-    #         decoded_objects = decode(frame)
-    #         for obj in decoded_objects:
-    #             qr_data = obj.data.decode("utf-8")
-    #             now = datetime.now()
-
-    #             last_time = last_scan_time_qr.get(qr_data)
-    #             printDebug(last_scan_time_qr)
-    #             tagRFID = qr_data
-    #             if last_time :
-    #                 elapsed = now - last_time
-    #                 if elapsed < timedelta(minutes=1):
-    #                     print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
-    #                     tagRFID = "xxx"
-    #                     gpio_control.write(5, 1)
-    #                     sleep(1)
-    #                     gpio_control.write(5, 0)
-    #                     continue  # skip ke loop berikutnya
-
-    #             statusInsert = insertdata(qr_data)
-    #             last_scan_time_qr[qr_data] = now
-    #             last_scan_time = time.time()
-    #             lcd_backlight_status = LCD_BACKLIGHT
-    #             gpio_control.write(5, 1)
-    #             sleep(1)
-    #             gpio_control.write(5, 0)
-    #             clientMQTT.publish(topicPublish + "/tag", qr_data)
-
-    #         sleep(0.1)
 
     except KeyboardInterrupt:
         printDebug("🛑 QR scanner berhenti")
@@ -1459,14 +1465,14 @@ if __name__ == '__main__':
   try:
     # main()
     print("🚀 Starting Absensi Application...")
-    print("📦 All required modules loaded successfully!")
+    print("📦 Aplikasi mulai; periksa log/status untuk ketersediaan RFID, GPIO, dan MQTT.")
     
     t1 = threading.Thread(target=display, args=())
     t2 = threading.Thread(target=rfid, args=())
     t3 = threading.Thread(target=send, args=())
     t4 = threading.Thread(target=mqttThread, args=())
     t5 = threading.Thread(target=heartBeat, args=())
-    t6 = threading.Thread(target=camThread, args=())
+    t6 = threading.Thread(target=qrScannerThread, args=())
 
     t1.start()
     t2.start()
@@ -1480,11 +1486,11 @@ if __name__ == '__main__':
             printDebug(f"Starting QR Scanner thread with device: {QR_DEVICE_PATH}")
             t6.start()
         else:
-            printDebug("QR Scanner disabled - camThread will not start")
-            statusCamera = False
+            printDebug("QR Scanner disabled - qrScannerThread will not start")
+            statusQRScanner = False
     except NameError:
-        printDebug("QR configuration not found - camThread will not start")
-        statusCamera = False
+        printDebug("QR configuration not found - qrScannerThread will not start")
+        statusQRScanner = False
     
     statusThread = True
     while True:
@@ -1507,7 +1513,7 @@ if __name__ == '__main__':
         try:
             if 'QR_ENABLED' in globals() and 'QR_DEVICE_PATH' in globals():
                 if QR_ENABLED and QR_DEVICE_PATH and 't6' in locals() and not t6.is_alive():
-                    printDebug("CamThread Mati")
+                    printDebug("QR Scanner Thread Mati")
         except (NameError, UnboundLocalError):
             # QR variables not defined, skip check
             pass
@@ -1526,8 +1532,7 @@ if __name__ == '__main__':
     print("🔧 Or install individual packages:")
     print("   pip3 install evdev paho-mqtt mysql-connector-python")
     print("   pip3 install requests netifaces psutil APScheduler")
-    print("   pip3 install opencv-python pyzbar mfrc522 smbus2")
+    print("   pip3 install mfrc522 smbus2")
     sys.exit(1)
   except Exception as e:
     printDebugEx("ERROR MAIN: ", e)
-

@@ -37,7 +37,7 @@ def get_tailscale_info():
             'dns_name': '', 'device_id': '', 'key_expiry': '', 'expired': False}
     try:
         result = subprocess.run(['tailscale', 'status', '--json'],
-                                capture_output=True, text=True, timeout=5)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=5)
         if result.returncode != 0:
             info['status'] = 'Tidak dapat membaca status tailscaled'
             return info
@@ -60,8 +60,8 @@ def get_tailscale_info():
 def run_tailscale_admin(args, timeout=30):
     # Non-interactive sudo: never leave the web request waiting for a password.
     prefix = [] if os.geteuid() == 0 else ['sudo', '-n']
-    subprocess.run(prefix + args, check=True, capture_output=True,
-                   text=True, timeout=timeout)
+    subprocess.run(prefix + args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                   universal_newlines=True, timeout=timeout)
 
 def tailscale_device_api(api_token, device_id, method='GET', payload=None):
     # Fixed HTTPS destination, no redirects and no credentials in URLs or logs.
@@ -237,7 +237,7 @@ def get_interface_ip(interface_name):
 
 def get_current_timezone():
     try:
-        result = subprocess.run(['timedatectl', 'show', '--property=Timezone', '--value'], capture_output=True, text=True)
+        result = subprocess.run(['timedatectl', 'show', '--property=Timezone', '--value'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if result.returncode == 0:
             return result.stdout.strip()
         else:
@@ -266,7 +266,7 @@ def scan_usb_input_devices():
             
         # Use ls command to list devices in /dev/input/by-id/
         try:
-            result = subprocess.run(['ls', by_id_path], capture_output=True, text=True, check=True)
+            result = subprocess.run(['ls', by_id_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, check=True)
             device_files = result.stdout.strip().split('\n')
         except subprocess.CalledProcessError:
             print("Failed to list devices in /dev/input/by-id/")
@@ -448,8 +448,8 @@ def restart_pm2_app(app_name):
         # Jalankan restart
         result = subprocess.run(
             ["pm2", "restart", app_name],
-            capture_output=True,
-            text=True
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True
         )
 
         # Cek exit code
@@ -460,8 +460,8 @@ def restart_pm2_app(app_name):
             # Cek status proses
             status = subprocess.run(
                 ["pm2", "status", app_name],
-                capture_output=True,
-                text=True
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True
             )
             print(status.stdout)
 

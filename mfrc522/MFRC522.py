@@ -127,7 +127,7 @@ class MFRC522:
 
 # Changed the defaults spi  bus to 1 and device to 1 . Previosly it was set to 0 0
 
-    def __init__(self, bus=1, device=1, spd=1000000, pin_mode=10, pin_rst=-1, debugLevel='WARNING'):
+    def __init__(self, bus=1, device=0, spd=1000000, pin_mode=10, pin_rst=-1, debugLevel='WARNING'):
         self.spi = spidev.SpiDev()
         self.spi.open(bus, device)
         self.spi.max_speed_hz = spd
