@@ -81,6 +81,7 @@ def create_requirements_file():
     """Create requirements.txt file with all required packages for pip3 installation"""
     requirements = [
         "requests>=2.25.0",
+        "ntplib>=0.4.0",
         "netifaces>=0.11.0", 
         "mysql-connector-python>=8.0.0",
         "APScheduler>=3.8.0",
@@ -224,66 +225,122 @@ def bcd_to_dec(bcd):
 def dec_to_bcd(val):
     return (val // 10) << 4 | (val % 10)
 
+# Once NTP succeeds, keep using the synchronized system clock even offline.
+ntp_synchronized = False
+rtc_lock = threading.RLock()
+
 def read_rtc_time(bus_num=I2C_BUS, address=0x68):
-    try:
-        bus = smbus.SMBus(bus_num)
-        data = bus.read_i2c_block_data(address, 0x00, 7)
+    """Return datetime or None; RTC failures must never break logging."""
+    rtc_bus = None
+    with rtc_lock:
+        try:
+            rtc_bus = smbus.SMBus(bus_num)
+            data = rtc_bus.read_i2c_block_data(address, 0x00, 7)
+            if data[0] & 0x80:  # DS1307 oscillator stopped
+                return None
+            second = bcd_to_dec(data[0] & 0x7F)
+            minute = bcd_to_dec(data[1] & 0x7F)
+            if data[2] & 0x40:  # 12-hour mode
+                hour = bcd_to_dec(data[2] & 0x1F) % 12
+                hour += 12 if data[2] & 0x20 else 0
+            else:
+                hour = bcd_to_dec(data[2] & 0x3F)
+            return datetime(2000 + bcd_to_dec(data[6]),
+                            bcd_to_dec(data[5] & 0x1F),
+                            bcd_to_dec(data[4]), hour, minute, second)
+        except Exception:
+            return None
+        finally:
+            if rtc_bus is not None:
+                try:
+                    rtc_bus.close()
+                except Exception:
+                    pass
 
-        second = bcd_to_dec(data[0] & 0x7F)  # bit 7 disable oscillator
-        minute = bcd_to_dec(data[1])
-        hour = bcd_to_dec(data[2] & 0x3F)    # 24h format
-        day = bcd_to_dec(data[4])
-        month = bcd_to_dec(data[5] & 0x1F)
-        year = bcd_to_dec(data[6]) + 2000
-
-        dt = datetime(year, month, day, hour, minute, second)
-        return dt
-    except Exception as e:
-        return f"ERROR membaca RTC: {e}"
+def set_system_time(timestamp):
+    """Linux clock update; requires root or CAP_SYS_TIME."""
+    time.clock_settime(time.CLOCK_REALTIME, timestamp)
 
 def sync_time_with_rtc():
-    printDebug("Masuk Sync")
-    printDebug(statusInternet)
-    if statusInternet == "ONLINE" : 
-        dt = read_rtc_time()
-        print(dt)
-        if dt:
-            try:
-                date_str = dt.strftime('%m%d%H%M%Y.%S')
-                subprocess.run(['sudo', 'date', date_str])
-                printDebug("Waktu sistem disinkronisasi dengan RTC:", dt)
-            except Exception as e:
-                printDebugEx("ERROR RTC sync_time_with_rtc:", e)
-
-def sync_rtc_with_system():
+    if ntp_synchronized:
+        return False
+    dt = read_rtc_time()
+    if not isinstance(dt, datetime):
+        return False
     try:
-        bus = smbus.SMBus(I2C_BUS)
-        now = datetime.now()  # Waktu dari sistem (NTP)
-
-        bus.write_i2c_block_data(0x68, 0x00, [
-            dec_to_bcd(now.second),
-            dec_to_bcd(now.minute),
-            dec_to_bcd(now.hour),
-            0,  # Day of week (optional, bisa 0)
-            dec_to_bcd(now.day),
-            dec_to_bcd(now.month),
-            dec_to_bcd(now.year - 2000)
-        ])
-        bus.close()
-
-        printDebug(f"RTC berhasil disinkronisasi: {now.strftime('%Y-%m-%d %H:%M:%S')}")
+        set_system_time(dt.timestamp())
         return True
     except Exception as e:
-        printDebugEx("ERROR sync_rtc_with_system:", e)
+        printDebug("ERROR RTC sync_time_with_rtc:", e)
         return False
 
-def get_datetime():
-    if statusInternet=="ONLINE" :
-        waktu = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    else :
-        waktu = read_rtc_time().strftime('%Y-%m-%d %H:%M:%S')
-    return waktu
+def sync_rtc_with_system():
+    rtc_bus = None
+    with rtc_lock:
+        try:
+            rtc_bus = smbus.SMBus(I2C_BUS)
+            now = datetime.now()
+            rtc_bus.write_i2c_block_data(0x68, 0x00, [
+                dec_to_bcd(now.second), dec_to_bcd(now.minute),
+                dec_to_bcd(now.hour), dec_to_bcd(now.isoweekday()),
+                dec_to_bcd(now.day), dec_to_bcd(now.month),
+                dec_to_bcd(now.year - 2000)
+            ])
+            return True
+        except Exception as e:
+            printDebug("RTC tidak tersedia; tetap memakai jam lokal:", e)
+            return False
+        finally:
+            if rtc_bus is not None:
+                try:
+                    rtc_bus.close()
+                except Exception:
+                    pass
 
+def get_datetime():
+    dt = None
+    if not ntp_synchronized:
+        try:
+            dt = read_rtc_time()
+        except Exception:
+            pass
+    if not isinstance(dt, datetime):
+        dt = datetime.now()
+    return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+def sync_time_with_ntp():
+    global ntp_synchronized
+    import ntplib
+    for server in ('pool.ntp.org', 'time.google.com'):
+        try:
+            response = ntplib.NTPClient().request(server, version=4, timeout=3)
+            if response.leap == 3 or not 1 <= response.stratum <= 15:
+                raise ValueError("Server NTP belum sinkron")
+            set_system_time(time.time() + response.offset)
+            ntp_synchronized = True
+            printDebug("Jam lokal berhasil sinkron NTP:", server)
+            sync_rtc_with_system()
+            return True
+        except Exception as e:
+            printDebug("Sinkron NTP gagal:", server, e)
+    return False
+
+def time_sync_worker():
+    # Independent of API/MySQL status: NTP itself checks connectivity.
+    try:
+        import ntplib
+    except ImportError:
+        if not install_package("ntplib"):
+            printDebug("NTP belum aktif. Pasang: pip3 install ntplib")
+            return
+    while True:
+        try:
+            synced = sync_time_with_ntp()
+        except Exception as e:
+            printDebug("ERROR NTP:", e)
+            synced = False
+        # Retry after reconnect within 30s; successful sync repeats hourly.
+        time.sleep(3600 if synced else 30)
 
 
 ############################### OTA FUNCTION #######################################
@@ -837,7 +894,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "2.0.1"
+LOCAL_VERSION = "2.0.2"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -975,30 +1032,38 @@ try :
    
     
 
-    ssid = get_ssid_nmcli()
-    printDebug("SSID:", ssid if ssid else "Tidak terhubung")
-    if cek_internet(API_HOST,3) : 
+    if cek_internet(API_HOST,3):
         statusInternet = "ONLINE"
         lcd_string("CHECK UPDATE ....", LCD_LINE_1)
         lcd_string("LOADING ...", LCD_LINE_2)
-        lcd_string(check_for_update(), LCD_LINE_3)
-        sync_rtc_with_system()
+        lcd_string(check_for_update() or "", LCD_LINE_3)
 except Exception as e:
-    printDebugEx("ERROR START 1: ", e)   
-    
-try : 
-    wlan_ip = get_interface_ip('wlan0')  # Common on Linux/Raspberry Pi
-    if not wlan_ip:
-        wlan_ip = get_interface_ip('Wi-Fi') # Common on Windows
+    printDebugEx("ERROR START 1: ", e)
 
-    vpn_ip = get_interface_ip('tailscale0')  # Common on Linux/Raspberry Pi
-    # Get IP for Ethernet (common names: eth0, Ethernet)
-    eth_ip = get_interface_ip('eth0')  # Common on Linux/Raspberry Pi
-    
-    if not eth_ip:
-        eth_ip = get_interface_ip('Ethernet') # Common on Windows
-except Exception as e:
-    printDebugEx("ERROR START 2: ", e)   
+def refresh_network_addresses():
+    global wlan_ip, eth_ip, vpn_ip
+    # Take a fresh snapshot, including link state, so removed IPs are cleared.
+    wifi = ethernet = tailscale = None
+    try:
+        stats = psutil.net_if_stats()
+        for name, addresses in psutil.net_if_addrs().items():
+            if name in stats and not stats[name].isup:
+                continue
+            ipv4 = next((a.address for a in addresses
+                         if a.family == socket.AF_INET), None)
+            if not ipv4:
+                continue
+            if name.startswith('tailscale'):
+                tailscale = ipv4
+            elif name.startswith(('wlan', 'wl')) or name == 'Wi-Fi':
+                wifi = wifi or ipv4
+            elif name.startswith(('eth', 'en')) or name == 'Ethernet':
+                ethernet = ethernet or ipv4
+    except Exception:
+        pass  # A failed snapshot displays '-' and retries next second.
+    wlan_ip, eth_ip, vpn_ip = wifi, ethernet, tailscale
+
+refresh_network_addresses()
 
 def initialize_rfid():
     try:
@@ -1029,8 +1094,12 @@ def display():
         lcd_clear()
         tick=True
         countTick=0
+        next_network_refresh = 0.0
         
         while True:
+            if time.monotonic() >= next_network_refresh:
+                refresh_network_addresses()
+                next_network_refresh = time.monotonic() + 1.0
             now = datetime.now()
 
             # Cek sleep backlight
@@ -1095,9 +1164,9 @@ def display():
 
             if displayPage==1 :
                 lcd_string("FW V." + LOCAL_VERSION + " " + MACHINE_ID, LCD_LINE_1)
-                lcd_string("S : " + str(ssid),LCD_LINE_2)  
-                lcd_string("W : " + str(wlan_ip),LCD_LINE_3)  
-                lcd_string("E : " + str(eth_ip),LCD_LINE_4)  
+                lcd_string("TS: " + (vpn_ip or "-"),LCD_LINE_2)  
+                lcd_string("W : " + (wlan_ip or "-"),LCD_LINE_3)  
+                lcd_string("E : " + (eth_ip or "-"),LCD_LINE_4)  
             
             time.sleep(0.5)
             tick = not tick
@@ -1473,6 +1542,8 @@ if __name__ == '__main__':
     t4 = threading.Thread(target=mqttThread, args=())
     t5 = threading.Thread(target=heartBeat, args=())
     t6 = threading.Thread(target=qrScannerThread, args=())
+
+    threading.Thread(target=time_sync_worker, name="ntp-sync", daemon=True).start()
 
     t1.start()
     t2.start()
