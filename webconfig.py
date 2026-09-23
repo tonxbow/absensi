@@ -15,7 +15,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('FLASK_SECRET_KEY') or secrets.token_hex(32)
 
 CONFIG_FILE = "setting.json"
-ETH_CONN_NAME = "eth0-static"
+ETH_CONN_NAME = "eth0-static"  # Nama profil lama; interface dideteksi otomatis.
 tailscale_reset_lock = threading.Lock()
 SETTINGS_TABS = [('ethernet', 'Ethernet'), ('wifi', 'WiFi'), ('tailscale', 'Tailscale'),
                  ('device', 'Device Info'), ('timezone', 'Timezone'),
@@ -37,7 +37,7 @@ def get_tailscale_info():
             'dns_name': '', 'device_id': '', 'key_expiry': '', 'expired': False}
     try:
         result = subprocess.run(['tailscale', 'status', '--json'],
-                                capture_output=True, text=True, timeout=5)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=5)
         if result.returncode != 0:
             info['status'] = 'Tidak dapat membaca status tailscaled'
             return info
@@ -60,8 +60,8 @@ def get_tailscale_info():
 def run_tailscale_admin(args, timeout=30):
     # Non-interactive sudo: never leave the web request waiting for a password.
     prefix = [] if os.geteuid() == 0 else ['sudo', '-n']
-    subprocess.run(prefix + args, check=True, capture_output=True,
-                   text=True, timeout=timeout)
+    subprocess.run(prefix + args, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                   universal_newlines=True, timeout=timeout)
 
 def tailscale_device_api(api_token, device_id, method='GET', payload=None):
     # Fixed HTTPS destination, no redirects and no credentials in URLs or logs.
@@ -235,9 +235,28 @@ def get_interface_ip(interface_name):
         return None
     return None
 
+def get_ethernet_interface():
+    """Detect the actual Ethernet device for both status and configuration."""
+    try:
+        interfaces = netifaces.interfaces()
+    except (OSError, ValueError):
+        return None
+
+    preferred = ('eth0', 'end0')
+    candidates = [name for name in preferred if name in interfaces]
+    candidates.extend(sorted(name for name in interfaces
+                             if name not in candidates
+                             and name.startswith(('eth', 'en'))))
+    # Prefer a device with an IPv4 address, but allow DHCP setup without one.
+    for name in candidates:
+        if get_interface_ip(name):
+            return name
+    return candidates[0] if candidates else None
+
+
 def get_current_timezone():
     try:
-        result = subprocess.run(['timedatectl', 'show', '--property=Timezone', '--value'], capture_output=True, text=True)
+        result = subprocess.run(['timedatectl', 'show', '--property=Timezone', '--value'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         if result.returncode == 0:
             return result.stdout.strip()
         else:
@@ -266,7 +285,7 @@ def scan_usb_input_devices():
             
         # Use ls command to list devices in /dev/input/by-id/
         try:
-            result = subprocess.run(['ls', by_id_path], capture_output=True, text=True, check=True)
+            result = subprocess.run(['ls', by_id_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, check=True)
             device_files = result.stdout.strip().split('\n')
         except subprocess.CalledProcessError:
             print("Failed to list devices in /dev/input/by-id/")
@@ -309,7 +328,8 @@ def network():
     if active_tab not in dict(SETTINGS_TABS):
         active_tab = 'ethernet'
     cfg = load_config()
-    eth_ip = get_interface_ip('eth0')
+    eth_interface = get_ethernet_interface()
+    eth_ip = get_interface_ip(eth_interface) if eth_interface else None
     wlan_ip = get_interface_ip('wlan0')
     ethernet_cfg = cfg.get('ethernet', None)
     wifi_cfg = cfg.get('wifi', None)
@@ -340,9 +360,14 @@ def save_ethernet():
     subnet = request.form.get('subnet', '').strip()
     gateway = request.form.get('gateway', '')
 
+    eth_interface = get_ethernet_interface()
+    if eth_interface is None:
+        flash("❌ Interface Ethernet tidak ditemukan. Periksa koneksi perangkat.")
+        return settings_redirect('ethernet')
+
     cfg = load_config()
     subprocess.run(["nmcli", "con", "delete", ETH_CONN_NAME], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    subprocess.run(["nmcli", "con", "add", "type", "ethernet", "ifname", "eth0", "con-name", ETH_CONN_NAME], check=False)
+    subprocess.run(["nmcli", "con", "add", "type", "ethernet", "ifname", eth_interface, "con-name", ETH_CONN_NAME], check=False)
 
     if ethernet_mode == "dhcp":
         subprocess.run(["nmcli", "con", "mod", ETH_CONN_NAME, "ipv4.method", "auto"], check=False)
@@ -448,8 +473,8 @@ def restart_pm2_app(app_name):
         # Jalankan restart
         result = subprocess.run(
             ["pm2", "restart", app_name],
-            capture_output=True,
-            text=True
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            universal_newlines=True
         )
 
         # Cek exit code
@@ -460,8 +485,8 @@ def restart_pm2_app(app_name):
             # Cek status proses
             status = subprocess.run(
                 ["pm2", "status", app_name],
-                capture_output=True,
-                text=True
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                universal_newlines=True
             )
             print(status.stdout)
 
