@@ -930,7 +930,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "2.1.4"
+LOCAL_VERSION = "2.1.5"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -1785,10 +1785,10 @@ def qrScannerThread():
 # APScheduler 3.x on Python 3.6 needs a real pytz zone, not a tzlocal shim.
 from pytz import timezone as pytz_timezone
 from tzlocal import get_localzone
-scheduler_timezone = pytz_timezone(str(get_localzone()))
-scheduler = BackgroundScheduler(timezone=scheduler_timezone)
-scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
-scheduler.start()
+#scheduler_timezone = pytz_timezone(str(get_localzone()))
+#scheduler = BackgroundScheduler(timezone=scheduler_timezone)
+#scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
+#scheduler.start()
 
 if __name__ == '__main__':
   # Create requirements.txt file if it doesn't exist
