@@ -211,7 +211,8 @@ except ImportError:
 
 
 
-broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
+#broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
+broker = "100.83.195.99"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
 statusInternet="OFFLINE"
 
