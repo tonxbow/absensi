@@ -58,3 +58,4 @@ env/
 # Abaikan file database lokal
 *.sqlite3
 *.db
+/absensi.sql
