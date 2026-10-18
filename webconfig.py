@@ -19,7 +19,8 @@ ETH_CONN_NAME = "eth0-static"
 tailscale_reset_lock = threading.Lock()
 SETTINGS_TABS = [('ethernet', 'Ethernet'), ('wifi', 'WiFi'), ('tailscale', 'Tailscale'),
                  ('device', 'Device Info'), ('timezone', 'Timezone'),
-                 ('qr', 'QR Scanner'), ('application', 'Aplikasi')]
+                 ('qr', 'QR Scanner'), ('application', 'Aplikasi'),
+                 ('git', 'Git / OTA'), ('logs', 'Logs'), ('hardware', 'Hardware'), ('account', 'Akun')]
 
 def settings_redirect(tab):
     return redirect(url_for('network', tab=tab))
@@ -368,7 +369,6 @@ def save_ethernet():
 def save_wifi():
     ssid = request.form.get('ssid', '')
     password = request.form.get('password', '')
-    print (ssid + "- " +password )
     cfg = load_config()
     if ssid:
         subprocess.run(["nmcli", "con", "delete", ssid], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -449,7 +449,7 @@ def restart_pm2_app(app_name):
         result = subprocess.run(
             ["pm2", "restart", app_name],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-            universal_newlines=True
+            universal_newlines=True, timeout=30
         )
 
         # Cek exit code
@@ -461,7 +461,7 @@ def restart_pm2_app(app_name):
             status = subprocess.run(
                 ["pm2", "status", app_name],
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                universal_newlines=True
+                universal_newlines=True, timeout=10
             )
             print(status.stdout)
 
@@ -484,8 +484,8 @@ def restart_pm2_app(app_name):
 
 @app.route('/restart_app', methods=['POST'])
 def restart_app():
-    restart_pm2_app("scola-absen")
-    flash("✅ APP RESTART!")
+    success = restart_pm2_app(PM2_TARGET)
+    flash("Aplikasi direstart." if success else "Restart gagal. Periksa log PM2.")
     return settings_redirect('application')
 
 @app.route('/scan_ssid')
@@ -498,5 +498,358 @@ def scan_usb_devices():
     devices = scan_usb_input_devices()
     return jsonify(devices)
 
+# Management routes never open SPI/I2C or drive GPIO.
+from flask import render_template_string
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.exceptions import HTTPException
+from datetime import timedelta
+from collections import deque
+import time
+import fcntl
+import stat
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE = os.path.join(SCRIPT_DIR, 'setting.json')
+STATE_DIR = os.environ.get('ABSENSI_STATE_DIR', os.path.expanduser('~/.config/absensi'))
+AUTH_FILE = os.path.join(STATE_DIR, 'web-auth.json')
+OTA_FILE = os.environ.get('ABSENSI_OTA_FILE', os.path.join(STATE_DIR, 'ota.json'))
+HARDWARE_FILE = os.environ.get('ABSENSI_HARDWARE_FILE', '/run/absensi-hardware.json')
+PM2_TARGET = os.environ.get('ABSENSI_PM2_APP', '0')
+app.config.update(SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SAMESITE='Lax',
+                  PERMANENT_SESSION_LIFETIME=timedelta(hours=8), MAX_CONTENT_LENGTH=65536)
+auth_lock = threading.RLock()
+ota_lock = threading.RLock()
+management_lock = threading.Lock()
+job_lock = threading.Lock()
+management_jobs = {}
+
+
+def atomic_json(path, data):
+    directory = os.path.dirname(path)
+    os.makedirs(directory, mode=0o700, exist_ok=True)
+    fd, temporary = tempfile.mkstemp(dir=directory)
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            json.dump(data, stream, indent=2)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def auth_record():
+    with auth_lock:
+        if not os.path.exists(AUTH_FILE):
+            atomic_json(AUTH_FILE, {'username': 'admin',
+                'password_hash': generate_password_hash('penta123', method='pbkdf2:sha256:260000'),
+                'session_secret': secrets.token_hex(32), 'revision': secrets.token_hex(16)})
+        with open(AUTH_FILE) as stream:
+            return json.load(stream)
+
+
+app.secret_key = os.environ.get('FLASK_SECRET_KEY') or auth_record()['session_secret']
+AUTH_PAGE = '''<!doctype html><html lang="id"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Login Absensi</title><style>body{font-family:Arial;background:#f4f4f4}main{max-width:380px;margin:8vh auto;padding:28px;background:white;border-radius:8px}label{display:block;margin-top:16px}input,button{box-sizing:border-box;width:100%;padding:12px;margin-top:6px}button{background:#007bff;color:white;border:0}p{color:#a00}</style>
+<main><h1>Login Absensi</h1>{% if error %}<p>{{ error }}</p>{% endif %}<form method="post"><input type="hidden" name="csrf_token" value="{{ token }}">
+<label>Username<input name="username" autocomplete="username" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button>Login</button></form></main></html>'''
+
+
+def csrf_token():
+    if 'tailscale_csrf' not in session:
+        session['tailscale_csrf'] = secrets.token_urlsafe(32)
+    return session['tailscale_csrf']
+
+
+@app.before_request
+def protect_management():
+    if request.endpoint == 'static':
+        return None
+    token = csrf_token()
+    if request.method not in ('GET', 'HEAD', 'OPTIONS'):
+        supplied = request.headers.get('X-CSRF-Token') or request.form.get('csrf_token', '')
+        if not supplied or not secrets.compare_digest(token, supplied):
+            if request.path.startswith('/api/'):
+                return jsonify(success=False, message='Sesi/form kedaluwarsa. Muat ulang halaman.'), 400
+            abort(400, description='Form kedaluwarsa. Muat ulang halaman.')
+    if request.endpoint == 'login':
+        return None
+    if session.get('auth_revision') != auth_record()['revision']:
+        if request.path.startswith('/api/'):
+            return jsonify(success=False, message='Silakan login kembali.'), 401
+        return redirect(url_for('login'))
+
+
+@app.after_request
+def management_headers(response):
+    response.headers['Cache-Control'] = 'no-store'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    return response
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = ''
+    if request.method == 'POST':
+        record = auth_record()
+        if (request.form.get('username') == record['username'] and
+                check_password_hash(record['password_hash'], request.form.get('password', ''))):
+            session.clear()
+            session['auth_revision'] = record['revision']
+            session.permanent = True
+            csrf_token()
+            return redirect(url_for('network'))
+        error = 'Username atau password salah.'
+    return render_template_string(AUTH_PAGE, error=error, token=csrf_token()), (401 if error else 200)
+
+
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
+
+@app.route('/change_password', methods=['POST'])
+def change_password():
+    with auth_lock:
+        record = auth_record()
+        password = request.form.get('new_password', '')
+        if not check_password_hash(record['password_hash'], request.form.get('current_password', '')):
+            flash('Password saat ini salah.')
+        elif not 8 <= len(password) <= 128:
+            flash('Password baru harus 8–128 karakter.')
+        elif password != request.form.get('confirm_password'):
+            flash('Konfirmasi password tidak sama.')
+        else:
+            record['password_hash'] = generate_password_hash(password, method='pbkdf2:sha256:260000')
+            record['revision'] = secrets.token_hex(16)
+            atomic_json(AUTH_FILE, record)
+            session['auth_revision'] = record['revision']
+            flash('Password berhasil diubah. Sesi login lain telah diakhiri.')
+    return settings_redirect('account')
+
+
+def ota_settings():
+    path = OTA_FILE if os.path.exists(OTA_FILE) else os.path.join(SCRIPT_DIR, 'ota.json')
+    data = {}
+    try:
+        with open(path) as stream:
+            data = json.load(stream)
+    except FileNotFoundError:
+        pass
+    if not isinstance(data, dict):
+        raise ValueError('ota.json harus objek JSON.')
+    # Preserve legacy firmware URLs/version. Device overrides stay outside Git.
+    raw_url = data.get('ota-version', '')
+    match = re.fullmatch(r'https://raw\.githubusercontent\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)/(.+)/ota\.json', raw_url)
+    data.setdefault('repository', ('https://github.com/%s/%s.git' % match.group(1, 2)) if match else 'https://github.com/tonxbow/absensi.git')
+    data.setdefault('branch', match.group(3) if match else 'zerolts')
+    return data
+
+
+def validate_repo(repository):
+    if not isinstance(repository, str) or not re.fullmatch(r'(?:https://github\.com/|git@github\.com:)[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:\.git)?', repository):
+        raise ValueError('Gunakan URL repository GitHub HTTPS atau SSH tanpa token/password.')
+    return repository
+
+
+def validate_branch(branch):
+    if not isinstance(branch, str) or len(branch) > 200 or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._/-]*', branch):
+        raise ValueError('Nama branch tidak valid.')
+    run_management(['git', 'check-ref-format', '--branch', branch])
+    return branch
+
+
+def run_management(args, timeout=30):
+    environment = dict(os.environ, GIT_TERMINAL_PROMPT='0', GIT_ASKPASS='/bin/false',
+                       GIT_SSH_COMMAND='ssh -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=10')
+    result = subprocess.run(args, cwd=SCRIPT_DIR, env=environment, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, universal_newlines=True, timeout=timeout)
+    if result.returncode:
+        raise RuntimeError('%s gagal. Periksa konfigurasi, akses repository, dan log layanan.' % args[0])
+    return result.stdout
+
+
+@app.route('/api/ota', methods=['GET', 'POST'])
+def api_ota():
+    try:
+        with ota_lock:
+            data = ota_settings()
+            if request.method == 'POST':
+                patch = request.get_json(silent=True) or {}
+                data['repository'] = validate_repo(patch.get('repository', data['repository']))
+                data['branch'] = validate_branch(patch.get('branch', data['branch']))
+                atomic_json(OTA_FILE, data)
+        return jsonify(success=True, settings=data, path=OTA_FILE)
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:
+        return jsonify(success=False, message=str(error)), 400
+
+
+@app.route('/api/git/branches')
+def api_git_branches():
+    try:
+        cfg = ota_settings()
+        repository = validate_repo(request.args.get('repository', cfg['repository']))
+        output = run_management(['git', 'ls-remote', '--heads', repository], timeout=20)
+        branches = sorted({line.split('refs/heads/', 1)[1].strip() for line in output.splitlines() if 'refs/heads/' in line})
+        return jsonify(success=True, branches=branches)
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:
+        return jsonify(success=False, message=str(error)), 503
+
+
+def pull_firmware(repository, branch):
+    git = lambda *args: run_management(['git', *args], timeout=120)
+    git('rev-parse', '--show-toplevel')
+    if git('status', '--porcelain', '--untracked-files=no').strip():
+        raise ValueError('Pull dibatalkan: ada perubahan lokal pada file Git. Simpan/commit dahulu.')
+    git('fetch', '--no-tags', repository, 'refs/heads/' + branch)
+    target = git('rev-parse', 'FETCH_HEAD').strip()
+    if target == git('rev-parse', 'HEAD').strip():
+        return 'Kode sudah terbaru.'
+    git('merge-base', '--is-ancestor', 'HEAD', target)
+    if git('branch', '--list', branch).strip():
+        git('merge-base', '--is-ancestor', branch, target)
+        git('checkout', branch)
+    else:
+        git('checkout', '-b', branch)
+    git('merge', '--ff-only', target)
+    return 'Pull berhasil. Restart aplikasi untuk memuat firmware; restart layanan web jika kode web berubah.'
+
+
+def start_management_job(operation):
+    if not management_lock.acquire(False):
+        return jsonify(success=False, message='Operasi lain masih berjalan.'), 409
+    job_id = secrets.token_hex(12)
+    with job_lock:
+        while len(management_jobs) >= 30:
+            del management_jobs[next(iter(management_jobs))]
+        management_jobs[job_id] = {'status': 'running', 'message': 'Operasi sedang berjalan...'}
+    def worker():
+        try:
+            message = operation()
+            result = {'status': 'succeeded', 'message': message}
+        except Exception as error:
+            result = {'status': 'failed', 'message': str(error)}
+        finally:
+            management_lock.release()
+        with job_lock:
+            management_jobs[job_id] = result
+    threading.Thread(target=worker, daemon=True).start()
+    return jsonify(success=True, job_id=job_id), 202
+
+
+@app.route('/api/jobs/<job_id>')
+def api_management_job(job_id):
+    with job_lock:
+        result = management_jobs.get(job_id)
+        if result is None:
+            return jsonify(success=False, message='Status operasi tidak ditemukan.'), 404
+        return jsonify(success=True, job=result)
+
+
+@app.route('/api/git/pull', methods=['POST'])
+def api_git_pull():
+    try:
+        patch = request.get_json(silent=True) or {}
+        cfg = ota_settings()
+        repository = validate_repo(patch.get('repository', cfg['repository']))
+        branch = validate_branch(patch.get('branch', cfg['branch']))
+    except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:
+        return jsonify(success=False, message=str(error)), 400
+    return start_management_job(lambda: pull_firmware(repository, branch))
+
+
+@app.route('/api/application/restart', methods=['POST'])
+def api_application_restart():
+    def restart():
+        run_management(['pm2', 'restart', PM2_TARGET], timeout=30)
+        return 'Aplikasi absensi berhasil direstart melalui PM2.'
+    return start_management_job(restart)
+
+
+_log_paths_cache = (0, None)
+_log_paths_lock = threading.Lock()
+
+
+def pm2_log_paths():
+    global _log_paths_cache
+    with _log_paths_lock:
+        if _log_paths_cache[1] and time.monotonic() - _log_paths_cache[0] < 10:
+            return dict(_log_paths_cache[1])
+        entries = json.loads(run_management(['pm2', 'jlist'], timeout=10))
+        for entry in entries:
+            env = entry.get('pm2_env', {})
+            if str(entry.get('pm_id')) == PM2_TARGET or entry.get('name') == PM2_TARGET:
+                paths = {'out': env.get('pm_out_log_path'), 'error': env.get('pm_err_log_path')}
+                if not all(isinstance(path, str) and os.path.isabs(path) for path in paths.values()):
+                    raise ValueError('Lokasi log PM2 tidak valid.')
+                _log_paths_cache = (time.monotonic(), paths)
+                return dict(paths)
+        raise ValueError('Proses absensi tidak ditemukan di PM2.')
+
+
+def tail_log(path):
+    try:
+        with open(path, 'rb') as stream:
+            stream.seek(0, os.SEEK_END)
+            position = stream.tell()
+            chunks = []
+            count = 0
+            while position and count <= 15 and sum(map(len, chunks)) < 262144:
+                size = min(position, 8192)
+                position -= size
+                stream.seek(position)
+                chunk = stream.read(size)
+                chunks.append(chunk)
+                count += chunk.count(b'\n')
+            return b'\n'.join(b''.join(reversed(chunks)).replace(b'\x00', b'').splitlines()[-15:]).decode('utf-8', errors='replace')
+    except FileNotFoundError:
+        return ''
+
+
+@app.route('/api/pm2/logs', methods=['GET', 'DELETE'])
+def api_pm2_logs():
+    try:
+        paths = pm2_log_paths()
+        if request.method == 'DELETE':
+            for path in paths.values():
+                try:
+                    with open(path, 'r+b') as stream:
+                        stream.truncate(0)
+                except FileNotFoundError:
+                    pass
+        return jsonify(success=True, paths=paths, lines=15,
+                       logs={key: tail_log(path) for key, path in paths.items()})
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        return jsonify(success=False, message=str(error)), 503
+
+
+@app.route('/api/hardware')
+def api_hardware():
+    # Only a status snapshot written by absensi.py. Absolutely no bus probes.
+    try:
+        with open(HARDWARE_FILE) as stream:
+            data = json.load(stream)
+        stale = time.time() - data['reported_at'] > 15 or time.time() < data['reported_at'] - 5
+        return jsonify(success=True, stale=stale, hardware=data)
+    except (OSError, ValueError, KeyError, TypeError):
+        return jsonify(success=True, stale=True, hardware=None,
+                       message='Status belum tersedia. Jalankan absensi.py yang mendukung laporan hardware.')
+
+
+@app.errorhandler(Exception)
+def management_error(error):
+    if isinstance(error, HTTPException):
+        code, message = error.code, error.description
+    else:
+        app.logger.exception('Web configuration failed')
+        code, message = 500, 'Operasi gagal. Periksa log layanan web.'
+    if request.path.startswith('/api/'):
+        return jsonify(success=False, message=message), code
+    return message, code
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=8080, threaded=True)

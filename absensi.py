@@ -13,6 +13,10 @@ import sys
 import subprocess
 import os
 import shutil
+import tempfile
+import fcntl
+import glob
+from functools import wraps
 
 # Bus I2C untuk LCD dan RTC pada perangkat Orange Pi LTS ini.
 I2C_BUS = 0
@@ -156,12 +160,12 @@ import traceback
 from typing import Any, Dict, Optional
 from urllib.parse import urlparse
 
-# Try to import modules with auto-install
+# Keep the installed board-compatible MFRC522 driver.
+SimpleMFRC522 = None
 try:
     from mfrc522 import SimpleMFRC522
-except ImportError:
-    if install_package("mfrc522", "mfrc522"):
-        from mfrc522 import SimpleMFRC522
+except Exception as error:
+    print('[WARN] MFRC522 driver belum tersedia/cocok:', error, flush=True)
 
 try:
     import netifaces
@@ -209,15 +213,30 @@ except ImportError:
 
 broker = "pentarium.id"   # bisa juga pakai localhost atau IP broker sendiri
 port = 1883
-statusInternet=False
+statusInternet="OFFLINE"
 
 def printDebug(*args):
     text = " ".join(str(a) for a in args)
-    print(f"[{get_datetime()}] {text}")
+    print(f"[{get_datetime()}] {text}", flush=True)
 
 def printDebugEx(text, e):
-    print(f"[{get_datetime()}] {text} {str(e)}")
+    print(f"[{get_datetime()}] {text} {str(e)}", flush=True)
     traceback.print_exc()
+# Hardware status is independent of Internet/NTP availability.
+hardware_lock = threading.RLock()
+hardware_status = {'lcd': False, 'rtc': False, 'rfid': False, 'gpio': False}
+
+
+def set_hardware_status(name, ready):
+    with hardware_lock:
+        hardware_status[name] = bool(ready)
+
+
+def hardware_blink_interval():
+    with hardware_lock:
+        return 1.0 if all(hardware_status.values()) else 0.2
+
+
 ############################### RTC FUNCTION #######################################
 def bcd_to_dec(bcd):
     return (bcd // 16) * 10 + (bcd % 16)
@@ -237,6 +256,7 @@ def read_rtc_time(bus_num=I2C_BUS, address=0x68):
             rtc_bus = smbus.SMBus(bus_num)
             data = rtc_bus.read_i2c_block_data(address, 0x00, 7)
             if data[0] & 0x80:  # DS1307 oscillator stopped
+                set_hardware_status("rtc", False)
                 return None
             second = bcd_to_dec(data[0] & 0x7F)
             minute = bcd_to_dec(data[1] & 0x7F)
@@ -245,10 +265,13 @@ def read_rtc_time(bus_num=I2C_BUS, address=0x68):
                 hour += 12 if data[2] & 0x20 else 0
             else:
                 hour = bcd_to_dec(data[2] & 0x3F)
-            return datetime(2000 + bcd_to_dec(data[6]),
+            result = datetime(2000 + bcd_to_dec(data[6]),
                             bcd_to_dec(data[5] & 0x1F),
                             bcd_to_dec(data[4]), hour, minute, second)
+            set_hardware_status("rtc", True)
+            return result
         except Exception:
+            set_hardware_status("rtc", False)
             return None
         finally:
             if rtc_bus is not None:
@@ -509,8 +532,16 @@ ENABLE = 0b00000100 # Enable bit
 E_PULSE = 0.0005
 E_DELAY = 0.0005
 
-# Open the LCD on the same I2C bus as the RTC.
-bus = smbus.SMBus(I2C_BUS)
+# Missing I2C must not prevent GPIO/RFID and recovery threads from starting.
+bus = None
+lcd_lock = threading.RLock()
+
+
+def open_lcd_bus():
+    global bus
+    if bus is None:
+        bus = smbus.SMBus(I2C_BUS)
+    return bus
 
 def lcd_init():
     try :
@@ -522,8 +553,12 @@ def lcd_init():
         lcd_byte(0x28,LCD_CMD) # 101000 Data length, number of lines, font size
         lcd_byte(0x01,LCD_CMD) # 000001 Clear display
         time.sleep(1)
+        set_hardware_status("lcd", True)
+        return True
     except Exception as e:
+        set_hardware_status("lcd", False)
         printDebugEx("ERROR lcd_init : ", e)
+        return False
 
 lcd_backlight_status = LCD_BACKLIGHT
 last_scan_time = time.time()
@@ -535,16 +570,29 @@ def lcd_clear():
     lcd_byte(0x01,LCD_CMD) # 000001 Clear display
 
 def lcd_byte(bits, mode):
-  bits_high = mode | (bits & 0xF0) | lcd_backlight_status
-  bits_low = mode | ((bits<<4) & 0xF0) | lcd_backlight_status
+    global bus
+    with lcd_lock:
+        try:
+            open_lcd_bus()
+            bits_high = mode | (bits & 0xF0) | lcd_backlight_status
+            bits_low = mode | ((bits<<4) & 0xF0) | lcd_backlight_status
+            # High bits
+            bus.write_byte(I2C_ADDR, bits_high)
+            lcd_toggle_enable(bits_high)
+            # Low bits
+            bus.write_byte(I2C_ADDR, bits_low)
+            lcd_toggle_enable(bits_low)
+            set_hardware_status('lcd', True)
+        except Exception:
+            set_hardware_status('lcd', False)
+            if bus is not None:
+                try:
+                    bus.close()
+                except Exception:
+                    pass
+            bus = None
+            raise
 
-  # High bits
-  bus.write_byte(I2C_ADDR, bits_high)
-  lcd_toggle_enable(bits_high)
-
-  # Low bits
-  bus.write_byte(I2C_ADDR, bits_low)
-  lcd_toggle_enable(bits_low)
 
 def lcd_toggle_enable(bits):
   # Toggle enable
@@ -638,8 +686,8 @@ class GPIOControl:
             return subprocess.check_output([self.command] + list(args),
                                            stderr=subprocess.STDOUT, timeout=3).decode().strip()
         except (OSError, subprocess.SubprocessError) as error:
-            self.available = False
-            print("⚠️ GPIO gagal; buzzer/tombol dinonaktifkan sampai aplikasi direstart:", error)
+            set_hardware_status("gpio", False)
+            print("[WARN] GPIO gagal; akan dicoba lagi:", error)
             return None
 
     def read(self, pin_number):
@@ -792,47 +840,34 @@ def get_base_url(url):
 import requests
 import socket
 
-def cek_internet(url='https://www.google.com/', timeout=5):
+def cek_internet(url=None, timeout=3):
+    """Test outbound Internet access independently of the attendance API.
+
+    url remains accepted for older callers; API HTTP status is not connectivity.
     """
-    Cek konektivitas internet.
-    Jika URL adalah endpoint API, akan cek base URL terlebih dahulu.
-    """
-    try:
-        # Deteksi API endpoint → ambil base URL
-        if '/foundation/' in url or '/api/' in url or len(url.split('/')) > 3:
-            test_url = get_base_url(url)
-        else:
-            test_url = url
+    for host, port in (('1.1.1.1', 443), ('8.8.8.8', 53)):
+        try:
+            with socket.create_connection((host, port), timeout=timeout):
+                return True
+        except OSError:
+            continue
+    return False
 
-        response = requests.get(test_url, timeout=timeout)
 
-        # Jika hanya tes base URL → status < 500 dianggap online
-        if test_url != url:
-            return response.status_code < 500
+def internet_status_worker():
+    global statusInternet
+    while True:
+        try:
+            current = 'ONLINE' if cek_internet(timeout=3) else 'OFFLINE'
+            if current != statusInternet:
+                printDebug('[INTERNET]', current)
+            statusInternet = current
+        except Exception as error:
+            statusInternet = 'OFFLINE'
+            printDebugEx('[INTERNET] Pemeriksaan gagal: ', error)
+        time.sleep(5)
 
-        return response.status_code == 200
 
-    except requests.exceptions.ReadTimeout:
-        printDebug("⏱️ Read timeout")
-        return False
-
-    except requests.exceptions.ConnectionError as e:
-        # Deteksi DNS error
-        if isinstance(e.__cause__, socket.gaierror):
-            printDebug("🌐 DNS lookup gagal")
-        else:
-            printDebug(f"🔌 Connection error: {e}")
-        return False
-
-    except requests.exceptions.RequestException as e:
-        printDebug(f"📡 Request error: {e}")
-        return False
-
-    except Exception as e:
-        printDebugEx("❌ ERROR cek_internet:", e)
-        return False
-
-    
 # Fungsi ambil MAC address
 def get_mac():
     mac = uuid.getnode()
@@ -894,7 +929,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "2.0.2"
+LOCAL_VERSION = "2.1.2"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -907,7 +942,134 @@ QR_DEVICE_PATH = QR_CONFIG.get('device_path', '')
 
 BUZZER = 5
 BUTTON = 7
+RFID_RST = 13  # Orange Pi Zero wPi 13 = physical 22, reader RST.
+# LED follows schematic connector position: physical pin 12 = wPi 6.
+# This is PC11 on Zero 3; PA7 on this device's Orange Pi Zero/H2.
+# PC11 (SoC pin name) must never be interpreted as wPi 11 (SPI MOSI).
+_led_setting = os.environ.get('ABSENSI_LED_PIN', '6').strip()
+LED = int(_led_setting) if _led_setting.isdigit() else None
+if LED in (0, 1, 5, 7, 11, 12, 13, 14, 15):
+    print('[WARN] LED dinonaktifkan: pin bentrok dengan I2C/SPI/buzzer/tombol.', flush=True)
+    LED = None
 button_pressed_time = 0  # buat catat kapan ditekan
+
+
+buzzer_lock = threading.RLock()
+
+
+def buzzer_beep(count=1, duration=0.15, delay=0.15):
+    with buzzer_lock:
+        try:
+            for index in range(count):
+                if not gpio_control.write(BUZZER, 1):
+                    return False
+                time.sleep(duration)
+                if not gpio_control.write(BUZZER, 0):
+                    return False
+                if index < count - 1:
+                    time.sleep(delay)
+            return True
+        finally:
+            gpio_control.write(BUZZER, 0)
+
+
+def restart_pm2_app():
+    printDebug('[BUTTON] Tombol ditahan 5 detik; pm2 restart 0')
+    gpio_control.write(BUZZER, 0)
+    subprocess.run(['pm2', 'restart', '0'], check=True, timeout=20)
+
+
+def button_worker():
+    global last_scan_time, lcd_backlight_status, displayPage
+    pressed_at = None
+    last_beep_second = 0
+    restart_requested = False
+    while True:
+        try:
+            state = gpio_control.read(BUTTON)
+            now = time.monotonic()
+            if state == 1:
+                last_scan_time = time.time()
+                lcd_backlight_status = LCD_BACKLIGHT
+                if pressed_at is None:
+                    pressed_at = now
+                seconds = int(now - pressed_at)
+                if seconds > last_beep_second:
+                    last_beep_second = seconds
+                    buzzer_beep()
+                if seconds >= 5 and not restart_requested:
+                    restart_requested = True
+                    restart_pm2_app()
+            elif state == 0:
+                if pressed_at is not None and not restart_requested:
+                    displayPage = (displayPage + 1) % (displayMaxPage + 1)
+                pressed_at = None
+                last_beep_second = 0
+                restart_requested = False
+            else:
+                pressed_at = None
+                last_beep_second = 0
+        except Exception as error:
+            printDebugEx('[BUTTON] Pemantauan gagal: ', error)
+        time.sleep(0.05)
+
+
+def publish_hardware_snapshot():
+    """Publish status only; no attendance identifiers are included."""
+    path = os.environ.get('ABSENSI_HARDWARE_FILE', '/run/absensi-hardware.json')
+    with hardware_lock:
+        states = dict(hardware_status)
+    gpio_ready = states.get('gpio', False)
+    def entry(ready, good, bad):
+        return {'ready': bool(ready), 'message': good if ready else bad}
+    payload = {'reported_at': time.time(), 'pid': os.getpid(), 'devices': {
+        'led': {'ready': gpio_ready if LED is not None else None,
+                'message': ('GPIO siap; interval %g detik' % hardware_blink_interval()) if LED is not None and gpio_ready else ('GPIO belum siap' if LED is not None else 'Nonaktif; pin LED belum dipilih')},
+        'buzzer': entry(gpio_ready, 'GPIO buzzer siap', 'GPIO buzzer bermasalah'),
+        'rfid': entry(states.get('rfid'), 'Driver siap / menunggu kartu', 'Reader belum siap; mencoba koneksi ulang'),
+        'rtc': entry(states.get('rtc'), 'RTC terbaca dan waktu valid', 'RTC tidak terbaca / waktu tidak valid'),
+        'lcd': entry(states.get('lcd'), 'Penulisan LCD berhasil', 'LCD tidak terbaca; mencoba ulang'),
+    }}
+    directory = os.path.dirname(path)
+    fd, temporary = tempfile.mkstemp(prefix='.absensi-hardware-', dir=directory)
+    try:
+        with os.fdopen(fd, 'w') as stream:
+            json.dump(payload, stream)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def hardware_status_worker():
+    led_on = False
+    last_toggle = time.monotonic()
+    next_check = 0.0
+    next_report = 0.0
+    while True:
+        try:
+            now = time.monotonic()
+            if now >= next_check:
+                read_rtc_time()
+                # GPIO can recover after a transient subprocess failure.
+                ready = True
+                if LED is not None:
+                    ready = gpio_control.mode(LED, 'out')
+                ready = gpio_control.mode(BUZZER, 'out') and ready
+                ready = gpio_control.mode(BUTTON, 'in') and ready
+                set_hardware_status('gpio', ready)
+                next_check = time.monotonic() + 5.0
+            if LED is not None and time.monotonic() - last_toggle >= hardware_blink_interval():
+                led_on = not led_on
+                if not gpio_control.write(LED, int(led_on)):
+                    set_hardware_status('gpio', False)
+                last_toggle = time.monotonic()
+            if time.monotonic() >= next_report:
+                publish_hardware_snapshot()
+                next_report = time.monotonic() + 2.0
+        except Exception as error:
+            printDebugEx('[HEALTH] Pemeriksaan hardware gagal: ', error)
+        time.sleep(0.02)
 
 
 def on_connect(client, userdata, flags, rc, properties=None):
@@ -1021,11 +1183,15 @@ try :
 except Exception as e:
     printDebugEx("Error MQTT:", e)   
 
+gpio_control = GPIOControl()
 try :
-    gpio_control = GPIOControl()
-    gpio_control.mode(BUZZER, "out") #pin 11 PC6
-    gpio_control.mode(BUTTON, "in") #pin13 PC5
-    #gpio_control.mode(BUTTON, "up") #pin13 PC5
+    gpio_control.mode(BUZZER, "out")
+    gpio_control.write(BUZZER, 0)
+    if LED is not None:
+        gpio_control.mode(LED, "out")
+        gpio_control.write(LED, 0)
+    gpio_control.mode(BUTTON, "in")
+    buzzer_beep(count=3)
     lcd_init()
     lcd_clear()
     
@@ -1066,13 +1232,49 @@ def refresh_network_addresses():
 refresh_network_addresses()
 
 def initialize_rfid():
+    if SimpleMFRC522 is None:
+        set_hardware_status('rfid', False)
+        printDebug('[WARN] Driver MFRC522 belum tersedia; periksa error import saat startup')
+        return None
     try:
-        return SimpleMFRC522()
-    except FileNotFoundError:
-        print("⚠️ RFID belum aktif: perangkat SPI yang diminta driver tidak ditemukan. Periksa /dev/spidev* dan bus/device di mfrc522/MFRC522.py.")
+        # Driver opens SPI but does not drive NRSTPD; reset and release it here.
+        if not gpio_control.mode(RFID_RST, 'out'):
+            raise RuntimeError('Tidak dapat mengatur pin reset RFID')
+        if not gpio_control.write(RFID_RST, 0):
+            raise RuntimeError('Reset RFID LOW gagal')
+        time.sleep(0.1)
+        if not gpio_control.write(RFID_RST, 1):
+            raise RuntimeError('Reset RFID HIGH gagal')
+        time.sleep(0.1)
+        device = SimpleMFRC522()
+        time.sleep(0.05)
+        set_hardware_status('rfid', True)
+        printDebug('[OK] MFRC522 siap; pembacaan memakai reader.read() seperti versi awal')
+        return device
     except Exception as error:
-        print("⚠️ RFID gagal diinisialisasi:", error)
+        set_hardware_status('rfid', False)
+        printDebugEx('[WARN] MFRC522 init gagal; mencoba lagi dalam 5 detik: ', error)
+        if isinstance(error, FileNotFoundError):
+            printDebug('[RFID] SPI tersedia:', sorted(glob.glob('/dev/spidev*')))
     return None
+
+
+def close_rfid(device):
+    # Close SPI without GPIO.cleanup(), preserving LED/buzzer/button setup.
+    low_level = getattr(device, 'READER', None)
+    spi = getattr(low_level, 'spi', None)
+    if spi is not None:
+        try:
+            spi.close()
+        except Exception:
+            pass
+
+
+def read_rfid_id(device):
+    # Restore the exact driver API used by the previously working application.
+    result = device.read()
+    return result[0] if isinstance(result, (tuple, list)) else result
+
 
 displayPage=0
 displayMaxPage=1
@@ -1081,7 +1283,7 @@ jumlahDataNotSend=0
 siswaNis = ""
 siswaNama = ""
 
-def display():
+def display_once():
     try:
         global tagRFID,statusInternet,statusInsert,displayPage,displayMaxPage,threadStatus,last_scan_time,lcd_backlight_status,button_pressed_time,statusSend,siswaNis,siswaNama
         lcd_clear()
@@ -1108,36 +1310,6 @@ def display():
             else:
                 lcd_backlight_status = LCD_BACKLIGHT
 
-            # Cek tombol
-            button_state = gpio_control.read(BUTTON)
-            if button_state == 1:  # ditekan
-                last_scan_time=  time.time()        # Catat waktu scan display
-                lcd_backlight_status = LCD_BACKLIGHT
-                if button_pressed_time == 0:
-                    button_pressed_time = time.time()
-                else:
-                    held_time = time.time() - button_pressed_time
-                    if held_time >= 5:
-                        lcd_clear()
-                        lcd_string("TOMBOL DITEKAN", LCD_LINE_1)
-                        lcd_string("SETTING DEFAULT", LCD_LINE_2)
-                        lcd_string("RESTARTING....", LCD_LINE_3)
-                        lcd_string("TUNGGU +-3 MENIT", LCD_LINE_4)
-                        print(send_network_config(ethernet_mode="dhcp", ip="", subnet="", gateway="", endpoint="/save_ethernet"))
-                        time.sleep(2)
-                        #setdafault
-                        restart_computer()
-            else:
-                if button_pressed_time != 0:
-                    held_time = time.time() - button_pressed_time
-                    if held_time < 5:
-                        # Tombol dilepas cepat ➜ ganti page
-                        lcd_clear()
-                        displayPage += 1
-                        if displayPage > displayMaxPage:
-                            displayPage = 0
-                    button_pressed_time = 0
-            
             # print(threadStatus[1])
             if displayPage==0 :
                 lcd_string(str(get_datetime()),LCD_LINE_1)
@@ -1224,55 +1396,70 @@ def display():
     except Exception as e:
         printDebugEx("ERROR display : ", e)
         traceback.print_exc()
+def display():
+    while True:
+        try:
+            if lcd_init():
+                display_once()
+        except Exception as error:
+            set_hardware_status('lcd', False)
+            printDebugEx('[LCD] Display gagal; mencoba ulang: ', error)
+        time.sleep(5)
+
+
 statusSend=0
 last_scan_time_rfid = {}
 def rfid():
-    global reader,tagRFID,statusInsert,threadStatus,last_scan_time_rfid,lcd_backlight_status,last_scan_time
-    while reader is None:
-        reader = initialize_rfid()
-        if reader is None:
-            threadStatus[2] = "RFID unavailable: check SPI/driver"
-            time.sleep(30)
-    try:
-        while True:
-            threadStatus[2]=get_datetime()
-            printDebug("Hold a tag near the reader")
-            id,text = reader.read()
-            printDebug("ID: %s" % (tagRFID))
-            uid_bytes = id.to_bytes(8, 'big')
-            uid_4bytes = uid_bytes[3:7]
-            tag_hex = ''.join(f'{b:02x}' for b in uid_4bytes)
-            tagRFID = str(tag_hex)
-            printDebug("ID: %s" % (tagRFID))
-    
+    global reader, tagRFID, statusInsert, lcd_backlight_status, last_scan_time
+    while True:
+        try:
+            threadStatus[2] = get_datetime()
+            if reader is None:
+                reader = initialize_rfid()
+                if reader is None:
+                    set_hardware_status('rfid', False)
+                    time.sleep(5)
+                    continue
+            card_id = read_rfid_id(reader)
+            if card_id is None:
+                time.sleep(0.1)
+                continue
+            set_hardware_status('rfid', True)
+            # Preserve the existing lowercase four-byte UID format for attendance.
+            if isinstance(card_id, bool) or not isinstance(card_id, int):
+                raise ValueError('ID RFID tidak valid')
+            current_tag = card_id.to_bytes(8, 'big')[3:7].hex()
+        except Exception as error:
+            set_hardware_status('rfid', False)
+            printDebugEx('[RFID] Pembacaan gagal; membuka ulang SPI: ', error)
+            close_rfid(reader)
+            reader = None
+            time.sleep(5)
+            continue
 
+        try:
             now = datetime.now()
-            last_time = last_scan_time_rfid.get(tagRFID)
-            printDebug(last_scan_time_rfid)
-            # Jika tag pernah di scan
-            if last_time:
-                elapsed = now - last_time
-                if elapsed < timedelta(minutes=1):
-                    printDebug(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
-                    tagRFID = "xxx"
-                    gpio_control.write(5, 1)
-                    sleep(1)
-                    gpio_control.write(5, 0)
-                    continue  # skip ke loop berikutnya
-                      
-            statusInsert = insertdata(tagRFID)
-            last_scan_time_rfid[tagRFID] = now        # Catat waktu scan
-            last_scan_time=  time.time()        # Catat waktu scan display
-            lcd_backlight_status = LCD_BACKLIGHT  # Hidupkan backlight kalau scan
+            previous = last_scan_time_rfid.get(current_tag)
+            if previous and now - previous < timedelta(minutes=1):
+                tagRFID = 'xxx'
+                buzzer_beep(count=1, duration=0.5)
+                continue
+            inserted = insertdata(current_tag)
+            if inserted is None:
+                printDebug('[RFID] Absen gagal disimpan:', current_tag)
+                buzzer_beep(count=1, duration=0.5)
+                continue
+            statusInsert = inserted
+            tagRFID = current_tag
+            last_scan_time_rfid[current_tag] = now
+            last_scan_time = time.time()
+            lcd_backlight_status = LCD_BACKLIGHT
+            buzzer_beep(count=2)
+            publish_mqtt(topicPublish + '/tag', current_tag)
+        except Exception as error:
+            printDebugEx('[RFID] Pemrosesan absen gagal: ', error)
+        time.sleep(0.1)
 
-            gpio_control.write(5, 1)
-            sleep(1)
-            gpio_control.write(5, 0)
-            publish_mqtt(topicPublish+"/tag", tagRFID)
-            #tidak bisa tap lagi jika kartu belum di angkat atau dalam 1 jam 
-
-    except Exception as e:
-        printDebugEx("ERROR RFID : ", e) 
 
 def send():
     try:
@@ -1297,8 +1484,7 @@ def send():
                 printDebugEx("ERROR counting unsent data: ", e)
                 jumlahDataNotSend = 0
 
-            if cek_internet(API_HOST,3) : 
-                statusInternet = "ONLINE"
+            if statusInternet == "ONLINE":
                 #check data yang belum ke kirim di database
                 try:
                     if not ensure_mysql_connection():
@@ -1328,7 +1514,7 @@ def send():
                     printDebug(f"Payload: {payload}")
                     printDebug(f"Headers: {headers}")
                     
-                    response = requests.request("POST", API_HOST, headers=headers, data=payload)
+                    response = requests.request("POST", API_HOST, headers=headers, data=payload, timeout=10)
                     
                     printDebug(f"Response status code: {response.status_code}")
                     printDebug(f"Response headers: {dict(response.headers)}")
@@ -1425,8 +1611,6 @@ def send():
 
                 #jika sukses maka di delete
                 
-            else :
-                statusInternet = "OFFLINE"
             printDebug("JUMLAH DATA NOT SEND : " + str(jumlahDataNotSend))
             printDebug("STATUS : " + str(statusInternet))
             
@@ -1497,18 +1681,20 @@ def qrScannerThread():
                             if elapsed < timedelta(minutes=1):
                                 print(f"Tag {tagRFID} baru di-scan {elapsed} lalu. Abaikan.")
                                 tagRFID = "xxx"
-                                gpio_control.write(5, 1)
-                                sleep(1)
-                                gpio_control.write(5, 0)
+                                buzzer_beep(count=1, duration=0.5)
+                                buffer = ''
                                 continue  # skip ke loop berikutnya
 
                         statusInsert = insertdata(qr_data)
+                        if statusInsert is None:
+                            tagRFID = ''
+                            buffer = ''
+                            buzzer_beep(count=1, duration=0.5)
+                            continue
                         last_scan_time_qr[qr_data] = now
                         last_scan_time = time.time()
                         lcd_backlight_status = LCD_BACKLIGHT
-                        gpio_control.write(5, 1)
-                        sleep(1)
-                        gpio_control.write(5, 0)
+                        buzzer_beep(count=2)
                         publish_mqtt(topicPublish + "/tag", qr_data)
                         buffer = ''
                     elif key.startswith('KEY_'):
@@ -1522,7 +1708,11 @@ def qrScannerThread():
     except Exception as e:
         printDebugEx("ERROR QR Scanner: ", e)
 
-scheduler = BackgroundScheduler()
+# APScheduler 3.x on Python 3.6 needs a real pytz zone, not a tzlocal shim.
+from pytz import timezone as pytz_timezone
+from tzlocal import get_localzone
+scheduler_timezone = pytz_timezone(str(get_localzone()))
+scheduler = BackgroundScheduler(timezone=scheduler_timezone)
 scheduler.add_job(restart_computer, 'cron', hour=23, minute=30)
 scheduler.start()
 
@@ -1536,6 +1726,9 @@ if __name__ == '__main__':
     print("🚀 Starting Absensi Application...")
     print("📦 Aplikasi mulai; periksa log/status untuk ketersediaan RFID, GPIO, dan MQTT.")
     
+    threading.Thread(target=hardware_status_worker, name='hardware-status', daemon=True).start()
+    threading.Thread(target=button_worker, name='button', daemon=True).start()
+
     t1 = threading.Thread(target=display, args=())
     t2 = threading.Thread(target=rfid, args=())
     t3 = threading.Thread(target=send, args=())
@@ -1543,6 +1736,7 @@ if __name__ == '__main__':
     t5 = threading.Thread(target=heartBeat, args=())
     t6 = threading.Thread(target=qrScannerThread, args=())
 
+    threading.Thread(target=internet_status_worker, name="internet-status", daemon=True).start()
     threading.Thread(target=time_sync_worker, name="ntp-sync", daemon=True).start()
 
     t1.start()

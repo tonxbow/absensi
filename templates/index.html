@@ -23,10 +23,52 @@
         small { display: block; color: #555; margin-top: 6px; line-height: 1.5; }
         .status { overflow-wrap: anywhere; line-height: 1.6; }
         h3 { margin-top: 28px; }
+        .log-panel { background:#111827;color:#e5e7eb;padding:16px;border-radius:6px;max-height:400px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere; }
+        table th, table td { border-bottom:1px solid #ddd; }
+
+        body { background:#f1f5f9; color:#1e293b; }
+        .app-shell { display:grid; grid-template-columns:240px minmax(0,1fr); min-height:100vh; }
+        .sidebar { position:sticky; top:0; height:100vh; overflow-y:auto; background:#0f172a; color:#e2e8f0; padding:28px 16px; display:flex; flex-direction:column; }
+        .sidebar-brand { padding:0 12px 24px; color:white; font-size:24px; font-weight:700; letter-spacing:1px; }
+        .sidebar-brand span { display:block; color:#94a3b8; font-size:12px; font-weight:400; letter-spacing:0; margin-top:8px; }
+        .sidebar .tabs { display:flex; flex-direction:column; flex-wrap:nowrap; gap:5px; border:0; padding:0; }
+        .sidebar .tabs a { background:transparent; color:#cbd5e1; padding:12px 14px; border-radius:7px; font-size:14px; }
+        .sidebar .tabs a:hover { background:#1e293b; color:white; }
+        .sidebar .tabs a[aria-current="page"] { background:#2563eb; color:white; font-weight:600; }
+        .sidebar-account { margin:auto 0 0; padding:24px 12px 0; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .sidebar-account button { margin:0; background:#334155; border-radius:5px; }
+        .container { min-width:0; width:100%; max-width:1100px; margin:0 auto; padding:32px; border-radius:0; background:transparent; }
+        .container section { background:white; padding:24px; border:1px solid #e2e8f0; border-radius:12px; box-shadow:0 2px 6px #0f172a05; }
+        h2 { margin-top:0; padding:0 0 18px; background:transparent; color:#0f172a; border-radius:0; border-bottom:1px solid #e2e8f0; }
+        input, select { border:1px solid #cbd5e1; border-radius:6px; padding:10px; }
+        button { border-radius:6px; }
+        .status { background:#e8eff8; }
+        .menu-toggle { display:none; }
+        @media(max-width:760px) {
+            .app-shell { grid-template-columns:minmax(0,1fr); }
+            .sidebar { display:none; position:static; height:auto; padding:20px 16px; }
+            .menu-open .sidebar { display:flex; }
+            .sidebar-account { margin-top:16px; padding-top:12px; }
+            .container { padding:16px; }
+            .container section { padding:18px; }
+            .menu-toggle { display:block; margin:0 0 16px; width:100%; text-align:left; background:#0f172a; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
+<div class="app-shell">
+    <aside class="sidebar" id="navigation-sidebar">
+        <div class="sidebar-brand">SCOLA<span>Konfigurasi Absensi</span></div>
+    <nav class="tabs" aria-label="Pengaturan perangkat">
+        {% for tab_id, tab_label in settings_tabs %}
+        <a href="{{ url_for('network', tab=tab_id) }}" {% if active_tab == tab_id %}aria-current="page"{% endif %}>{{ tab_label }}</a>
+        {% endfor %}
+    </nav>    <form method="post" action="{{ url_for('logout') }}" class="sidebar-account">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}"><span>admin</span> <button>Logout</button></form>
+
+    </aside>
+    <main class="container">
+        <button class="menu-toggle" type="button" aria-controls="navigation-sidebar" aria-expanded="false" onclick="toggleSidebar(this)">☰ Menu pengaturan</button>
     {% with messages = get_flashed_messages() %}
     {% if messages %}
         {% for msg in messages %}
@@ -41,11 +83,7 @@
         <b>Tailscale IP:</b> {{ tailscale.ips | join(', ') or '—' }}
     </div>
 
-    <nav class="tabs" aria-label="Pengaturan perangkat">
-        {% for tab_id, tab_label in settings_tabs %}
-        <a href="{{ url_for('network', tab=tab_id) }}" {% if active_tab == tab_id %}aria-current="page"{% endif %}>{{ tab_label }}</a>
-        {% endfor %}
-    </nav>
+
 
     {% if active_tab == 'tailscale' %}
     <section aria-labelledby="heading-tailscale">
@@ -65,6 +103,7 @@
     <h3>Daftar ulang Tailscale</h3>
     <form method="post" action="{{ url_for('reregister_tailscale') }}" onsubmit="this.querySelector('button').disabled = true; this.querySelector('button').textContent = 'Mendaftarkan ulang…';">
         <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label for="tailscale-new-hostname">Nama node</label>
         <input id="tailscale-new-hostname" name="hostname" placeholder="scola-absen-XXXXXX" type="text" maxlength="63"
                pattern="[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?"
@@ -81,6 +120,7 @@
 
     <h3>Node key expiry</h3>
     <form method="post" action="{{ url_for('set_tailscale_expiry') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label for="tailscale-api-token">API access token:</label>
         <input type="password" id="tailscale-api-token" name="api_token" required maxlength="510"
@@ -102,6 +142,7 @@
     <section aria-labelledby="heading-ethernet">
     <h2 id="heading-ethernet">Ethernet</h2>
     <form method="post" action="{{ url_for('save_ethernet') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label>Mode:</label>
         <select name="ethernet_mode">
             <option value="dhcp" {% if ethernet_cfg and ethernet_cfg.mode == 'dhcp' %}selected{% endif %}>DHCP</option>
@@ -123,6 +164,7 @@
     <section aria-labelledby="heading-wifi">
     <h2 id="heading-wifi">WiFi</h2>
     <form method="post" action="{{ url_for('save_wifi') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label>SSID:</label>
         <input type="text" name="ssid" id="ssid-input" list="ssid-list" value="{{ wifi_cfg.ssid if wifi_cfg else '' }}">
         <datalist id="ssid-list">
@@ -143,6 +185,7 @@
     <section aria-labelledby="heading-device">
     <h2 id="heading-device">Device Info</h2>
     <form method="post" action="{{ url_for('save_device') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label>Machine ID:</label>
         <input type="text" name="machine_id" value="{{ cfg['machine-id'] if 'machine-id' in cfg else '' }}">
         <label>API Host:</label>
@@ -157,6 +200,7 @@
     <section aria-labelledby="heading-timezone">
     <h2 id="heading-timezone">Timezone</h2>
     <form method="post" action="{{ url_for('save_timezone') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label>Timezone:</label>
         <select name="timezone">
             <option value="UTC" {% if timezone == 'UTC' %}selected{% endif %}>UTC (GMT+0)</option>
@@ -181,6 +225,7 @@
     <section aria-labelledby="heading-qr">
     <h2 id="heading-qr">QR Code Scanner</h2>
     <form method="post" action="{{ url_for('save_qr_device') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <label>QR Scanner Device:</label>
         <select name="qr_device" id="qr-device-select">
             <option value="none" {% if not qr_cfg or not qr_cfg.enabled %}selected{% endif %}>No QR Scanner</option>
@@ -203,15 +248,71 @@
     {% if active_tab == 'application' %}
     <section aria-labelledby="heading-application">
     <h2 id="heading-application">Aplikasi</h2>
-    <p>Restart aplikasi absensi untuk menerapkan pengaturan perangkat.</p>
-    <form method="post" action="{{ url_for('restart_app') }}">
+    <p>Restart proses absensi melalui PM2 untuk menerapkan pengaturan perangkat.</p><div id="restart-result" class="status" role="status"></div>
+    <form method="post" action="{{ url_for('restart_app') }}" id="restart-form">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
         <button style="width: 100%; background-color: red;" class="danger" type="submit">RESTART APPLICATION</button>
     </form>
     </section>
     {% endif %}
+    {% if active_tab == 'git' %}
+    <section><h2>Git / OTA</h2>
+    <p id="ota-info">Memuat ota.json…</p>
+    <form id="git-form">
+        <label>Repository GitHub<input id="git-repository" required placeholder="https://github.com/tonxbow/absensi.git"></label>
+        <label>Branch hardware<select id="git-branch" required><option value="">Muat daftar branch terlebih dahulu</option></select></label>
+        <small id="git-branch-info">Semua branch akan ditampilkan tanpa filter teks. Pilih sesuai hardware perangkat.</small>
+        <button type="button" id="git-load">Muat Daftar Branch</button>
+        <button type="button" id="git-save">Simpan OTA</button>
+        <button type="submit">Pull Code</button>
+    </form>
+    <small>Repository publik: HTTPS tanpa password. Repository privat: SSH dengan deploy key dan known_hosts yang sudah dikonfigurasi pada perangkat. Pull hanya fast-forward dan dibatalkan jika ada perubahan lokal.</small>
+    <div id="git-result" class="status" role="status"></div></section>
+    {% endif %}
+
+    {% if active_tab == 'logs' %}
+    <section><h2>Log PM2 Absensi</h2>
+    <button id="logs-refresh" type="button">Refresh</button>
+    <button id="logs-live" type="button" aria-pressed="true">Live: Aktif</button>
+    <button id="logs-clear" type="button" style="background:#b42318">Hapus Kedua Log</button>
+    <p id="logs-result" role="status"></p>
+    <h3 id="log-out-path">Output — 15 baris terakhir</h3><pre id="log-out" class="log-panel">Memuat…</pre>
+    <h3 id="log-error-path">Error — 15 baris terakhir</h3><pre id="log-error" class="log-panel">Memuat…</pre>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'hardware' %}
+    <section><h2>Status Hardware</h2>
+    <p>Status dilaporkan oleh aplikasi absensi. Halaman ini tidak mengakses GPIO, SPI, atau I2C.</p>
+    <p id="hardware-result" role="status">Memuat status…</p>
+    <table style="width:100%;text-align:left;border-collapse:collapse"><thead><tr><th>Perangkat</th><th>Status terakhir</th></tr></thead><tbody>
+    {% for key, label in [('led','LED'),('buzzer','Buzzer'),('rfid','RFID'),('rtc','DS1307 / RTC'),('lcd','LCD')] %}
+    <tr><td style="padding:12px 0">{{ label }}</td><td id="hardware-{{ key }}">Belum tersedia</td></tr>
+    {% endfor %}</tbody></table>
+    <small>GPIO siap tidak memastikan LED/buzzer berbunyi secara fisik. Status RFID menunjukkan inisialisasi/pembacaan terakhir; menunggu kartu bukan error.</small>
+    </section>
+    {% endif %}
+
+    {% if active_tab == 'account' %}
+    <section><h2>Akun Admin</h2>
+    <form method="post" action="{{ url_for('change_password') }}">
+        <input type="hidden" name="csrf_token" value="{{ tailscale_csrf }}">
+        <label>Password saat ini<input name="current_password" type="password" autocomplete="current-password" required></label>
+        <label>Password baru<input name="new_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+        <label>Konfirmasi password baru<input name="confirm_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required></label>
+        <button type="submit">Ganti Password</button>
+    </form></section>
+    {% endif %}
+
+    </main>
 </div>
 
 <script>
+function toggleSidebar(button) {
+    const opened = document.body.classList.toggle('menu-open');
+    button.setAttribute('aria-expanded', String(opened));
+}
+
 function refreshSSID(){
     fetch('/scan_ssid')
     .then(res => res.json())
@@ -264,6 +365,155 @@ function refreshUSBDevices(){
         alert('Failed to refresh USB devices');
     });
 }
+const activeManagementTab = {{ active_tab|tojson }};
+const managementCsrf = {{ tailscale_csrf|tojson }};
+async function managementFetch(url, options = {}) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 25000);
+    try {
+        const response = await fetch(url, {...options, cache:'no-store', signal:controller.signal,
+            headers:{'Content-Type':'application/json','X-CSRF-Token':managementCsrf,...options.headers}});
+        const data = await response.json();
+        if (response.status === 401) { location.href = '/login'; throw new Error('Login diperlukan.'); }
+        if (!response.ok || !data.success) throw new Error(data.message || 'Operasi gagal.');
+        return data;
+    } finally { clearTimeout(timeout); }
+}
+function managementMessage(id, text, error=false) {
+    const element=document.getElementById(id);
+    if (element) { element.textContent=text; element.style.color=error?'#b42318':'#175c36'; }
+}
+async function runManagementJob(url, payload, resultId, form) {
+    const controls=[...form.querySelectorAll('button,input')];
+    controls.forEach(el=>el.disabled=true);
+    try {
+        const data=await managementFetch(url,{method:'POST',body:JSON.stringify(payload)});
+        managementMessage(resultId,'Operasi sedang berjalan…');
+        while (true) {
+            await new Promise(resolve=>setTimeout(resolve,1000));
+            const status=await managementFetch('/api/jobs/'+encodeURIComponent(data.job_id));
+            managementMessage(resultId,status.job.message,status.job.status==='failed');
+            if (status.job.status!=='running') break;
+        }
+    } catch (error) { managementMessage(resultId,error.message,true); }
+    finally { controls.forEach(el=>el.disabled=false); }
+}
+if (activeManagementTab==='git') {
+    const form=document.getElementById('git-form');
+    const repository=document.getElementById('git-repository');
+    const branch=document.getElementById('git-branch');
+    const payload=()=>({repository:repository.value.trim(),branch:branch.value.trim()});
+    let branchRequest=0;
+    function branchOption(name, label=name) {
+        const option=document.createElement('option');option.value=name;option.textContent=label;return option;
+    }
+    async function loadGitBranches(preferred=branch.value) {
+        const requestId=++branchRequest;
+        const button=document.getElementById('git-load');
+        button.disabled=true;branch.disabled=true;
+        const requestedRepository=repository.value.trim();
+        managementMessage('git-result','Mengambil seluruh branch dari GitHub…');
+        try {
+            const data=await managementFetch('/api/git/branches?repository='+encodeURIComponent(requestedRepository));
+            if(requestId!==branchRequest || repository.value.trim()!==requestedRepository)return;
+            const names=[...new Set(data.branches)].sort((a,b)=>a.localeCompare(b));
+            branch.replaceChildren(branchOption('','Pilih branch sesuai hardware'),...names.map(name=>branchOption(name)));
+            branch.value=names.includes(preferred)?preferred:'';
+            document.getElementById('git-branch-info').textContent=names.length+' branch tersedia dari '+requestedRepository+'. Pilih sesuai hardware perangkat.';
+            managementMessage('git-result',names.length ? 'Seluruh '+names.length+' branch berhasil dimuat.' : 'Repository tidak memiliki branch yang dapat dipilih.',!names.length);
+        } catch(error){
+            if(requestId===branchRequest)managementMessage('git-result',error.message,true);
+        } finally {
+            if(requestId===branchRequest){button.disabled=false;branch.disabled=false;}
+        }
+    }
+    managementFetch('/api/ota').then(data=>{
+        repository.value=data.settings.repository;
+        branch.replaceChildren(branchOption(data.settings.branch));
+        document.getElementById('ota-info').textContent='Versi: '+(data.settings.version||'—')+' • Konfigurasi perangkat: '+data.path;
+        return loadGitBranches(data.settings.branch);
+    }).catch(error=>managementMessage('git-result',error.message,true));
+    document.getElementById('git-load').onclick=()=>loadGitBranches();
+    repository.addEventListener('input',()=>{
+        branchRequest++;
+        branch.replaceChildren(branchOption('','Repository berubah — muat ulang daftar branch'));
+        branch.disabled=false;
+        document.getElementById('git-load').disabled=false;
+        document.getElementById('git-branch-info').textContent='Klik Muat Daftar Branch untuk repository ini.';
+    });
+    document.getElementById('git-save').onclick=async event=>{
+        if(!form.reportValidity())return;
+        const button=event.currentTarget;button.disabled=true;
+        try { await managementFetch('/api/ota',{method:'POST',body:JSON.stringify(payload())});managementMessage('git-result','Konfigurasi OTA tersimpan.'); }
+        catch(error){managementMessage('git-result',error.message,true);}
+        finally{button.disabled=false;}
+    };
+    form.onsubmit=event=>{event.preventDefault();runManagementJob('/api/git/pull',payload(),'git-result',form);};
+}
+const restartForm=document.getElementById('restart-form');
+if(restartForm)restartForm.onsubmit=event=>{
+    event.preventDefault();runManagementJob('/api/application/restart',{},'restart-result',restartForm);
+};
+let previewTimer=null;
+let previewRequest=null;
+let logsLive=true;
+let logsClearing=false;
+function updateLogs(data) {
+    for(const key of ['out','error']) {
+        document.getElementById('log-'+key+'-path').textContent=data.paths[key]+' — 15 baris terakhir';
+        const panel=document.getElementById('log-'+key);
+        const content=data.logs[key]||'Log kosong.';
+        if(panel.textContent!==content){
+            const follow=panel.scrollTop+panel.clientHeight>=panel.scrollHeight-24;
+            panel.textContent=content;if(follow)panel.scrollTop=panel.scrollHeight;
+        }
+    }
+    managementMessage('logs-result',(logsLive?'Live • ':'')+new Date().toLocaleTimeString('id-ID'));
+}
+async function refreshPreview() {
+    if(previewRequest)return previewRequest;
+    if(logsClearing)return;
+    previewRequest=(async()=>{
+        try {
+            if(activeManagementTab==='logs')updateLogs(await managementFetch('/api/pm2/logs'));
+            if(activeManagementTab==='hardware'){
+                const data=await managementFetch('/api/hardware');
+                const hardware=data.hardware;
+                managementMessage('hardware-result',data.stale?'Laporan kedaluwarsa/belum tersedia. Periksa proses absensi.':'Laporan aktif • '+new Date(hardware.reported_at*1000).toLocaleTimeString('id-ID'),data.stale);
+                for(const key of ['led','buzzer','rfid','rtc','lcd']) {
+                    const item=hardware&&hardware.devices&&hardware.devices[key];
+                    document.getElementById('hardware-'+key).textContent=data.stale?'Tidak diketahui':(item?item.message:'Belum tersedia');
+                }
+            }
+        }catch(error){managementMessage(activeManagementTab==='logs'?'logs-result':'hardware-result',error.message,true);}
+    })();
+    try{await previewRequest;}finally{previewRequest=null;}
+}
+function schedulePreview() {
+    clearTimeout(previewTimer);
+    if(document.hidden || !['logs','hardware'].includes(activeManagementTab) || (activeManagementTab==='logs'&&!logsLive))return;
+    refreshPreview().finally(()=>{
+        if(!document.hidden && (activeManagementTab!=='logs'||logsLive))previewTimer=setTimeout(schedulePreview,activeManagementTab==='logs'?1000:2000);
+    });
+}
+if(activeManagementTab==='logs') {
+    document.getElementById('logs-refresh').onclick=()=>refreshPreview();
+    document.getElementById('logs-live').onclick=event=>{
+        logsLive=!logsLive;event.currentTarget.textContent='Live: '+(logsLive?'Aktif':'Nonaktif');
+        event.currentTarget.setAttribute('aria-pressed',String(logsLive));schedulePreview();
+    };
+    document.getElementById('logs-clear').onclick=async event=>{
+        const button=event.currentTarget;button.disabled=true;logsClearing=true;
+        try{
+            if(previewRequest)await previewRequest;
+            updateLogs(await managementFetch('/api/pm2/logs',{method:'DELETE'}));
+        }catch(error){managementMessage('logs-result',error.message,true);}
+        finally{logsClearing=false;button.disabled=false;}
+    };
+}
+document.addEventListener('visibilitychange',schedulePreview);
+schedulePreview();
+
 </script>
 </body>
 </html>
