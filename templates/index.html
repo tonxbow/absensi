@@ -265,8 +265,9 @@
         <button type="button" id="git-load">Muat Daftar Branch</button>
         <button type="button" id="git-save">Simpan OTA</button>
         <button type="submit">Pull Code</button>
+        <button type="button" id="git-force" style="background:#b42318">Force Pull</button>
     </form>
-    <small>Repository publik: HTTPS tanpa password. Repository privat: SSH dengan deploy key dan known_hosts yang sudah dikonfigurasi pada perangkat. Pull hanya fast-forward dan dibatalkan jika ada perubahan lokal.</small>
+    <small>Repository publik: HTTPS tanpa password. Repository privat: SSH dengan deploy key dan known_hosts yang sudah dikonfigurasi pada perangkat. Pull biasa hanya fast-forward. Force Pull menyamakan kode dengan GitHub tanpa merge dan membuang perubahan kode/commit lokal dari branch aktif; cadangan dibuat dan setting.json perangkat dipertahankan.</small>
     <div id="git-result" class="status" role="status"></div></section>
     {% endif %}
 
@@ -384,7 +385,7 @@ function managementMessage(id, text, error=false) {
     if (element) { element.textContent=text; element.style.color=error?'#b42318':'#175c36'; }
 }
 async function runManagementJob(url, payload, resultId, form) {
-    const controls=[...form.querySelectorAll('button,input')];
+    const controls=[...form.querySelectorAll('button,input,select')];
     controls.forEach(el=>el.disabled=true);
     try {
         const data=await managementFetch(url,{method:'POST',body:JSON.stringify(payload)});
@@ -449,6 +450,12 @@ if (activeManagementTab==='git') {
         finally{button.disabled=false;}
     };
     form.onsubmit=event=>{event.preventDefault();runManagementJob('/api/git/pull',payload(),'git-result',form);};
+    document.getElementById('git-force').onclick=()=>{
+        if(!form.reportValidity())return;
+        const selected=payload();
+        if(!confirm('Force Pull branch "'+selected.branch+'"? Perubahan kode lokal akan dibuang dan kode disamakan dengan GitHub tanpa merge. Cadangan dibuat; setting.json dipertahankan.'))return;
+        runManagementJob('/api/git/pull',{...selected,force:true,confirm_discard:true},'git-result',form);
+    };
 }
 const restartForm=document.getElementById('restart-form');
 if(restartForm)restartForm.onsubmit=event=>{

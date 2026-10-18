@@ -699,9 +699,38 @@ def api_git_branches():
         return jsonify(success=False, message=str(error)), 503
 
 
-def pull_firmware(repository, branch):
+def pull_firmware(repository, branch, force=False):
     git = lambda *args: run_management(['git', *args], timeout=120)
     git('rev-parse', '--show-toplevel')
+    if force:
+        # Fetch successfully before discarding anything in the working tree.
+        git('fetch', '--no-tags', repository, 'refs/heads/' + branch)
+        target = git('rev-parse', 'FETCH_HEAD').strip()
+        previous = git('rev-parse', 'HEAD').strip()
+        backup = os.path.join(STATE_DIR, 'backups', 'force-' + time.strftime('%Y%m%d-%H%M%S') + '-' + secrets.token_hex(3))
+        os.makedirs(backup, mode=0o700)
+        git('update-ref', 'refs/absensi-backups/' + os.path.basename(backup), previous)
+        with open(os.path.join(backup, 'tracked-changes.patch'), 'w') as stream:
+            stream.write(git('diff', 'HEAD', '--binary'))
+        atomic_json(os.path.join(backup, 'source.json'), {'commit': previous, 'repository': repository, 'branch': branch})
+        # Keep device configuration even when setting.json is tracked in Git.
+        setting = os.path.join(SCRIPT_DIR, 'setting.json')
+        saved_setting = None
+        if os.path.exists(setting):
+            with open(setting, 'rb') as stream:
+                saved_setting = stream.read()
+            fd = os.open(os.path.join(backup, 'setting.json'), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, 'wb') as stream:
+                stream.write(saved_setting)
+        try:
+            # Ends an unfinished merge too. No merge/pull is performed here.
+            git('reset', '--hard', 'HEAD')
+            git('checkout', '-B', branch, target)
+        finally:
+            if saved_setting is not None:
+                with open(setting, 'wb') as stream:
+                    stream.write(saved_setting)
+        return 'Force pull berhasil; kode sesuai branch ' + branch + '. Konfigurasi perangkat dipertahankan. Cadangan: ' + backup + '. Restart aplikasi untuk memuat perubahan.'
     if git('status', '--porcelain', '--untracked-files=no').strip():
         raise ValueError('Pull dibatalkan: ada perubahan lokal pada file Git. Simpan/commit dahulu.')
     git('fetch', '--no-tags', repository, 'refs/heads/' + branch)
@@ -756,9 +785,14 @@ def api_git_pull():
         cfg = ota_settings()
         repository = validate_repo(patch.get('repository', cfg['repository']))
         branch = validate_branch(patch.get('branch', cfg['branch']))
+        force = patch.get('force', False)
+        if type(force) is not bool:
+            raise ValueError('Pilihan force tidak valid.')
+        if force and patch.get('confirm_discard') is not True:
+            raise ValueError('Konfirmasi pembuangan perubahan lokal diperlukan untuk force pull.')
     except (ValueError, RuntimeError, OSError, subprocess.SubprocessError) as error:
         return jsonify(success=False, message=str(error)), 400
-    return start_management_job(lambda: pull_firmware(repository, branch))
+    return start_management_job(lambda: pull_firmware(repository, branch, force=force))
 
 
 @app.route('/api/application/restart', methods=['POST'])
