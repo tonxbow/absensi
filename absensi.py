@@ -929,7 +929,7 @@ with open(file_path, 'r') as file:
 
 VERSION_FILE_URL = dataOTA['ota-version']
 MAIN_FILE_URL = dataOTA['ota-app']
-LOCAL_VERSION = "2.1.2"
+LOCAL_VERSION = "2.1.3"
 LOCAL_FILE = 'absensi.py'
 MACHINE_ID = dataSetting['machine-id']
 API_HOST = dataSetting['api-server']
@@ -1249,7 +1249,7 @@ def initialize_rfid():
         device = SimpleMFRC522()
         time.sleep(0.05)
         set_hardware_status('rfid', True)
-        printDebug('[OK] MFRC522 siap; pembacaan memakai reader.read() seperti versi awal')
+        printDebug('[OK] MFRC522 siap; polling UID tanpa membaca blok kartu')
         return device
     except Exception as error:
         set_hardware_status('rfid', False)
@@ -1270,10 +1270,45 @@ def close_rfid(device):
             pass
 
 
+def check_rfid_chip(device):
+    """Check the SPI link, allowing board-specific chip versions such as 0x82."""
+    low = device.READER
+    version = low.Read_MFRC522(0x37)
+    if version in (0x00, 0xFF):
+        raise RuntimeError('Reader tidak merespons SPI (VersionReg=0x%02X)' % version)
+    if low.Read_MFRC522(0x01) & 0x10:
+        raise RuntimeError('Reader masih power-down; diperlukan reset RST')
+    if low.Read_MFRC522(0x14) & 0x03 != 0x03:
+        low.AntennaOn()
+        time.sleep(0.01)
+        if low.Read_MFRC522(0x14) & 0x03 != 0x03:
+            raise RuntimeError('Antena reader mati dan gagal diaktifkan kembali')
+        printDebug('[RFID] Antena sempat mati; sudah diaktifkan kembali')
+
+
+def rearm_rfid(device):
+    """Release authentication and reset the chip after every scan transaction."""
+    low = device.READER
+    low.MFRC522_StopCrypto1()
+    low.MFRC522_Init()
+    deadline = time.monotonic() + 0.5
+    time.sleep(0.05)
+    while low.Read_MFRC522(0x01) & 0x10 and time.monotonic() < deadline:
+        time.sleep(0.02)
+    check_rfid_chip(device)
+
+
 def read_rfid_id(device):
-    # Restore the exact driver API used by the previously working application.
-    result = device.read()
-    return result[0] if isinstance(result, (tuple, list)) else result
+    """Read UID only: no block reads, MIFARE keys, or infinite read() loop."""
+    low = device.READER
+    low.MFRC522_StopCrypto1()
+    status, _ = low.MFRC522_Request(low.PICC_REQALL)
+    if status != low.MI_OK:
+        return None
+    status, uid = low.MFRC522_Anticoll()
+    if status != low.MI_OK:
+        return None
+    return device.uid_to_num(uid)
 
 
 displayPage=0
@@ -1411,6 +1446,10 @@ statusSend=0
 last_scan_time_rfid = {}
 def rfid():
     global reader, tagRFID, statusInsert, lcd_backlight_status, last_scan_time
+    next_check = 0.0
+    last_reset = time.monotonic()
+    held_uid = None
+    absent_since = None
     while True:
         try:
             threadStatus[2] = get_datetime()
@@ -1420,20 +1459,42 @@ def rfid():
                     set_hardware_status('rfid', False)
                     time.sleep(5)
                     continue
+                check_rfid_chip(reader)
+                next_check = time.monotonic() + 5
+                last_reset = time.monotonic()
+                held_uid = None
+                absent_since = None
+            now_monotonic = time.monotonic()
+            if now_monotonic >= next_check:
+                check_rfid_chip(reader)
+                next_check = now_monotonic + 5
+            if now_monotonic - last_reset >= 30:
+                rearm_rfid(reader)
+                last_reset = time.monotonic()
             card_id = read_rfid_id(reader)
             if card_id is None:
-                time.sleep(0.1)
+                now_monotonic = time.monotonic()
+                if absent_since is None:
+                    absent_since = now_monotonic
+                elif now_monotonic - absent_since >= 0.3:
+                    held_uid = None
+                time.sleep(0.05)
                 continue
+            absent_since = None
             set_hardware_status('rfid', True)
-            # Preserve the existing lowercase four-byte UID format for attendance.
             if isinstance(card_id, bool) or not isinstance(card_id, int):
                 raise ValueError('ID RFID tidak valid')
             current_tag = card_id.to_bytes(8, 'big')[3:7].hex()
+            if current_tag == held_uid:
+                time.sleep(0.1)
+                continue
+            held_uid = current_tag
         except Exception as error:
             set_hardware_status('rfid', False)
-            printDebugEx('[RFID] Pembacaan gagal; membuka ulang SPI: ', error)
+            printDebugEx('[RFID] Baca/status SPI gagal; reopen dan reset RST: ', error)
             close_rfid(reader)
             reader = None
+            held_uid = None
             time.sleep(5)
             continue
 
@@ -1442,11 +1503,13 @@ def rfid():
             previous = last_scan_time_rfid.get(current_tag)
             if previous and now - previous < timedelta(minutes=1):
                 tagRFID = 'xxx'
+                printDebug('[RFID] Kartu sama ditolak: jeda absen belum 1 menit')
                 buzzer_beep(count=1, duration=0.5)
                 continue
+            printDebug('[RFID] UID terbaca; menyimpan absen')
             inserted = insertdata(current_tag)
             if inserted is None:
-                printDebug('[RFID] Absen gagal disimpan:', current_tag)
+                printDebug('[RFID] Absen gagal disimpan')
                 buzzer_beep(count=1, duration=0.5)
                 continue
             statusInsert = inserted
@@ -1456,8 +1519,18 @@ def rfid():
             lcd_backlight_status = LCD_BACKLIGHT
             buzzer_beep(count=2)
             publish_mqtt(topicPublish + '/tag', current_tag)
+            printDebug('[RFID] Absen tersimpan')
         except Exception as error:
             printDebugEx('[RFID] Pemrosesan absen gagal: ', error)
+        finally:
+            try:
+                rearm_rfid(reader)
+                last_reset = time.monotonic()
+            except Exception as error:
+                set_hardware_status('rfid', False)
+                printDebugEx('[RFID] Reset setelah scan gagal; reopen SPI: ', error)
+                close_rfid(reader)
+                reader = None
         time.sleep(0.1)
 
 
