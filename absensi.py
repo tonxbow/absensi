@@ -431,82 +431,85 @@ def check_for_update():
 
 
 ############################### MYSQL FUNCTION #######################################
+# A connection belongs to exactly one thread. Cursors are created per query.
+_mysql_local = threading.local()
+stop_event = threading.Event()
+send_last_progress = time.monotonic()
+SEND_STALL_TIMEOUT = 120  # Watchdog also covers drivers without read_timeout support.
+
+
+def close_mysql_connection():
+    """Discard only the calling thread's connection, including broken sessions."""
+    connection = getattr(_mysql_local, "connection", None)
+    _mysql_local.connection = None
+    if connection is not None:
+        try:
+            connection.close()
+        except Exception:
+            pass
+
+
 def init_mysql_connection():
-    """Initialize MySQL connection with error handling"""
+    """Open a connection lazily for the calling thread."""
     try:
-        mydb = mysql.connector.connect(
+        return mysql.connector.connect(
             host="localhost",
             user="scola",
             password="scolaabsen",
             database="absensi",
-            autocommit=False,
+            autocommit=True,
             connection_timeout=10,
             auth_plugin='mysql_native_password'
         )
-        mycursor = mydb.cursor()
-        return mydb, mycursor
     except Exception as e:
         printDebugEx("ERROR init_mysql_connection: ", e)
-        return None, None
+        return None
+
 
 def ensure_mysql_connection():
-    """Ensure MySQL connection is alive, reconnect if needed"""
-    global mydb, mycursor
-    try:
-        if mydb is None or not mydb.is_connected():
-            printDebug("Reconnecting to MySQL...")
-            mydb, mycursor = init_mysql_connection()
-            if mydb is None:
-                return False
-        
-        # Test connection with a simple query
-        mycursor.execute("SELECT 1")
-        mycursor.fetchone()
-        return True
-    except Exception as e:
-        printDebugEx("ERROR ensure_mysql_connection: ", e)
+    """Check this thread's session; never execute a probe on a shared cursor."""
+    connection = getattr(_mysql_local, "connection", None)
+    if connection is not None:
         try:
-            mydb, mycursor = init_mysql_connection()
-            return mydb is not None
-        except:
-            return False
+            if connection.is_connected():
+                return True
+        except Exception as e:
+            printDebugEx("ERROR checking MySQL connection: ", e)
+        close_mysql_connection()
+    _mysql_local.connection = init_mysql_connection()
+    return _mysql_local.connection is not None
 
-# Initialize connection
-mydb, mycursor = init_mysql_connection()
 
-def insertdata(tagRFID):
-    global mycursor, mydb
+def mysql_execute(query, values=None, fetchone=False):
+    """Run one statement; autocommit keeps reads out of long-lived snapshots."""
+    cursor = None
     try:
         if not ensure_mysql_connection():
-            printDebug("MySQL connection failed, cannot insert data")
-            return None
-            
-        tag = tagRFID
-        waktu = get_datetime()
-        status = 0  # Misalnya 1 = Hadir
+            raise ConnectionError("MySQL connection unavailable")
+        cursor = _mysql_local.connection.cursor(buffered=True)
+        cursor.execute(query, values)
+        return cursor.fetchone() if fetchone else cursor.lastrowid
+    except Exception:
+        # Never reuse a session after protocol/query failure. The next call reconnects.
+        # Do not replay writes: a lost acknowledgement may mean they already committed.
+        close_mysql_connection()
+        raise
+    finally:
+        if cursor is not None:
+            try:
+                cursor.close()
+            except Exception:
+                close_mysql_connection()
 
-        # Query insert
-        query = "INSERT INTO data_absen (tag, datetime, status) VALUES (%s, %s, %s)"
-        values = (tag, waktu, status)
 
-        # Eksekusi dan commit
-        mycursor.execute(query, values)
-        mydb.commit()
-        return mycursor.lastrowid
-        
-    except mysql.connector.Error as e:
-        printDebugEx("MySQL error in insertdata: ", e)
-        # Try to reconnect and retry once
-        try:
-            if ensure_mysql_connection():
-                mycursor.execute(query, values)
-                mydb.commit()
-                return mycursor.lastrowid
-        except Exception as retry_e:
-            printDebugEx("Retry failed in insertdata: ", retry_e)
-        return None
+def insertdata(tagRFID):
+    try:
+        return mysql_execute(
+            "INSERT INTO data_absen (tag, datetime, status) VALUES (%s, %s, %s)",
+            (tagRFID, get_datetime(), 0),
+        )
     except Exception as e:
-        printDebugEx("ERROR insertdata: ", e)
+        printDebugEx("ERROR insertdata (silakan scan ulang jika belum tersimpan): ", e)
         return None
 
 ############################### LCD FUNCTION #######################################
@@ -1413,11 +1416,16 @@ def display_once():
                 time.sleep(1.5)
                 lcd_clear()
             
-            if statusSend == 2 :
-                statusSend=0
+            if statusSend in (2, 3):
+                display_status = statusSend
+                statusSend = 0
                 lcd_clear()
-                lcd_string("INFORMASI ",LCD_LINE_1) 
-                lcd_string("ERROR :" + siswaNama,LCD_LINE_2)  
+                lcd_string("INFORMASI", LCD_LINE_1)
+                if display_status == 3:
+                    lcd_string("ADA MASALAH", LCD_LINE_2)
+                    lcd_string("DI SERVER", LCD_LINE_3)
+                else:
+                    lcd_string("ERROR :" + siswaNama, LCD_LINE_2)
                 time.sleep(1.5)
                 lcd_clear()
                
@@ -1535,162 +1543,185 @@ def rfid():
         time.sleep(0.1)
 
 
-def send():
+def send_pending_once():
+    global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus,statusSend,siswaNis,siswaNama
+    # Ensure MySQL connection before executing queries
+    if not ensure_mysql_connection():
+        printDebug("MySQL connection failed in send thread")
+        return
+
     try:
-        global tagRFID,MACHINE_ID,API_HOST,statusInternet,jumlahDataNotSend,threadStatus,statusSend,siswaNis,siswaNama
-        while True:
-            threadStatus[3]=get_datetime()
-            
-            # Ensure MySQL connection before executing queries
-            if not ensure_mysql_connection():
-                printDebug("MySQL connection failed in send thread")
-                time.sleep(5)
-                continue
-                
-            try:
-                query = "SELECT COUNT(*) FROM data_absen where status=0"
-                mycursor.execute(query)
-                result = mycursor.fetchone()
-                jumlahData = result[0] if result else 0
-                jumlahDataNotSend = jumlahData
-                
-            except Exception as e:
-                printDebugEx("ERROR counting unsent data: ", e)
-                jumlahDataNotSend = 0
+        query = "SELECT COUNT(*) FROM data_absen where status=0"
+        result = mysql_execute(query, fetchone=True)
+        jumlahData = result[0] if result else 0
+        jumlahDataNotSend = jumlahData
 
-            if statusInternet == "ONLINE":
-                #check data yang belum ke kirim di database
-                try:
-                    if not ensure_mysql_connection():
-                        time.sleep(5)
-                        continue
-                        
-                    mycursor.execute("SELECT * FROM data_absen WHERE status=0 ORDER BY id ASC LIMIT 1")
-                    row = mycursor.fetchone()
-                except Exception as e:
-                    printDebugEx("ERROR fetching data for send: ", e)
-                    row = None
-    
-                if row:
-                    id = row[0]
-                    kartu = row[1]
-                    waktu = row[2]
-
-                    payload = json.dumps({
-                    "mesin": str(MACHINE_ID),
-                    "kartu": str(kartu),
-                    "waktu": str(waktu)
-                    })
-                    headers = {
-                    'Content-Type': 'application/json'
-                    }
-                    printDebug(f"Sending POST request to: {API_HOST}")
-                    printDebug(f"Payload: {payload}")
-                    printDebug(f"Headers: {headers}")
-                    
-                    response = requests.request("POST", API_HOST, headers=headers, data=payload, timeout=10)
-                    
-                    printDebug(f"Response status code: {response.status_code}")
-                    printDebug(f"Response headers: {dict(response.headers)}")
-                    printDebug(f"Response text: {response.text}")
-                    
-                    if response.status_code == 404:
-                        printDebug("❌ ERROR 404: API endpoint not found!")
-                        printDebug("⚠️  Check if the API_HOST URL is correct in setting.json")
-
-                    try:
-                        if response.status_code == 404:
-                            printDebug("❌ API endpoint returns 404 - endpoint tidak ditemukan")
-                            # Handle 404 as API error, not network error
-                            siswaNama = "ENDPOINT TIDAK DITEMUKAN"
-                            statusSend = 2
-                            
-                            # Mark data as error instead of retrying
-                            try:
-                                if ensure_mysql_connection():
-                                    query = "UPDATE data_absen SET status = 2, keterangan = %s WHERE id = %s"
-                                    mycursor.execute(query, ("API endpoint not found (404)", id))
-                                    mydb.commit()
-                                    printDebug(f"Data ID {id} marked as API error (404)")
-                            except Exception as e:
-                                printDebugEx("ERROR updating data for 404: ", e)
-                            continue  # Skip to next iteration
-                            
-                        res_json = response.json()
-                        status = res_json.get("status", False)
-                        message = res_json.get("message", "")
-                        jadwal = res_json.get("data", {}).get("jadwal", "")
-                        siswaNama = res_json.get("data", {}).get("nama", "")
-                        siswaNis = res_json.get("data", {}).get("no", "")
-                        jadwal = jadwal or ""
-                        siswaNama = siswaNama or ""
-                        siswaNis = siswaNis or ""
-                        if status:
-                            printDebug("✅ Status: Berhasil")
-                            printDebug("Pesan  : " + message)
-                            printDebug("Jadwal : " + jadwal)
-                            try:
-                                if ensure_mysql_connection():
-                                    query = "DELETE FROM data_absen WHERE id = %s"
-                                    mycursor.execute(query, (id,))
-                                    mydb.commit()
-                                    printDebug(f"Data dengan ID {id} berhasil dihapus.")
-                            except Exception as e:
-                                printDebugEx("ERROR deleting data: ", e)
-                            statusSend=1
-                        else:
-                            StatusError = res_json.get("error", "")
-                            # siswaNis = res_json.get("statusCode","")
-                            printDebug("❌ Status: Gagal")
-                            printDebug("Pesan : " +  message)
-                            printDebug("Error : " +  StatusError)
-                            statusSend=2
-                            siswaNama = "API URL SALAH"
-                            
-                            if StatusError!="Not Found" :
-                                siswaNama = message
-                                message = message.replace("'", "").replace('"', "")
-                                try:
-                                    if ensure_mysql_connection():
-                                        query = "UPDATE data_absen SET status = 2,keterangan = %s WHERE id = %s"
-                                        mycursor.execute(query, (message, id))
-                                        mydb.commit()
-                                except Exception as e:
-                                    printDebugEx("ERROR updating data: ", e)
-                                
-                            
-
-                    except ValueError:
-                        printDebug("⚠️ Response bukan format JSON yang valid:")
-                        printDebug(f"Status code: {response.status_code}")
-                        printDebug(f"Response text: {response.text}")
-                        
-                        # Handle non-JSON responses
-                        if response.status_code == 404:
-                            siswaNama = "API ENDPOINT NOT FOUND"
-                            statusSend = 2
-                            try:
-                                if ensure_mysql_connection():
-                                    query = "UPDATE data_absen SET status = 2, keterangan = %s WHERE id = %s"
-                                    mycursor.execute(query, (f"HTTP {response.status_code}: {response.text[:100]}", id))
-                                    mydb.commit()
-                            except:
-                                pass
-                        elif response.status_code >= 500:
-                            printDebug("Server error (5xx) - will retry later")
-                        else:
-                            printDebug(f"Unexpected response code: {response.status_code}")
-                #else:
-                    #print("Data tidak ditemukan.")
-
-                #jika sukses maka di delete
-                
-            printDebug("JUMLAH DATA NOT SEND : " + str(jumlahDataNotSend))
-            printDebug("STATUS : " + str(statusInternet))
-            
-            time.sleep(5)
     except Exception as e:
-        printDebugEx("ERROR SEND : ", e)
+        printDebugEx("ERROR counting unsent data: ", e)
+        # Keep the previous count if the database is temporarily unavailable.
+        return
+
+    if statusInternet == "ONLINE":
+        #check data yang belum ke kirim di database
+        try:
+            if not ensure_mysql_connection():
+                return
+
+            row = mysql_execute(
+                "SELECT * FROM data_absen WHERE status=0 ORDER BY id ASC LIMIT 1",
+                fetchone=True,
+            )
+        except Exception as e:
+            printDebugEx("ERROR fetching data for send: ", e)
+            row = None
+
+        if row:
+            id = row[0]
+            kartu = row[1]
+            waktu = row[2]
+
+            payload = json.dumps({
+            "mesin": str(MACHINE_ID),
+            "kartu": str(kartu),
+            "waktu": str(waktu)
+            })
+            headers = {
+            'Content-Type': 'application/json'
+            }
+            printDebug(f"Sending POST request to: {API_HOST}")
+            printDebug(f"Payload: {payload}")
+            printDebug(f"Headers: {headers}")
+
+            response = requests.request("POST", API_HOST, headers=headers, data=payload, timeout=(5, 15))
+
+            printDebug(f"Response status code: {response.status_code}")
+            printDebug(f"Response headers: {dict(response.headers)}")
+            printDebug(f"Response text: {response.text}")
+
+            response_ok = response.status_code in (200, 201)
+            if not response_ok:
+                # LCD state 3 always uses a fixed message, including non-JSON replies.
+                statusSend = 3
+
+            if response.status_code == 404:
+                printDebug("❌ ERROR 404: API endpoint not found!")
+                printDebug("⚠️  Check if the API_HOST URL is correct in setting.json")
+
+            # Temporary API failures must stay pending for the next send cycle.
+            if response.status_code >= 500 or response.status_code == 429:
+                statusSend = 3
+                printDebug(f"API HTTP {response.status_code}; data tetap dalam antrean")
+                return
+
+            try:
+                if response.status_code == 404:
+                    printDebug("❌ API endpoint returns 404 - endpoint tidak ditemukan")
+                    # Handle 404 as API error, not network error
+                    siswaNama = "ENDPOINT TIDAK DITEMUKAN"
+                    statusSend = 3
+
+                    # Mark data as error instead of retrying
+                    try:
+                        if ensure_mysql_connection():
+                            query = "UPDATE data_absen SET status = 2, keterangan = %s WHERE id = %s"
+                            mysql_execute(query, ("API endpoint not found (404)", id))
+                            printDebug(f"Data ID {id} marked as API error (404)")
+                    except Exception as e:
+                        printDebugEx("ERROR updating data for 404: ", e)
+                    return  # Skip to the next send cycle
+
+                res_json = response.json()
+                status = res_json.get("status", False)
+                message = res_json.get("message", "")
+                jadwal = res_json.get("data", {}).get("jadwal", "")
+                siswaNama = res_json.get("data", {}).get("nama", "")
+                siswaNis = res_json.get("data", {}).get("no", "")
+                jadwal = jadwal or ""
+                siswaNama = siswaNama or ""
+                siswaNis = siswaNis or ""
+                if status:
+                    printDebug("✅ Status: Berhasil")
+                    printDebug("Pesan  : " + message)
+                    printDebug("Jadwal : " + jadwal)
+                    try:
+                        if ensure_mysql_connection():
+                            query = "DELETE FROM data_absen WHERE id = %s"
+                            mysql_execute(query, (id,))
+                            printDebug(f"Data dengan ID {id} berhasil dihapus.")
+                    except Exception as e:
+                        printDebugEx("ERROR deleting data: ", e)
+                    statusSend = 1 if response_ok else 3
+                else:
+                    StatusError = res_json.get("error", "")
+                    # siswaNis = res_json.get("statusCode","")
+                    printDebug("❌ Status: Gagal")
+                    printDebug("Pesan : " +  message)
+                    printDebug("Error : " +  StatusError)
+                    statusSend = 2 if response_ok else 3
+                    siswaNama = "API URL SALAH"
+
+                    if StatusError!="Not Found" :
+                        siswaNama = message
+                        message = message.replace("'", "").replace('"', "")
+                        try:
+                            if ensure_mysql_connection():
+                                query = "UPDATE data_absen SET status = 2,keterangan = %s WHERE id = %s"
+                                mysql_execute(query, (message, id))
+                        except Exception as e:
+                            printDebugEx("ERROR updating data: ", e)
+
+
+
+            except ValueError:
+                printDebug("⚠️ Response bukan format JSON yang valid:")
+                printDebug(f"Status code: {response.status_code}")
+                printDebug(f"Response text: {response.text}")
+
+                # Handle non-JSON responses
+                if response.status_code == 404:
+                    siswaNama = "API ENDPOINT NOT FOUND"
+                    statusSend = 3
+                    try:
+                        if ensure_mysql_connection():
+                            query = "UPDATE data_absen SET status = 2, keterangan = %s WHERE id = %s"
+                            mysql_execute(query, (f"HTTP {response.status_code}: {response.text[:100]}", id))
+                    except:
+                        pass
+                elif response.status_code >= 500:
+                    printDebug("Server error (5xx) - will retry later")
+                else:
+                    printDebug(f"Unexpected response code: {response.status_code}")
+        #else:
+            #print("Data tidak ditemukan.")
+
+        #jika sukses maka di delete
+
+    printDebug("JUMLAH DATA NOT SEND : " + str(jumlahDataNotSend))
+    printDebug("STATUS : " + str(statusInternet))
+
+
+
+def send():
+    global send_last_progress, statusSend
+    try:
+        while not stop_event.is_set():
+            send_last_progress = time.monotonic()
+            try:
+                threadStatus[3] = get_datetime()
+                send_pending_once()
+            except requests.RequestException as e:
+                statusSend = 2
+                printDebugEx("ERROR SEND network; data tetap dalam antrean: ", e)
+            except Exception as e:
+                close_mysql_connection()
+                printDebugEx("ERROR SEND; mencoba lagi dalam 5 detik: ", e)
+            finally:
+                send_last_progress = time.monotonic()
+            # All paths, including errors/404, wait to avoid a tight retry loop.
+            stop_event.wait(5)
+    finally:
+        close_mysql_connection()
+
 
 def heartBeat():
     while True:
@@ -1803,12 +1834,12 @@ if __name__ == '__main__':
     threading.Thread(target=hardware_status_worker, name='hardware-status', daemon=True).start()
     threading.Thread(target=button_worker, name='button', daemon=True).start()
 
-    t1 = threading.Thread(target=display, args=())
-    t2 = threading.Thread(target=rfid, args=())
-    t3 = threading.Thread(target=send, args=())
-    t4 = threading.Thread(target=mqttThread, args=())
-    t5 = threading.Thread(target=heartBeat, args=())
-    t6 = threading.Thread(target=qrScannerThread, args=())
+    t1 = threading.Thread(target=display, args=(), daemon=True)
+    t2 = threading.Thread(target=rfid, args=(), daemon=True)
+    t3 = threading.Thread(target=send, args=(), daemon=True)
+    t4 = threading.Thread(target=mqttThread, args=(), daemon=True)
+    t5 = threading.Thread(target=heartBeat, args=(), daemon=True)
+    t6 = threading.Thread(target=qrScannerThread, args=(), daemon=True)
 
     threading.Thread(target=internet_status_worker, name="internet-status", daemon=True).start()
     threading.Thread(target=time_sync_worker, name="ntp-sync", daemon=True).start()
@@ -1840,8 +1871,12 @@ if __name__ == '__main__':
             statusThread=False
             printDebug("rfid Mati")
         if not t3.is_alive():
-            # statusThread=False
-            printDebug("send Mati")
+            printDebug("send Mati; memulai ulang thread pengiriman")
+            t3 = threading.Thread(target=send, args=(), daemon=True)
+            t3.start()
+        elif time.monotonic() - send_last_progress > SEND_STALL_TIMEOUT:
+            printDebug("Pengiriman tidak merespons selama 120 detik; restart aplikasi")
+            restart_app()
         if not t4.is_alive():
             # statusThread=False
             printDebug("mqtt Mati")
@@ -1861,6 +1896,9 @@ if __name__ == '__main__':
         if statusThread==False :
             statusThread=True
             restart_app()
+  except KeyboardInterrupt:
+    stop_event.set()
+    print("\nAplikasi absensi dihentikan oleh pengguna.")
   except Exception as e:
     printDebugEx("ERROR START: ", e)
   except ImportError as e:
